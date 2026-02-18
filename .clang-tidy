@@ -1,0 +1,13 @@
+---
+Checks: >
+    -*,
+    readability-*,
+    modernize-*,
+    bugprone-*,
+    performance-*,
+    -modernize-use-trailing-return-type,
+    -modernize-use-auto,
+    -bugprone-easily-swappable-parameters
+WarningsAsErrors: ''
+HeaderFilterRegex: '^((?!third_party).)*$'
+FormatStyle: 'file'

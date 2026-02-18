@@ -1,0 +1,179 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "gcc",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/usr/bin/gcc",
+                "CMAKE_CXX_COMPILER": "/usr/bin/g++"
+            }
+        },
+        {
+            "name": "gcc-amd64-debug",
+            "displayName": "GCC amd64 Debug",
+            "inherits": "gcc",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "gcc-amd64-release",
+            "displayName": "GCC amd64 Release",
+            "inherits": "gcc-amd64-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "gcc-i386-debug",
+            "displayName": "GCC i386 Debug",
+            "inherits": "gcc",
+            "architecture": {
+                "value": "x86",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "gcc-i386-release",
+            "displayName": "GCC i386 Release",
+            "inherits": "gcc-i386-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "clang",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/usr/bin/clang",
+                "CMAKE_CXX_COMPILER": "/usr/bin/clang++"
+            }
+        },
+        {
+            "name": "clang-amd64-debug",
+            "displayName": "Clang amd64 Debug",
+            "inherits": "clang",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "clang-amd64-release",
+            "displayName": "Clang amd64 Release",
+            "inherits": "clang-amd64-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "clang-i386-debug",
+            "displayName": "Clang i386 Debug",
+            "inherits": "clang",
+            "architecture": {
+                "value": "x86",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "clang-i386-release",
+            "displayName": "Clang i386 Release",
+            "inherits": "clang-i386-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "msvc",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl.exe",
+                "CMAKE_CXX_COMPILER": "cl.exe"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "msvc-amd64-debug",
+            "displayName": "MSVC amd64 Debug",
+            "inherits": "msvc",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "msvc-amd64-release",
+            "displayName": "MSVC amd64 Release",
+            "inherits": "msvc-amd64-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "msvc-i386-debug",
+            "displayName": "MSVC i386 Debug",
+            "inherits": "msvc",
+            "architecture": {
+                "value": "x86",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "msvc-i386-release",
+            "displayName": "MSVC i386 Release",
+            "inherits": "msvc-i386-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-clang-amd64-debug",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "clang-amd64-debug",
+            "verbose": false
+        },
+        {
+            "name": "build-msvc-amd64-debug",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "msvc-amd64-debug",
+            "verbose": false
+        }
+    ]
+}
