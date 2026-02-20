@@ -12,6 +12,9 @@ namespace nuvelocity
 {
     class ObjectBase
     {
+    // FIXME: This is inefficient because this means every object has a string member
+    // for comments, even if it's not used. We should move this to a separate component
+    // or use a more efficient storage method for storing dynamic properties.
     private:
         std::string mComment;
     public:
