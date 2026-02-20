@@ -16,3 +16,6 @@ SpaceBeforeAssignmentOperators: true
 AccessModifierOffset: -4
 NamespaceIndentation: All
 InsertNewlineAtEOF: true
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: 8
+PackConstructorInitializers: Never
