@@ -324,11 +324,11 @@ namespace nuvelocity
             if (line.empty()) {
                 continue;
             }
-            else if (line == "{" || line == "}")
+            if (line == "{" || line == "}")
             {
                 continue;
             }
-            else if (line.find('=') != std::string::npos)
+            if (line.find('=') != std::string::npos)
             {
                 if (info == nullptr || dest == nullptr)
                 {
@@ -338,7 +338,7 @@ namespace nuvelocity
                 }
                 std::string key = line.substr(0, line.find('='));
                 std::string value = line.substr(line.find('=') + 1);
-                if (auto prop = info->GetProperty(key); prop != nullptr)
+                if (auto* prop = info->GetProperty(key); prop != nullptr)
                 {
                     prop->SetValue(dest, value);
                 }
