@@ -2,10 +2,8 @@
 
 #include "Game.h"
 
-enum {
-    NVE_DEFAULT_WINDOW_WIDTH = 640,
-    NVE_DEFAULT_WINDOW_HEIGHT = 480
-};
+constexpr std::uint16_t NVE_DEFAULT_WINDOW_WIDTH = 640;
+constexpr std::uint16_t NVE_DEFAULT_WINDOW_HEIGHT = 480;
 
 namespace nuvelocity
 {
