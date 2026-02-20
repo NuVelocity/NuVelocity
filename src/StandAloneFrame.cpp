@@ -19,11 +19,11 @@ namespace nuvelocity
 
     StandAloneFrame::~StandAloneFrame()
     {
-        if (mSurface)
+        if (mSurface != nullptr)
         {
             SDL_DestroySurface(mSurface);
         }
-        if (mTexture)
+        if (mTexture != nullptr)
         {
             SDL_DestroyTexture(mTexture);
         }
@@ -31,11 +31,11 @@ namespace nuvelocity
 
     SDL_Texture* StandAloneFrame::GetTexture(SDL_Renderer* aRenderer)
     {
-        if (mTexture)
+        if (mTexture != nullptr)
         {
             return mTexture;
         }
-        if (mSurface)
+        if (mSurface != nullptr)
         {
             mTexture = SDL_CreateTextureFromSurface(aRenderer, mSurface);
             return mTexture;
