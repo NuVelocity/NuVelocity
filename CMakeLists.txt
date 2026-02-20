@@ -78,7 +78,7 @@ add_subdirectory(third_party/physfs EXCLUDE_FROM_ALL)
 #------------------------------------------------------------------------------
 # Clang Tidy
 #------------------------------------------------------------------------------
-option(NVE_CLANG_TIDY "Enable clang-tidy checks" OFF)
+option(NVE_CLANG_TIDY "Enable clang-tidy checks" ON)
 if(MSVC)
     set(NVE_CLANG_TIDY OFF CACHE BOOL "" FORCE)
 endif()
@@ -122,7 +122,7 @@ endif()
 #------------------------------------------------------------------------------
 # Clang Format
 #------------------------------------------------------------------------------
-option(NVE_CLANG_FORMAT "Enable clang-format targets" OFF)
+option(NVE_CLANG_FORMAT "Enable clang-format targets" ON)
 if(NVE_CLANG_FORMAT)
     find_program(CLANG_FORMAT_EXE NAMES clang-format)
     if(CLANG_FORMAT_EXE)
