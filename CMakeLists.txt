@@ -120,6 +120,44 @@ if(NVE_CLANG_TIDY)
 endif()
 
 #------------------------------------------------------------------------------
+# Clang Format
+#------------------------------------------------------------------------------
+option(NVE_CLANG_FORMAT "Enable clang-format targets" OFF)
+if(NVE_CLANG_FORMAT)
+    find_program(CLANG_FORMAT_EXE NAMES clang-format)
+    if(CLANG_FORMAT_EXE)
+        message(STATUS "clang-format found: ${CLANG_FORMAT_EXE}")
+        
+        file(GLOB_RECURSE ALL_SOURCE_FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
+        )
+        
+        # Target to check formatting
+        add_custom_target(clang-format-check
+            COMMAND ${CLANG_FORMAT_EXE}
+                --dry-run
+                --Werror
+                ${ALL_SOURCE_FILES}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMENT "Checking code formatting with clang-format..."
+        )
+        
+        # Target to fix formatting
+        add_custom_target(clang-format-fix
+            COMMAND ${CLANG_FORMAT_EXE}
+                -i
+                ${ALL_SOURCE_FILES}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMENT "Fixing code formatting with clang-format..."
+        )
+    else()
+        message(WARNING "clang-format requested but not found")
+    endif()
+endif()
+
+#------------------------------------------------------------------------------
 # NuVelocity Library
 #------------------------------------------------------------------------------
 option(NVE_BUILD_STATIC "Enable building static library" OFF)
