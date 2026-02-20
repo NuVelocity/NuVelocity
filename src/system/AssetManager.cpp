@@ -314,62 +314,10 @@ namespace nuvelocity
     void AssetManager::DumpPropertyFile(const std::string& path)
     {
         auto text = LoadTextFile(path);
-        std::vector<std::string> lines;
-        std::stringstream stream(text);
-        std::string line;
-
-        ClassInfo* info = nullptr;
         void* dest = nullptr;
+        ClassInfo* info = nullptr;
 
-        while (std::getline(stream, line))
-        {
-            line = trim(line);
-            if (line.empty())
-            {
-                continue;
-            }
-            if (line == "{" || line == "}")
-            {
-                continue;
-            }
-            if (line.find('=') != std::string::npos)
-            {
-                if (info == nullptr || dest == nullptr)
-                {
-                    SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS,
-                                "Missing object context for property assignment: '%s'",
-                                line.c_str());
-                    continue;
-                }
-                std::string key = line.substr(0, line.find('='));
-                std::string value = line.substr(line.find('=') + 1);
-                if (auto* prop = info->GetProperty(key); prop != nullptr)
-                {
-                    prop->SetValue(dest, value);
-                }
-                else
-                {
-                    SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS, "Unknown property '%s' for class '%s'",
-                                key.c_str(), info->mName.c_str());
-                }
-                // SDL_Log("%s: %s", key.c_str(), value.c_str());
-            }
-            else
-            {
-                info = ObjectRegistry::Get().Find(line);
-                if (info != nullptr)
-                {
-                    dest = info->mFactoryFunction();
-                    SDL_Log("Created object of type: %s", info->mName.c_str());
-                }
-                else
-                {
-                    SDL_Log("%s", line.c_str());
-                }
-            }
-        }
-
-        if (dest != nullptr)
+        if (PropertySerializer::Deserialize(text, dest, info))
         {
             info->DumpFor(dest);
         }
