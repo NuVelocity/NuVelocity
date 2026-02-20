@@ -2,8 +2,8 @@
 #define NVE_MANAGER_H
 
 #include "API.h"
-#include <SDL3/SDL_log.h>
 #include "LogCategory.h"
+#include <SDL3/SDL_log.h>
 
 namespace nuvelocity
 {
@@ -12,11 +12,12 @@ namespace nuvelocity
     public:
         virtual ~Manager() = default;
         virtual bool Initialize(char** argv) = 0;
+
     protected:
         bool mInitialized;
 
         Manager()
-            : mInitialized(false)
+                : mInitialized(false)
         {
         }
         Manager(const Manager&) = delete;
@@ -26,8 +27,7 @@ namespace nuvelocity
         {
             if (mInitialized)
             {
-                SDL_LogWarn(NVE_LOG_CATEGORY_ENGINE,
-                    "%s is already initialized", managerName);
+                SDL_LogWarn(NVE_LOG_CATEGORY_ENGINE, "%s is already initialized", managerName);
                 return true;
             }
             return false;

@@ -1,8 +1,8 @@
 #ifndef NVE_GAME_H
 #define NVE_GAME_H
 
-#include <SDL3/SDL_render.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_render.h>
 
 #include "API.h"
 #include "AssetManager.h"
@@ -29,7 +29,7 @@ namespace nuvelocity
         NVE_API Game(const char* aWindowTitle, int aWidth, int aHeight);
         NVE_API Game(const char* aWindowTitle);
         NVE_API ~Game();
-        
+
         NVE_API bool Initialize(char** argv);
 
         NVE_API void Update();
@@ -37,9 +37,11 @@ namespace nuvelocity
 
         NVE_API void SetScene(Scene* aScene);
         NVE_API Scene* GetScene();
+
     protected:
         Scene* mScene;
         static inline bool Fail();
+
     private:
         bool mInitialized;
     };

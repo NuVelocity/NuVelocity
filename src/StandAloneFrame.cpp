@@ -3,17 +3,17 @@
 namespace nuvelocity
 {
     constexpr int kDefaultQuality = 80;
-    
+
     StandAloneFrame::StandAloneFrame()
-        : mRle(true),
-          mRleAllCopy(false),
-          mCropColor0(true),
-          mDoDither(true),
-          mLossless(false),
-          mQuality(kDefaultQuality),
-          mCenterHotSpot(false),
-          mSurface(nullptr),
-          mTexture(nullptr)
+            : mRle(true)
+            , mRleAllCopy(false)
+            , mCropColor0(true)
+            , mDoDither(true)
+            , mLossless(false)
+            , mQuality(kDefaultQuality)
+            , mCenterHotSpot(false)
+            , mSurface(nullptr)
+            , mTexture(nullptr)
     {
     }
 

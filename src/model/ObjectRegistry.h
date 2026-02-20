@@ -1,10 +1,10 @@
 #ifndef NVE_OBJECT_REGISTRY_H
 #define NVE_OBJECT_REGISTRY_H
 
-#include <unordered_map>
-#include <string>
 #include "ClassInfo.h"
 #include <stdexcept>
+#include <string>
+#include <unordered_map>
 
 namespace nuvelocity
 {
@@ -13,6 +13,7 @@ namespace nuvelocity
     private:
         ObjectRegistry() = default;
         std::unordered_map<std::string, ClassInfo*> mClasses;
+
     public:
         static ObjectRegistry& Get()
         {
@@ -27,9 +28,12 @@ namespace nuvelocity
 
         ClassInfo* Find(const std::string& name)
         {
-            try {
+            try
+            {
                 return mClasses.at(name);
-            } catch (const std::out_of_range&) {
+            }
+            catch (const std::out_of_range&)
+            {
                 return nullptr;
             }
         }

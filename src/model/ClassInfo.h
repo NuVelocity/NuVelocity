@@ -1,9 +1,9 @@
 #ifndef NVE_CLASSINFO_H
 #define NVE_CLASSINFO_H
 
+#include "Property.h"
 #include <string>
 #include <unordered_map>
-#include "Property.h"
 
 namespace nuvelocity
 {
@@ -11,6 +11,7 @@ namespace nuvelocity
     {
     private:
         Property* mLastProperty;
+
     public:
         std::string mName;
         std::unordered_map<std::string, Property*> mProperties;
@@ -58,6 +59,5 @@ namespace nuvelocity
         }
     };
 } // namespace nuvelocity
-
 
 #endif // NVE_CLASSINFO_H

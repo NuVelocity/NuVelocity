@@ -18,25 +18,23 @@ namespace nuvelocity
 
         if (!MIX_Init())
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ENGINE,
-                "Failed to initialize SDL_mixer: %s",
-                SDL_GetError());
+            SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to initialize SDL_mixer: %s",
+                         SDL_GetError());
             return false;
         }
 
         mMixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
-        if (mMixer == nullptr) {
-            SDL_LogError(NVE_LOG_CATEGORY_ENGINE,
-                "Failed to create mixer device: %s",
-                SDL_GetError());
+        if (mMixer == nullptr)
+        {
+            SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to create mixer device: %s",
+                         SDL_GetError());
             return false;
         }
 
         mBgmTrack = MIX_CreateTrack(mMixer);
-        if (mBgmTrack == nullptr) {
-            SDL_LogError(NVE_LOG_CATEGORY_ENGINE,
-                "Failed to create BGM track: %s",
-                SDL_GetError());
+        if (mBgmTrack == nullptr)
+        {
+            SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to create BGM track: %s", SDL_GetError());
             return false;
         }
 
@@ -45,12 +43,11 @@ namespace nuvelocity
     }
 
     bool AudioManager::AssignBgm(const std::string& aId, SDL_IOStream* aStream)
-    { 
-        auto *music = MIX_LoadAudio_IO(mMixer, aStream, false, true);
-        if (music == nullptr) {
-            SDL_LogError(NVE_LOG_CATEGORY_ENGINE,
-                "Failed to load BGM track: %s",
-                SDL_GetError());
+    {
+        auto* music = MIX_LoadAudio_IO(mMixer, aStream, false, true);
+        if (music == nullptr)
+        {
+            SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to load BGM track: %s", SDL_GetError());
             return false;
         }
         mBgmInputs[aId] = music;
@@ -68,10 +65,10 @@ namespace nuvelocity
         SDL_PropertiesID properties = SDL_CreateProperties();
         SDL_SetNumberProperty(properties, MIX_PROP_PLAY_LOOPS_NUMBER, aLoops);
         SDL_SetNumberProperty(properties, MIX_PROP_PLAY_FADE_IN_FRAMES_NUMBER,
-            MIX_TrackMSToFrames(mBgmTrack, aFadeMS));
+                              MIX_TrackMSToFrames(mBgmTrack, aFadeMS));
         return MIX_PlayTrack(mBgmTrack, properties);
     }
-    
+
     bool AudioManager::StopBgm(const std::string& aId, int aFadeMS)
     {
         return MIX_StopTrack(mBgmTrack, MIX_TrackMSToFrames(mBgmTrack, aFadeMS));
@@ -79,12 +76,11 @@ namespace nuvelocity
 
     bool AudioManager::AssignSfx(const std::string& aId, SDL_IOStream* aStream)
     {
-        auto *track = MIX_CreateTrack(mMixer);
-        auto *sfx = MIX_LoadAudio_IO(mMixer, aStream, false, true);
-        if (sfx == nullptr) {
-            SDL_LogError(NVE_LOG_CATEGORY_ENGINE,
-                "Failed to load SFX track: %s",
-                SDL_GetError());
+        auto* track = MIX_CreateTrack(mMixer);
+        auto* sfx = MIX_LoadAudio_IO(mMixer, aStream, false, true);
+        if (sfx == nullptr)
+        {
+            SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to load SFX track: %s", SDL_GetError());
             return false;
         }
         mSfxInputs[aId] = sfx;

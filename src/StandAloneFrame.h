@@ -1,12 +1,12 @@
 #ifndef NVE_STANDALONEFRAME_H
 #define NVE_STANDALONEFRAME_H
 
-#include <string>
 #include <SDL3/SDL.h>
+#include <string>
 
 #include "API.h"
-#include "model/Model.h"
 #include "BlitType.h"
+#include "model/Model.h"
 
 namespace nuvelocity
 {

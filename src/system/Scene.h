@@ -20,8 +20,10 @@ namespace nuvelocity
         NVE_API virtual void Unload(Game* aContext) = 0;
 
         NVE_API virtual std::string GetName() const = 0;
+
     protected:
         Scene() = default;
+
     private:
         Scene(const Scene&) = delete;
         Scene& operator=(const Scene&) = delete;

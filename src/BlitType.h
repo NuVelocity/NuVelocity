@@ -1,7 +1,8 @@
 #ifndef NVE_BLITTYPE_H
 #define NVE_BLITTYPE_H
 
-enum BlitType {
+enum BlitType
+{
     BLIT_TRANSPARENT_MASK = 0,
     BLIT_NORMAL = 1,
     BLIT_BLEND_BLACK_BIAS = 2,

@@ -8,16 +8,16 @@ constexpr std::uint16_t NVE_DEFAULT_WINDOW_HEIGHT = 480;
 namespace nuvelocity
 {
     Game::Game(const char* aWindowTitle, int aWidth, int aHeight)
-        : mWindowTitle(aWindowTitle)
-        , mWindowWidth(aWidth)
-        , mWindowHeight(aHeight)
-        , mInitialized(false)
-        , mScene(nullptr)
+            : mWindowTitle(aWindowTitle)
+            , mWindowWidth(aWidth)
+            , mWindowHeight(aHeight)
+            , mInitialized(false)
+            , mScene(nullptr)
     {
     }
 
     Game::Game(const char* aWindowTitle)
-        : Game(aWindowTitle, NVE_DEFAULT_WINDOW_WIDTH, NVE_DEFAULT_WINDOW_HEIGHT)
+            : Game(aWindowTitle, NVE_DEFAULT_WINDOW_WIDTH, NVE_DEFAULT_WINDOW_HEIGHT)
     {
     }
 
@@ -29,7 +29,8 @@ namespace nuvelocity
 
     bool Game::Initialize(char** argv)
     {
-        if (mInitialized) {
+        if (mInitialized)
+        {
             return true;
         }
 
@@ -39,16 +40,16 @@ namespace nuvelocity
         }
 
         SDL_WindowFlags windowFlags = SDL_WINDOW_HIGH_PIXEL_DENSITY;
-        if (mWindowResizable) {
+        if (mWindowResizable)
+        {
             windowFlags |= SDL_WINDOW_RESIZABLE;
         }
-        mWindow = SDL_CreateWindow(
-            mWindowTitle, mWindowWidth, mWindowHeight, windowFlags);
+        mWindow = SDL_CreateWindow(mWindowTitle, mWindowWidth, mWindowHeight, windowFlags);
         if (mWindow == nullptr)
         {
             return Fail();
         }
-    
+
         mRenderer = SDL_CreateRenderer(mWindow, nullptr);
         if (mRenderer == nullptr)
         {
@@ -65,7 +66,8 @@ namespace nuvelocity
             SDL_GetWindowSizeInPixels(mWindow, &bbwidth, &bbheight);
             SDL_Log("Window size: %ix%i", width, height);
             SDL_Log("Backbuffer size: %ix%i", bbwidth, bbheight);
-            if (width != bbwidth){
+            if (width != bbwidth)
+            {
                 SDL_Log("This is a highdpi environment.");
             }
         }
@@ -73,12 +75,14 @@ namespace nuvelocity
         SDL_SetRenderVSync(mRenderer, -1);
 
         mAsset = new AssetManager();
-        if (!mAsset->Initialize(argv)) {
+        if (!mAsset->Initialize(argv))
+        {
             return Fail();
         }
 
         mAudio = new AudioManager();
-        if (!mAudio->Initialize(argv)) {
+        if (!mAudio->Initialize(argv))
+        {
             return Fail();
         }
 
@@ -98,7 +102,8 @@ namespace nuvelocity
 
     void Game::SetScene(Scene* aScene)
     {
-        if (mScene != nullptr) {
+        if (mScene != nullptr)
+        {
             mScene->Unload(this);
             delete mScene;
         }

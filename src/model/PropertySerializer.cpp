@@ -2,11 +2,7 @@
 
 namespace nuvelocity
 {
-    PropertySerializer::PropertySerializer(/* args */)
-    {
-    }
+    PropertySerializer::PropertySerializer(/* args */) {}
 
-    PropertySerializer::~PropertySerializer()
-    {
-    }
+    PropertySerializer::~PropertySerializer() {}
 } // namespace nuvelocity

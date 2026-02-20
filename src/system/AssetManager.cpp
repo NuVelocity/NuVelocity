@@ -1,19 +1,19 @@
-#include <physfs.h>
-#include <physfssdl3.h>
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_log.h>
 #include <SDL3_image/SDL_image.h>
 #include <format>
-//tmp
-    #include <vector>
-    #include <string>
-    #include <sstream>
+#include <physfs.h>
+#include <physfssdl3.h>
+// tmp
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "AssetManager.h"
 
-#include "model/Model.h"
 #include "ModuleInfo.h"
 #include "Utils.h"
+#include "model/Model.h"
 
 namespace nuvelocity
 {
@@ -43,8 +43,8 @@ namespace nuvelocity
 
         if (PHYSFS_init(argv[0]) == 0)
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ENGINE,
-                "Failed to initialize PhysFS: %s", GetErrorMessage());
+            SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to initialize PhysFS: %s",
+                         GetErrorMessage());
             return false;
         }
 
@@ -52,8 +52,7 @@ namespace nuvelocity
         std::string basePath = SDL_GetBasePath();
         if (basePath.empty())
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ENGINE,
-                "Failed to get base path: %s", SDL_GetError());
+            SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to get base path: %s", SDL_GetError());
             return false;
         }
         SDL_Log("Working directory: %s", basePath.c_str());
@@ -61,8 +60,8 @@ namespace nuvelocity
         std::string dataPath = std::format("{}Data.dat", basePath);
         if (PHYSFS_mount(dataPath.c_str(), nullptr, 0) == 0)
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
-                "Failed to mount Data.dat: %s\n", GetErrorMessage());
+            SDL_LogError(NVE_LOG_CATEGORY_ASSETS, "Failed to mount Data.dat: %s\n",
+                         GetErrorMessage());
         }
 
         mInitialized = true;
@@ -84,8 +83,7 @@ namespace nuvelocity
 #if DEBUG
         if (PHYSFS_exists(path) == 0)
         {
-            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                "Asset '%s' does not exist.", path);
+            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS, "Asset '%s' does not exist.", path);
             return nullptr;
         }
         SDL_Log("Loading asset '%s'.", path);
@@ -93,13 +91,14 @@ namespace nuvelocity
         return PHYSFSSDL3_openRead(path);
     }
 
-    SDL_IOStream* AssetManager::LoadWithExtension(const std::string& path, const std::string& extension) 
+    SDL_IOStream* AssetManager::LoadWithExtension(const std::string& path,
+                                                  const std::string& extension)
     {
         std::string fullPath = path + extension;
         return Load(fullPath);
     }
 
-    SDL_IOStream* AssetManager::LoadFromCache(const std::string& path, CacheKind kind) 
+    SDL_IOStream* AssetManager::LoadFromCache(const std::string& path, CacheKind kind)
     {
         std::string fullPath = path;
         std::string cachedPath = "Cache/" + fullPath;
@@ -114,8 +113,8 @@ namespace nuvelocity
             cachedPath += ".Sequence";
             break;
         default:
-            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
-                "Unknown cache kind for asset '%s'", path.c_str());
+            SDL_LogError(NVE_LOG_CATEGORY_ASSETS, "Unknown cache kind for asset '%s'",
+                         path.c_str());
             break;
         }
         if (Exists(cachedPath))
@@ -127,14 +126,14 @@ namespace nuvelocity
 
     StandAloneFrame* AssetManager::LoadStandAloneFrame(const std::string& path)
     {
-        auto *stream = LoadFromCache(path, CACHE_KIND_STANDALONE_FRAME);
+        auto* stream = LoadFromCache(path, CACHE_KIND_STANDALONE_FRAME);
         if (stream == nullptr)
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
-                "Failed to load frame '%s': %s", path.c_str(), GetErrorMessage());
+            SDL_LogError(NVE_LOG_CATEGORY_ASSETS, "Failed to load frame '%s': %s", path.c_str(),
+                         GetErrorMessage());
             return nullptr;
         }
-        auto *frame = new StandAloneFrame();
+        auto* frame = new StandAloneFrame();
         LoadStandAloneFrameFromStream(frame, stream);
         SDL_CloseIO(stream);
         return frame;
@@ -247,8 +246,10 @@ namespace nuvelocity
             if (SDL_ReadIO(stream, nullptr, 0) == 0 && SDL_GetIOStatus(stream) != SDL_IO_STATUS_EOF)
             {
                 // The original surface does not have an alpha channel.
-                SDL_Surface* output = SDL_CreateSurface(frame->mSurface->w, frame->mSurface->h, SDL_PIXELFORMAT_RGBA32);
-                if (output == nullptr) {
+                SDL_Surface* output = SDL_CreateSurface(frame->mSurface->w, frame->mSurface->h,
+                                                        SDL_PIXELFORMAT_RGBA32);
+                if (output == nullptr)
+                {
                     return false;
                 }
 
@@ -274,7 +275,8 @@ namespace nuvelocity
                 SDL_DestroySurface(frame->mSurface);
                 frame->mSurface = output;
 
-                MergeBitPlane(0, 3, frame->mSurface->w, frame->mSurface->h, maskData, frame->mSurface);
+                MergeBitPlane(0, 3, frame->mSurface->w, frame->mSurface->h, maskData,
+                              frame->mSurface);
 
                 SDL_free(maskData);
             }
@@ -283,9 +285,9 @@ namespace nuvelocity
         return true;
     }
 
-    std::string AssetManager::LoadTextFile(const std::string& path) 
+    std::string AssetManager::LoadTextFile(const std::string& path)
     {
-        auto *stream = Load(path);
+        auto* stream = Load(path);
         if (stream == nullptr)
         {
             return "";
@@ -309,7 +311,7 @@ namespace nuvelocity
         return text;
     }
 
-    void AssetManager::DumpPropertyFile(const std::string& path) 
+    void AssetManager::DumpPropertyFile(const std::string& path)
     {
         auto text = LoadTextFile(path);
         std::vector<std::string> lines;
@@ -318,10 +320,12 @@ namespace nuvelocity
 
         ClassInfo* info = nullptr;
         void* dest = nullptr;
-        
-        while (std::getline(stream, line)) {
+
+        while (std::getline(stream, line))
+        {
             line = trim(line);
-            if (line.empty()) {
+            if (line.empty())
+            {
                 continue;
             }
             if (line == "{" || line == "}")
@@ -333,7 +337,8 @@ namespace nuvelocity
                 if (info == nullptr || dest == nullptr)
                 {
                     SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS,
-                        "Missing object context for property assignment: '%s'", line.c_str());
+                                "Missing object context for property assignment: '%s'",
+                                line.c_str());
                     continue;
                 }
                 std::string key = line.substr(0, line.find('='));
@@ -344,8 +349,8 @@ namespace nuvelocity
                 }
                 else
                 {
-                    SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS,
-                        "Unknown property '%s' for class '%s'", key.c_str(), info->mName.c_str());
+                    SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS, "Unknown property '%s' for class '%s'",
+                                key.c_str(), info->mName.c_str());
                 }
                 // SDL_Log("%s: %s", key.c_str(), value.c_str());
             }

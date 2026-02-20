@@ -16,6 +16,7 @@ namespace nuvelocity
             AddProperty(aInfo, "Build Number", &ModuleInfo::mBuildNumber);
             AddProperty(aInfo, "Display Version Number", &ModuleInfo::mModuleVersion);
         }
+
     private:
         std::string mModuleName;
         std::string mModuleVersion;
