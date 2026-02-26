@@ -3,7 +3,7 @@
 
 #include <string>
 
-const char* ws = " \t\n\r\f\v";
+inline const char* ws = " \t\n\r\f\v";
 
 inline std::string& rtrim(std::string& s, const char* t = ws)
 {
