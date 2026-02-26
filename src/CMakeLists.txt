@@ -6,6 +6,8 @@ target_sources(
     BlitType.h
     StandAloneFrame.cpp
     StandAloneFrame.h
+    PaletteHolder.cpp
+    PaletteHolder.h
     ModuleInfo.cpp
     ModuleInfo.h
     API.h

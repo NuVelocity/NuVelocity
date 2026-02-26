@@ -12,6 +12,7 @@
 #include "AssetManager.h"
 
 #include "ModuleInfo.h"
+#include "PaletteHolder.h"
 #include "Utils.h"
 #include "model/Model.h"
 
@@ -22,6 +23,7 @@ namespace nuvelocity
         // FIXME: THIS SHOULD NOT BE HERE!
         ObjectRegistry::Get().Register(StandAloneFrame::GetClassInfo());
         ObjectRegistry::Get().Register(ModuleInfo::GetClassInfo());
+        ObjectRegistry::Get().Register(PaletteHolder::GetClassInfo());
     }
 
     AssetManager::~AssetManager()

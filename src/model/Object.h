@@ -10,13 +10,15 @@
 
 namespace nuvelocity
 {
+    // FIXME: This is inefficient because this means every object has a member for each
+    // "dynamic" property. We should move this to a separate component or use a more efficient
+    // storage method for storing dynamic properties. This will all go away eventually.
+    class PaletteHolder; // Forward declaration
     class ObjectBase
     {
-        // FIXME: This is inefficient because this means every object has a string member
-        // for comments, even if it's not used. We should move this to a separate component
-        // or use a more efficient storage method for storing dynamic properties.
     private:
         std::string mComment;
+        PaletteHolder* mPaletteHolder;
 
     public:
         virtual ~ObjectBase() = default;
