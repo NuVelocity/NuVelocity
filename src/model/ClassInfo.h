@@ -10,6 +10,7 @@ namespace nuvelocity
     struct ClassInfo
     {
     private:
+        Property* mFirstProperty;
         Property* mLastProperty;
 
     public:
@@ -26,7 +27,20 @@ namespace nuvelocity
                 return;
             }
             mProperties[prop->GetName()] = prop;
+            if (mLastProperty != nullptr)
+            {
+                mLastProperty->mNext = prop;
+            }
+            if (mFirstProperty == nullptr)
+            {
+                mFirstProperty = prop;
+            }
             mLastProperty = prop;
+        }
+
+        Property* GetFirstProperty() const
+        {
+            return mFirstProperty;
         }
 
         Property* GetLastProperty() const
@@ -43,18 +57,22 @@ namespace nuvelocity
         void DumpMetadata() const
         {
             SDL_Log("Properties for class '%s':", mName.c_str());
-            for (const auto& pair : mProperties)
+            Property* prop = mFirstProperty;
+            while (prop != nullptr)
             {
-                pair.second->DumpMetadata();
+                prop->DumpMetadata();
+                prop = prop->mNext;
             }
         }
 
         void DumpFor(void* obj) const
         {
             SDL_Log("Property values for object of class '%s':", mName.c_str());
-            for (const auto& pair : mProperties)
+            Property* prop = mFirstProperty;
+            while (prop != nullptr)
             {
-                pair.second->DumpValue(obj);
+                prop->DumpValue(obj);
+                prop = prop->mNext;
             }
         }
     };

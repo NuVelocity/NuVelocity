@@ -23,10 +23,13 @@ namespace nuvelocity
                 , mOffset(offset)
                 , mSize(size)
                 , mDescription(description)
+                , mNext(nullptr)
         {
         }
 
         virtual ~Property() = default;
+
+        Property* mNext;
 
         const std::string& GetName() const
         {
