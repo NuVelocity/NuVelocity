@@ -7,6 +7,19 @@
 
 namespace nuvelocity
 {
+    enum class PropertyType
+    {
+        Object,
+        Int,
+        UInt,
+        Float,
+        Double,
+        Bool,
+        String,
+        CString,
+        Enum
+    };
+
     class Property
     {
     protected:
@@ -68,6 +81,11 @@ namespace nuvelocity
                         "String assignment not supported for property '%s'", mName.c_str());
         }
 
+        virtual PropertyType GetType() const
+        {
+            return PropertyType::Object;
+        }
+
         virtual void DumpValue(void* obj) const
         {
             void* valuePtr = GetValue(obj);
@@ -126,6 +144,11 @@ namespace nuvelocity
             int intValue = GetIntValue(obj);
             SDL_Log("  %s: %d", mName.c_str(), intValue);
         }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::Int;
+        }
     };
 
     class UIntProperty : public Property
@@ -170,6 +193,11 @@ namespace nuvelocity
         {
             unsigned int uintValue = GetUIntValue(obj);
             SDL_Log("  %s: %u", mName.c_str(), uintValue);
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::UInt;
         }
     };
 
@@ -216,6 +244,11 @@ namespace nuvelocity
             float floatValue = GetFloatValue(obj);
             SDL_Log("  %s: %f", mName.c_str(), floatValue);
         }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::Float;
+        }
     };
 
     class DoubleProperty : public Property
@@ -260,6 +293,11 @@ namespace nuvelocity
         {
             double doubleValue = GetDoubleValue(obj);
             SDL_Log("  %s: %f", mName.c_str(), doubleValue);
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::Double;
         }
     };
 
@@ -309,6 +347,11 @@ namespace nuvelocity
             bool boolValue = GetBoolValue(obj);
             SDL_Log("  %s: %s", mName.c_str(), boolValue ? "true" : "false");
         }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::Bool;
+        }
     };
 
     class StringProperty : public Property
@@ -343,6 +386,11 @@ namespace nuvelocity
         {
             std::string strValue = GetStringValue(obj);
             SDL_Log("  %s: %s", mName.c_str(), strValue.c_str());
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::String;
         }
     };
 
@@ -379,6 +427,11 @@ namespace nuvelocity
             const char* cstrValue = GetCStringValue(obj);
             SDL_Log("  %s: %s", mName.c_str(), cstrValue ? cstrValue : "null");
         }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::CString;
+        }
     };
 
     class EnumProperty : public Property
@@ -408,6 +461,11 @@ namespace nuvelocity
         {
             int intValue = GetIntValue(obj);
             SDL_Log("  %s: %d", mName.c_str(), intValue);
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::Enum;
         }
     };
 } // namespace nuvelocity
