@@ -1,3 +1,6 @@
+#ifndef NVE_MODULE_INFO_H
+#define NVE_MODULE_INFO_H
+
 #include "model/Model.h"
 #include <string>
 
@@ -23,3 +26,5 @@ namespace nuvelocity
         int mBuildNumber;
     };
 } // namespace nuvelocity
+
+#endif // NVE_MODULE_INFO_H
