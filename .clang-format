@@ -9,6 +9,7 @@ AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 BreakBeforeBraces: Allman
+AlwaysBreakTemplateDeclarations: Yes
 PointerAlignment: Left
 ReferenceAlignment: Left
 SpaceAfterCStyleCast: true
