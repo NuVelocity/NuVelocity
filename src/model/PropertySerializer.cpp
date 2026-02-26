@@ -8,10 +8,12 @@
 
 namespace nuvelocity
 {
-    template <typename T> void PropertySerializer::Serialize(const T& value, std::string& output)
+    template <typename T>
+    void PropertySerializer::Serialize(const T& value, std::string& output)
     {
         throw std::logic_error("Serialize not implemented for this type");
     }
+
     template <typename T>
     bool PropertySerializer::Deserialize(const std::string& input, T*& output, ClassInfo*& info)
     {
@@ -80,7 +82,8 @@ namespace nuvelocity
         return true;
     }
 
-    template <typename T> bool PropertySerializer::Deserialize(const std::string& input, T*& output)
+    template <typename T>
+    bool PropertySerializer::Deserialize(const std::string& input, T*& output)
     {
         ClassInfo* info = nullptr;
         return Deserialize(input, output, info);
