@@ -12,13 +12,15 @@ project(NuVelocity VERSION ${NVE_VERSION} LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Third-Party Libraries
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 option(NVE_VENDORED "Use vendored libraries" ON)
+
 if(NVE_VENDORED)
-    ## SDL3
+    # * SDL3
     add_subdirectory(third_party/SDL EXCLUDE_FROM_ALL)
+
     # Use a reduced SDL image feature set.
     set(SDLIMAGE_AVIF OFF CACHE BOOL "" FORCE)
     set(SDLIMAGE_BMP OFF CACHE BOOL "" FORCE)
@@ -31,18 +33,23 @@ if(NVE_VENDORED)
     set(SDLIMAGE_XCF OFF CACHE BOOL "" FORCE)
     set(SDLIMAGE_XPM OFF CACHE BOOL "" FORCE)
     set(SDLIMAGE_XV OFF CACHE BOOL "" FORCE)
-    ## SDL_Image
+
+    # * SDL_Image
     add_subdirectory(third_party/SDL_image EXCLUDE_FROM_ALL)
-    ## SDL_Mixer
+
+    # * SDL_Mixer
     add_subdirectory(third_party/SDL_mixer EXCLUDE_FROM_ALL)
+
     # Disable FLAC support on MSVC:
     # upstream support has a broken CMake config that I cba to fix yet.
     if(MSVC)
         set(SDLMIXER_FLAC_LIBFLAC OFF CACHE BOOL "" FORCE)
     endif()
-    ## SDL_TTF
+
+    # * SDL_TTF
     add_subdirectory(third_party/SDL_ttf EXCLUDE_FROM_ALL)
-    ## zlib
+
+    # * zlib
     # Avoid conflict with vendored SDL zlib on MSVC.
     if(NOT MSVC)
         add_subdirectory(third_party/zlib EXCLUDE_FROM_ALL)
@@ -58,6 +65,7 @@ endif()
 # PhysicsFS is vendored because we patch it to add support for our
 # custom archive format.
 set(PHYSFS_BUILD_TEST OFF CACHE BOOL "" FORCE)
+
 # Turn off unneeded archive formats.
 set(PHYSFS_ARCHIVE_GRP OFF CACHE BOOL "" FORCE)
 set(PHYSFS_ARCHIVE_WAD OFF CACHE BOOL "" FORCE)
@@ -71,24 +79,27 @@ set(PHYSFS_ARCHIVE_ISO9660 OFF CACHE BOOL "" FORCE)
 set(PHYSFS_ARCHIVE_VDF OFF CACHE BOOL "" FORCE)
 set(PHYSFS_ARCHIVE_LECARCHIVES OFF CACHE BOOL "" FORCE)
 set(PHYSFS_ARCHIVE_POD OFF CACHE BOOL "" FORCE)
+
 # Disable building as a static library.
 set(PHYSFS_BUILD_STATIC OFF CACHE BOOL "" FORCE)
 add_subdirectory(third_party/physfs EXCLUDE_FROM_ALL)
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Code Quality Tools
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 include(cmake/CodeQuality.cmake)
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # NuVelocity Library
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 option(NVE_BUILD_STATIC "Enable building static library" OFF)
+
 if(NVE_BUILD_STATIC)
     add_library(NuVelocity STATIC)
 else()
     add_library(NuVelocity SHARED)
 endif()
+
 add_library(NuVelocity::NuVelocity ALIAS NuVelocity)
 
 target_compile_definitions(
@@ -122,13 +133,14 @@ target_sources(
 if(NOT MSVC OR NOT NVE_BUILD_STATIC)
     set_property(TARGET NuVelocity PROPERTY OUTPUT_NAME "nuvelocity")
 endif()
+
 set_property(TARGET NuVelocity PROPERTY MACOSX_RPATH 1)
 set_property(TARGET NuVelocity PROPERTY VERSION ${PHYSFS_VERSION})
 set_property(TARGET NuVelocity PROPERTY SOVERSION ${PHYSFS_SOVERSION})
 
-if (POLICY CMP0141)
-  cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+if(POLICY CMP0141)
+    cmake_policy(SET CMP0141 NEW)
+    set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
 add_subdirectory(src)
