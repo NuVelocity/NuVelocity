@@ -5,7 +5,6 @@ target_sources(
     Object.h
     ObjectRegistry.h
     PropertySerializer.h
-    PropertySerializer.cpp
     Model.h
 )
 
