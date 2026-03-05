@@ -92,6 +92,22 @@ namespace nuvelocity
             return PropertyType::Object;
         }
 
+        virtual bool IsObjectArray() const
+        {
+            return false;
+        }
+
+        virtual size_t GetArraySize(void* obj) const
+        {
+            return 0;
+        }
+
+        virtual const std::string& GetItemKey() const
+        {
+            static const std::string empty;
+            return empty;
+        }
+
         virtual void DumpValue(void* obj) const
         {
             void* valuePtr = GetValue(obj);
@@ -481,6 +497,10 @@ namespace nuvelocity
     private:
         std::string mItemKey; // Custom key name for array items (e.g., "Round")
 
+        // SFINAE to detect if T is a pointer
+        template <typename U>
+        static constexpr bool is_pointer_v = std::is_pointer_v<U>;
+
     public:
         ArrayProperty(const std::string& name, size_t offset, size_t size,
                       const std::string& itemKey = "")
@@ -545,6 +565,11 @@ namespace nuvelocity
         PropertyType GetType() const override
         {
             return PropertyType::Array;
+        }
+
+        bool IsObjectArray() const override
+        {
+            return is_pointer_v<T>;
         }
 
         const std::string& GetItemKey() const
