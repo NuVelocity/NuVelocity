@@ -65,9 +65,48 @@ namespace nuvelocity
         }
 
     protected:
-        // Helper to automatically register properties using member pointers
+        // Helper to detect if a type is a std::vector
+        template <typename T>
+        struct is_vector : std::false_type
+        {
+        };
+
+        template <typename T, typename A>
+        struct is_vector<std::vector<T, A>> : std::true_type
+        {
+            using element_type = T;
+        };
+
+        // Helper to detect if a type is a std::map
+        template <typename T>
+        struct is_map : std::false_type
+        {
+        };
+
+        template <typename K, typename V, typename C>
+        struct is_map<std::map<K, V, C>> : std::true_type
+        {
+            using key_type = K;
+            using value_type = V;
+        };
+
+        // Helper to detect if a type is a std::unordered_map
+        template <typename T>
+        struct is_unordered_map : std::false_type
+        {
+        };
+
+        template <typename K, typename V, typename H, typename E>
+        struct is_unordered_map<std::unordered_map<K, V, H, E>> : std::true_type
+        {
+            using key_type = K;
+            using value_type = V;
+        };
+
         template <typename MemberType>
-        static void AddProperty(ClassInfo& info, const char* name, MemberType Derived::* memberPtr)
+        static void AddPropertyImpl(ClassInfo& info, const char* name,
+                                    MemberType Derived::* memberPtr,
+                                    const std::string& arrayItemKey)
         {
             size_t offset = reinterpret_cast<size_t>(&(reinterpret_cast<Derived*>(0)->*memberPtr));
             size_t size = sizeof(MemberType);
@@ -100,6 +139,24 @@ namespace nuvelocity
             {
                 prop = new DoubleProperty(name, offset, size);
             }
+            else if constexpr (is_vector<MemberType>::value)
+            {
+                using ElementType = typename is_vector<MemberType>::element_type;
+                auto* arrayProp = new ArrayProperty<ElementType>(name, offset, size, arrayItemKey);
+                prop = arrayProp;
+            }
+            else if constexpr (is_map<MemberType>::value)
+            {
+                using KeyType = typename is_map<MemberType>::key_type;
+                using ValueType = typename is_map<MemberType>::value_type;
+                prop = new MapProperty<KeyType, ValueType>(name, offset, size);
+            }
+            else if constexpr (is_unordered_map<MemberType>::value)
+            {
+                using KeyType = typename is_unordered_map<MemberType>::key_type;
+                using ValueType = typename is_unordered_map<MemberType>::value_type;
+                prop = new UnorderedMapProperty<KeyType, ValueType>(name, offset, size);
+            }
             else
             {
                 // Fallback to generic Property
@@ -107,6 +164,23 @@ namespace nuvelocity
             }
 
             info.AddProperty(prop);
+        }
+
+        // Helper to automatically register properties using member pointers
+        template <typename MemberType>
+        static void AddProperty(ClassInfo& info, const char* name, MemberType Derived::* memberPtr)
+        {
+            AddPropertyImpl(info, name, memberPtr, "");
+        }
+
+        // arrayItemKey is only valid for vector properties
+        template <typename MemberType>
+        static void AddProperty(ClassInfo& info, const char* name, MemberType Derived::* memberPtr,
+                                const std::string& arrayItemKey)
+        {
+            static_assert(is_vector<MemberType>::value,
+                          "arrayItemKey can only be provided for std::vector properties");
+            AddPropertyImpl(info, name, memberPtr, arrayItemKey);
         }
 
     public:

@@ -3,7 +3,10 @@
 
 #include "LogCategory.h"
 #include <cstring>
+#include <map>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace nuvelocity
 {
@@ -17,7 +20,10 @@ namespace nuvelocity
         Bool,
         String,
         CString,
-        Enum
+        Enum,
+        Array,
+        Map,
+        UnorderedMap
     };
 
     class Property
@@ -466,6 +472,218 @@ namespace nuvelocity
         PropertyType GetType() const override
         {
             return PropertyType::Enum;
+        }
+    };
+
+    template <typename T>
+    class ArrayProperty : public Property
+    {
+    private:
+        std::string mItemKey; // Custom key name for array items (e.g., "Round")
+
+    public:
+        ArrayProperty(const std::string& name, size_t offset, size_t size,
+                      const std::string& itemKey = "")
+                : Property(name, offset, size)
+                , mItemKey(itemKey)
+        {
+        }
+
+        std::vector<T>& GetVector(void* obj) const
+        {
+            return *(std::vector<T>*) GetValuePtr(obj);
+        }
+
+        size_t GetArraySize(void* obj) const
+        {
+            return GetVector(obj).size();
+        }
+
+        void ResizeArray(void* obj, size_t newSize)
+        {
+            GetVector(obj).resize(newSize);
+        }
+
+        void ClearArray(void* obj)
+        {
+            GetVector(obj).clear();
+        }
+
+        T& GetElement(void* obj, size_t index) const
+        {
+            return GetVector(obj)[index];
+        }
+
+        void SetElement(void* obj, size_t index, const T& value)
+        {
+            GetVector(obj)[index] = value;
+        }
+
+        void PushElement(void* obj, const T& value)
+        {
+            GetVector(obj).push_back(value);
+        }
+
+        void SetValue(void* obj, const void* valuePtr) override
+        {
+            *(std::vector<T>*) GetValuePtr(obj) = *(const std::vector<T>*) valuePtr;
+        }
+
+        void SetValue(void* obj, const std::string& value) override
+        {
+            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                        "String assignment not directly supported for array property '%s'",
+                        mName.c_str());
+        }
+
+        void DumpValue(void* obj) const override
+        {
+            size_t size = GetArraySize(obj);
+            SDL_Log("  %s: [array of %zu elements]", mName.c_str(), size);
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::Array;
+        }
+
+        const std::string& GetItemKey() const
+        {
+            return mItemKey;
+        }
+
+        void SetItemKey(const std::string& itemKey)
+        {
+            mItemKey = itemKey;
+        }
+    };
+
+    template <typename K, typename V>
+    class MapProperty : public Property
+    {
+    public:
+        MapProperty(const std::string& name, size_t offset, size_t size)
+                : Property(name, offset, size)
+        {
+        }
+
+        std::map<K, V>& GetMap(void* obj) const
+        {
+            return *(std::map<K, V>*) GetValuePtr(obj);
+        }
+
+        size_t GetMapSize(void* obj) const
+        {
+            return GetMap(obj).size();
+        }
+
+        void ClearMap(void* obj)
+        {
+            GetMap(obj).clear();
+        }
+
+        V& GetValue(void* obj, const K& key) const
+        {
+            return GetMap(obj)[key];
+        }
+
+        void SetMapEntry(void* obj, const K& key, const V& value)
+        {
+            GetMap(obj)[key] = value;
+        }
+
+        bool HasKey(void* obj, const K& key) const
+        {
+            auto& map = GetMap(obj);
+            return map.find(key) != map.end();
+        }
+
+        void SetValue(void* obj, const void* valuePtr) override
+        {
+            *(std::map<K, V>*) GetValuePtr(obj) = *(const std::map<K, V>*) valuePtr;
+        }
+
+        void SetValue(void* obj, const std::string& value) override
+        {
+            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                        "String assignment not directly supported for map property '%s'",
+                        mName.c_str());
+        }
+
+        void DumpValue(void* obj) const override
+        {
+            size_t size = GetMapSize(obj);
+            SDL_Log("  %s: [map with %zu entries]", mName.c_str(), size);
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::Map;
+        }
+    };
+
+    template <typename K, typename V>
+    class UnorderedMapProperty : public Property
+    {
+    public:
+        UnorderedMapProperty(const std::string& name, size_t offset, size_t size)
+                : Property(name, offset, size)
+        {
+        }
+
+        std::unordered_map<K, V>& GetMap(void* obj) const
+        {
+            return *(std::unordered_map<K, V>*) GetValuePtr(obj);
+        }
+
+        size_t GetMapSize(void* obj) const
+        {
+            return GetMap(obj).size();
+        }
+
+        void ClearMap(void* obj)
+        {
+            GetMap(obj).clear();
+        }
+
+        V& GetValue(void* obj, const K& key) const
+        {
+            return GetMap(obj)[key];
+        }
+
+        void SetMapEntry(void* obj, const K& key, const V& value)
+        {
+            GetMap(obj)[key] = value;
+        }
+
+        bool HasKey(void* obj, const K& key) const
+        {
+            auto& map = GetMap(obj);
+            return map.find(key) != map.end();
+        }
+
+        void SetValue(void* obj, const void* valuePtr) override
+        {
+            *(std::unordered_map<K, V>*) GetValuePtr(obj) =
+                *(const std::unordered_map<K, V>*) valuePtr;
+        }
+
+        void SetValue(void* obj, const std::string& value) override
+        {
+            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                        "String assignment not directly supported for unordered_map property '%s'",
+                        mName.c_str());
+        }
+
+        void DumpValue(void* obj) const override
+        {
+            size_t size = GetMapSize(obj);
+            SDL_Log("  %s: [unordered_map with %zu entries]", mName.c_str(), size);
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::UnorderedMap;
         }
     };
 } // namespace nuvelocity
