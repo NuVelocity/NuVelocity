@@ -2,12 +2,19 @@
 #define NVE_CLASSINFO_H
 
 #include "Property.h"
+#include <cassert>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace nuvelocity
 {
+    enum class SerializationMode
+    {
+        Standard, // Normal property-based serialization
+        HexArray  // Special mode for hex array data (e.g., CFrame pixel data)
+    };
+
     struct ClassInfo
     {
     private:
@@ -18,6 +25,8 @@ namespace nuvelocity
         std::string mName;
         std::unordered_map<std::string, Property*> mProperties;
         ClassInfo* mBaseClassInfo;
+        SerializationMode mSerializationMode = SerializationMode::Standard;
+        Property* mHexArrayProperty = nullptr; // Property to receive hex array binary data
 
         void* (*mFactoryFunction)(const std::vector<std::string>& args);
 
@@ -37,6 +46,13 @@ namespace nuvelocity
                 mFirstProperty = prop;
             }
             mLastProperty = prop;
+        }
+
+        void SetHexArrayProperty(Property* prop)
+        {
+            assert(mHexArrayProperty == nullptr && "Cannot set multiple hex array properties: a "
+                                                   "hex array property is already defined");
+            mHexArrayProperty = prop;
         }
 
         Property* GetFirstProperty() const
