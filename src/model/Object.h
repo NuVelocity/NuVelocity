@@ -55,7 +55,8 @@ namespace nuvelocity
                 info.mBaseClassInfo = Base::GetClassInfo();
             }
 
-            info.mFactoryFunction = []() -> void* { return new Derived(); };
+            info.mFactoryFunction = [](const std::vector<std::string>& args) -> void*
+            { return new Derived(); };
 
             // Call derived class's InitClassInfo
             Derived::InitClassInfo(info);

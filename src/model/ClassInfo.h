@@ -4,6 +4,7 @@
 #include "Property.h"
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace nuvelocity
 {
@@ -18,7 +19,7 @@ namespace nuvelocity
         std::unordered_map<std::string, Property*> mProperties;
         ClassInfo* mBaseClassInfo;
 
-        void* (*mFactoryFunction)();
+        void* (*mFactoryFunction)(const std::vector<std::string>& args);
 
         void AddProperty(Property* prop)
         {
