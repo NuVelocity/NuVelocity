@@ -28,7 +28,7 @@ namespace nuvelocity
         SerializationMode mSerializationMode = SerializationMode::Standard;
         Property* mHexArrayProperty = nullptr; // Property to receive hex array binary data
 
-        void* (*mFactoryFunction)(const std::vector<std::string>& args);
+        void* (*mFactoryFunction)();
 
         void AddProperty(Property* prop)
         {
