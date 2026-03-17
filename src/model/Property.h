@@ -578,7 +578,7 @@ namespace nuvelocity
             return *(std::vector<T>*) GetValuePtr(obj);
         }
 
-        size_t GetArraySize(void* obj) const
+        size_t GetArraySize(void* obj) const override
         {
             return GetVector(obj).size();
         }
@@ -636,7 +636,7 @@ namespace nuvelocity
             return is_pointer_v<T>;
         }
 
-        const std::string& GetItemKey() const
+        const std::string& GetItemKey() const override
         {
             return mItemKey;
         }
