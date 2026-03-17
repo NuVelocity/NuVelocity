@@ -1,6 +1,6 @@
 #include "Frame.h"
 
-namespace nuvelocity::frs42
+namespace nuvelocity
 {
     Frame::Frame()
             : mWidth(0)
@@ -75,4 +75,4 @@ namespace nuvelocity::frs42
     {
         return end();
     }
-} // namespace nuvelocity::frs42
+} // namespace nuvelocity

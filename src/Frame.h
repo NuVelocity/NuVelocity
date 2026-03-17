@@ -4,7 +4,7 @@
 #include "model/Model.h"
 #include <string>
 
-namespace nuvelocity::frs42
+namespace nuvelocity
 {
     class Frame : public Object<Frame>
     {
@@ -48,6 +48,6 @@ namespace nuvelocity::frs42
 
         uint32_t* mPixelData;
     };
-} // namespace nuvelocity::frs42
+} // namespace nuvelocity
 
 #endif // NVE_FRAME_H
