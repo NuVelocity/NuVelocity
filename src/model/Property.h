@@ -4,12 +4,15 @@
 #include "LogCategory.h"
 #include <cstring>
 #include <map>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace nuvelocity
 {
+    class ClassInfo;
+
     enum class PropertyType
     {
         Object,
@@ -119,6 +122,17 @@ namespace nuvelocity
         {
             static const std::string empty;
             return empty;
+        }
+
+        virtual const std::string& GetExpectedClassName() const
+        {
+            static const std::string empty;
+            return empty;
+        }
+
+        virtual ClassInfo* GetChildClassInfo() const
+        {
+            return nullptr;
         }
 
         virtual void AddMapEntry(void* obj, const std::string& key, const std::string& value)
@@ -514,6 +528,30 @@ namespace nuvelocity
         PropertyType GetType() const override
         {
             return PropertyType::Enum;
+        }
+    };
+
+    class ObjectProperty : public Property
+    {
+    private:
+        ClassInfo* mChildClassInfo;
+
+    public:
+        ObjectProperty(const std::string& name, size_t offset, size_t size,
+                       ClassInfo* childClassInfo)
+                : Property(name, offset, size)
+                , mChildClassInfo(childClassInfo)
+        {
+        }
+
+        ClassInfo* GetChildClassInfo() const override
+        {
+            return mChildClassInfo;
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::Object;
         }
     };
 

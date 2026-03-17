@@ -64,6 +64,18 @@ namespace nuvelocity
         }
 
     protected:
+        // Helper to detect if a type is a pointer to an Object-derived class
+        template <typename T>
+        struct is_object_ptr : std::false_type
+        {
+        };
+
+        template <typename T>
+        struct is_object_ptr<T*> : std::bool_constant<std::is_base_of_v<ObjectBase, T>>
+        {
+            using element_type = T;
+        };
+
         // Helper to detect if a type is a std::vector
         template <typename T>
         struct is_vector : std::false_type
@@ -155,6 +167,11 @@ namespace nuvelocity
                 using KeyType = typename is_unordered_map<MemberType>::key_type;
                 using ValueType = typename is_unordered_map<MemberType>::value_type;
                 prop = new UnorderedMapProperty<KeyType, ValueType>(name, offset, size);
+            }
+            else if constexpr (is_object_ptr<MemberType>::value)
+            {
+                using ObjectType = typename is_object_ptr<MemberType>::element_type;
+                prop = new ObjectProperty(name, offset, size, ObjectType::GetClassInfo());
             }
             else
             {
