@@ -92,9 +92,22 @@ namespace nuvelocity
             return PropertyType::Object;
         }
 
-        virtual bool IsObjectArray() const
+    protected:
+        // Single check for whether a container holds object pointers
+        virtual bool ContainsObjects() const
         {
             return false;
+        }
+
+    public:
+        virtual bool IsObjectArray() const
+        {
+            return ContainsObjects();
+        }
+
+        virtual bool IsObjectMapValue() const
+        {
+            return ContainsObjects();
         }
 
         virtual size_t GetArraySize(void* obj) const
@@ -106,6 +119,19 @@ namespace nuvelocity
         {
             static const std::string empty;
             return empty;
+        }
+
+        virtual void AddMapEntry(void* obj, const std::string& key, const std::string& value)
+        {
+            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                        "Map entry insertion not supported for property '%s'", mName.c_str());
+        }
+
+        virtual void AddMapObjectEntry(void* obj, const std::string& key, void* valueObj)
+        {
+            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                        "Map object entry insertion not supported for property '%s'",
+                        mName.c_str());
         }
 
         virtual void DumpValue(void* obj) const
@@ -567,7 +593,7 @@ namespace nuvelocity
             return PropertyType::Array;
         }
 
-        bool IsObjectArray() const override
+        bool ContainsObjects() const override
         {
             return is_pointer_v<T>;
         }
@@ -583,49 +609,45 @@ namespace nuvelocity
         }
     };
 
-    template <typename K, typename V>
-    class MapProperty : public Property
+    // Base template for shared map/unordered_map logic
+    template <typename K, typename V, typename ContainerType>
+    class BaseMapPropertyTemplate : public Property
     {
     public:
-        MapProperty(const std::string& name, size_t offset, size_t size)
+        BaseMapPropertyTemplate(const std::string& name, size_t offset, size_t size)
                 : Property(name, offset, size)
         {
         }
 
-        std::map<K, V>& GetMap(void* obj) const
-        {
-            return *(std::map<K, V>*) GetValuePtr(obj);
-        }
+    public:
+        // Pure virtual - derived classes implement GetMapContainer() specific to their
+        // container type
+        virtual ContainerType& GetMapContainer(void* obj) const = 0;
 
         size_t GetMapSize(void* obj) const
         {
-            return GetMap(obj).size();
+            return GetMapContainer(obj).size();
         }
 
         void ClearMap(void* obj)
         {
-            GetMap(obj).clear();
+            GetMapContainer(obj).clear();
         }
 
         V& GetValue(void* obj, const K& key) const
         {
-            return GetMap(obj)[key];
+            return GetMapContainer(obj)[key];
         }
 
         void SetMapEntry(void* obj, const K& key, const V& value)
         {
-            GetMap(obj)[key] = value;
+            GetMapContainer(obj)[key] = value;
         }
 
         bool HasKey(void* obj, const K& key) const
         {
-            auto& map = GetMap(obj);
+            auto& map = GetMapContainer(obj);
             return map.find(key) != map.end();
-        }
-
-        void SetValue(void* obj, const void* valuePtr) override
-        {
-            *(std::map<K, V>*) GetValuePtr(obj) = *(const std::map<K, V>*) valuePtr;
         }
 
         void SetValue(void* obj, const std::string& value) override
@@ -633,6 +655,121 @@ namespace nuvelocity
             SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                         "String assignment not directly supported for map property '%s'",
                         mName.c_str());
+        }
+
+        void AddMapEntry(void* obj, const std::string& key, const std::string& value) override
+        {
+            // For maps with string key/value types, insert the entry directly
+            // For other types, handle conversion
+            try
+            {
+                // Attempt to construct K and V from strings and insert
+                K strKey;
+                V strValue;
+
+                // For std::string types, direct construction works
+                if constexpr (std::is_constructible_v<K, const std::string&>)
+                {
+                    strKey = K(key);
+                }
+                else
+                {
+                    // Try string stream conversion for numeric types
+                    std::istringstream iss(key);
+                    iss >> strKey;
+                }
+
+                if constexpr (std::is_constructible_v<V, const std::string&>)
+                {
+                    strValue = V(value);
+                }
+                else
+                {
+                    // Try string stream conversion for numeric types
+                    std::istringstream iss(value);
+                    iss >> strValue;
+                }
+
+                SetMapEntry(obj, strKey, strValue);
+            }
+            catch (const std::exception& e)
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "Failed to add map entry for property '%s': %s", mName.c_str(),
+                            e.what());
+            }
+        }
+
+        bool ContainsObjects() const override
+        {
+            // Check if V is a pointer type (indicates object value)
+            return std::is_pointer_v<V>;
+        }
+
+        void AddMapObjectEntry(void* obj, const std::string& key, void* valueObj) override
+        {
+            // Add an object value to the map
+            // Only works if V is a pointer type
+            if constexpr (std::is_pointer_v<V>)
+            {
+                try
+                {
+                    K strKey;
+                    if constexpr (std::is_constructible_v<K, const std::string&>)
+                    {
+                        strKey = K(key);
+                    }
+                    else
+                    {
+                        std::istringstream iss(key);
+                        iss >> strKey;
+                    }
+
+                    GetMapContainer(obj)[strKey] = static_cast<V>(valueObj);
+                }
+                catch (const std::exception& e)
+                {
+                    SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                                "Failed to add object map entry for property '%s': %s",
+                                mName.c_str(), e.what());
+                }
+            }
+            else
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "AddMapObjectEntry called on non-pointer-value map property '%s'",
+                            mName.c_str());
+            }
+        }
+    };
+
+    template <typename K, typename V>
+    class MapProperty : public BaseMapPropertyTemplate<K, V, std::map<K, V>>
+    {
+    public:
+        using Base = BaseMapPropertyTemplate<K, V, std::map<K, V>>;
+        using Base::GetMapSize;
+        using Base::GetValuePtr;
+        using Base::mName;
+
+        MapProperty(const std::string& name, size_t offset, size_t size)
+                : BaseMapPropertyTemplate<K, V, std::map<K, V>>(name, offset, size)
+        {
+        }
+
+        std::map<K, V>& GetMapContainer(void* obj) const override
+        {
+            return *(std::map<K, V>*) GetValuePtr(obj);
+        }
+
+        std::map<K, V>& GetMap(void* obj) const
+        {
+            return GetMapContainer(obj);
+        }
+
+        void SetValue(void* obj, const void* valuePtr) override
+        {
+            *(std::map<K, V>*) GetValuePtr(obj) = *(const std::map<K, V>*) valuePtr;
         }
 
         void DumpValue(void* obj) const override
@@ -648,56 +785,33 @@ namespace nuvelocity
     };
 
     template <typename K, typename V>
-    class UnorderedMapProperty : public Property
+    class UnorderedMapProperty : public BaseMapPropertyTemplate<K, V, std::unordered_map<K, V>>
     {
     public:
+        using Base = BaseMapPropertyTemplate<K, V, std::unordered_map<K, V>>;
+        using Base::GetMapSize;
+        using Base::GetValuePtr;
+        using Base::mName;
+
         UnorderedMapProperty(const std::string& name, size_t offset, size_t size)
-                : Property(name, offset, size)
+                : BaseMapPropertyTemplate<K, V, std::unordered_map<K, V>>(name, offset, size)
         {
         }
 
-        std::unordered_map<K, V>& GetMap(void* obj) const
+        std::unordered_map<K, V>& GetMapContainer(void* obj) const override
         {
             return *(std::unordered_map<K, V>*) GetValuePtr(obj);
         }
 
-        size_t GetMapSize(void* obj) const
+        std::unordered_map<K, V>& GetMap(void* obj) const
         {
-            return GetMap(obj).size();
-        }
-
-        void ClearMap(void* obj)
-        {
-            GetMap(obj).clear();
-        }
-
-        V& GetValue(void* obj, const K& key) const
-        {
-            return GetMap(obj)[key];
-        }
-
-        void SetMapEntry(void* obj, const K& key, const V& value)
-        {
-            GetMap(obj)[key] = value;
-        }
-
-        bool HasKey(void* obj, const K& key) const
-        {
-            auto& map = GetMap(obj);
-            return map.find(key) != map.end();
+            return GetMapContainer(obj);
         }
 
         void SetValue(void* obj, const void* valuePtr) override
         {
             *(std::unordered_map<K, V>*) GetValuePtr(obj) =
                 *(const std::unordered_map<K, V>*) valuePtr;
-        }
-
-        void SetValue(void* obj, const std::string& value) override
-        {
-            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                        "String assignment not directly supported for unordered_map property '%s'",
-                        mName.c_str());
         }
 
         void DumpValue(void* obj) const override
