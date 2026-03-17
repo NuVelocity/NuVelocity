@@ -4,6 +4,8 @@ add_subdirectory(system)
 target_sources(
     NuVelocity PRIVATE
     BlitType.h
+    Frame.cpp
+    Frame.h
     StandAloneFrame.cpp
     StandAloneFrame.h
     PaletteHolder.cpp
