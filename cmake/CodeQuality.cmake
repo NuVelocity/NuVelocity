@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
 # Clang Tidy
 # ------------------------------------------------------------------------------
-option(NVE_CLANG_TIDY "Enable clang-tidy checks" ON)
+option(NVE_CLANG_TIDY "Enable clang-tidy checks" OFF)
 
 if(MSVC)
     set(NVE_CLANG_TIDY OFF CACHE BOOL "" FORCE)
@@ -48,7 +48,7 @@ endif()
 # ------------------------------------------------------------------------------
 # Clang Format
 # ------------------------------------------------------------------------------
-option(NVE_CLANG_FORMAT "Enable clang-format targets" ON)
+option(NVE_CLANG_FORMAT "Enable clang-format targets" OFF)
 
 if(NVE_CLANG_FORMAT)
     find_program(CLANG_FORMAT_EXE NAMES clang-format)

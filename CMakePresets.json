@@ -9,7 +9,9 @@
             "installDir": "${sourceDir}/out/install/${presetName}",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "/usr/bin/gcc",
-                "CMAKE_CXX_COMPILER": "/usr/bin/g++"
+                "CMAKE_CXX_COMPILER": "/usr/bin/g++",
+                "NVE_CLANG_TIDY": false,
+                "NVE_CLANG_FORMAT": false
             }
         },
         {
@@ -60,7 +62,9 @@
             "installDir": "${sourceDir}/out/install/${presetName}",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "/usr/bin/clang",
-                "CMAKE_CXX_COMPILER": "/usr/bin/clang++"
+                "CMAKE_CXX_COMPILER": "/usr/bin/clang++",
+                "NVE_CLANG_TIDY": false,
+                "NVE_CLANG_FORMAT": false
             }
         },
         {
@@ -111,7 +115,9 @@
             "installDir": "${sourceDir}/out/install/${presetName}",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe"
+                "CMAKE_CXX_COMPILER": "cl.exe",
+                "NVE_CLANG_TIDY": false,
+                "NVE_CLANG_FORMAT": false
             },
             "condition": {
                 "type": "equals",
@@ -157,6 +163,24 @@
             "inherits": "msvc-i386-debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "gcc-amd64-debug-lint",
+            "displayName": "GCC amd64 Debug (with Linting)",
+            "inherits": "gcc-amd64-debug",
+            "cacheVariables": {
+                "NVE_CLANG_TIDY": true,
+                "NVE_CLANG_FORMAT": true
+            }
+        },
+        {
+            "name": "clang-amd64-debug-lint",
+            "displayName": "Clang amd64 Debug (with Linting)",
+            "inherits": "clang-amd64-debug",
+            "cacheVariables": {
+                "NVE_CLANG_TIDY": true,
+                "NVE_CLANG_FORMAT": true
             }
         }
     ],
