@@ -67,12 +67,14 @@ namespace nuvelocity
             mDescription = description;
         }
 
+    protected:
         inline void* GetValuePtr(void* obj) const
         {
             char* base = (char*) obj;
             return (void*) (base + mOffset);
         }
 
+    public:
         virtual void* GetValue(void* obj) const
         {
             return GetValuePtr(obj);

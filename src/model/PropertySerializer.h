@@ -142,7 +142,7 @@ namespace nuvelocity
 
             // Get pointer to the array pointer held by the property
             context.hexArrayData = static_cast<uint8_t**>(
-                context.currentInfo->mHexArrayProperty->GetValuePtr(context.currentObject));
+                context.currentInfo->mHexArrayProperty->GetValue(context.currentObject));
             if (context.hexArrayData == nullptr)
             {
                 throw std::runtime_error(std::string("Failed to get hex array pointer for property '") +
