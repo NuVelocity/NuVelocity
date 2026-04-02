@@ -78,24 +78,17 @@ namespace nuvelocity
             {
                 void* childObject = childInfo->mFactoryFunction();
 
-                // If arguments are provided, assign them to properties in order
+                // If arguments are provided, pass them through the object's init-args hook.
                 if (args.size() > 0)
                 {
-                    // Assert that this class uses non-standard serialization
-                    // (argument-based construction only makes sense for special classes like
-                    // HexArray)
-                    assert(childInfo->mSerializationMode != SerializationMode::Standard &&
-                           "Arguments can only be used with non-Standard serialization modes");
-
-                    // Assign arguments to properties in order
-                    size_t argIndex = 0;
-                    Property* prop = childInfo->GetFirstProperty();
-                    while (prop != nullptr && argIndex < args.size())
+                    if (childInfo->mInitArgsFunction == nullptr)
                     {
-                        prop->SetValue(childObject, args[argIndex]);
-                        argIndex++;
-                        prop = prop->mNext;
+                        throw std::runtime_error(std::string("Class '") + className +
+                                                 "' does not support argument-based "
+                                                 "instantiation");
                     }
+
+                    childInfo->mInitArgsFunction(childObject, args);
                 }
 
                 return {childInfo, childObject};

@@ -16,6 +16,8 @@ namespace nuvelocity
         Frame(uint32_t width, uint32_t height, uint32_t bpp);
         ~Frame();
 
+        void InitFromArgs(const std::vector<std::string>& args) override;
+
         static void InitClassInfo(ClassInfo& aInfo)
         {
             aInfo.mName = "CFrame";

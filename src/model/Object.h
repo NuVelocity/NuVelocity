@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <typeinfo>
+#include <vector>
 
 namespace nuvelocity
 {
@@ -22,6 +23,12 @@ namespace nuvelocity
 
     public:
         virtual ~ObjectBase() = default;
+
+        // Optional vector-based hook for argument-based initialization.
+        virtual void InitFromArgs(const std::vector<std::string>& args)
+        {
+            (void) args;
+        }
     };
 
     // CRTP template providing automatic reflection with optional customization hook
@@ -56,6 +63,9 @@ namespace nuvelocity
             }
 
             info.mFactoryFunction = []() -> void* { return new Derived(); };
+            info.mInitArgsFunction = [](void* obj, std::vector<std::string> args) {
+                static_cast<Derived*>(obj)->InitFromArgs(args);
+            };
 
             // Call derived class's InitClassInfo
             Derived::InitClassInfo(info);

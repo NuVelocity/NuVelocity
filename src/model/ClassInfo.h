@@ -29,6 +29,7 @@ namespace nuvelocity
         Property* mHexArrayProperty = nullptr; // Property to receive hex array binary data
 
         void* (*mFactoryFunction)();
+        void (*mInitArgsFunction)(void* obj, std::vector<std::string> args) = nullptr;
 
         void AddProperty(Property* prop)
         {
