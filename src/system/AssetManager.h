@@ -45,6 +45,9 @@ namespace nuvelocity
         static SDL_IOStream* LoadFromCache(const std::string& path, CacheKind kind);
 
         static bool LoadStandAloneFrameFromStream(StandAloneFrame* frame, SDL_IOStream* stream);
+        static bool LoadCompressedDeflateFrame(StandAloneFrame* frame, SDL_IOStream* stream);
+        static bool LoadCompressedPackedFrame(StandAloneFrame* frame, SDL_IOStream* stream);
+        static bool LoadJpegFrame(StandAloneFrame* frame, SDL_IOStream* stream);
 
         static inline const char* GetErrorMessage();
 

@@ -153,137 +153,170 @@ namespace nuvelocity
         SDL_ReadS32LE(stream, &hotSpotY);
         SDL_ReadU8(stream, &isCompressed);
 
+        // Case 1: Compressed image data.
+        if (isCompressed != 0U)
+        {
+            // Case 1.1: Deflate-compressed image data, 4-plane/32-bit-plane RGBA.
+            if (FrameHasDeflateHeader(stream))
+            {
+                return LoadCompressedDeflateFrame(frame, stream);
+            }
+
+            // Case 1.2: Packed image data, 32-bit RGBA8888.
+            return LoadCompressedPackedFrame(frame, stream);
+        }
+
+        // Case 2: JPEG image data.
+        return LoadJpegFrame(frame, stream);
+    }
+
+    bool AssetManager::LoadCompressedDeflateFrame(StandAloneFrame* frame, SDL_IOStream* stream)
+    {
+        // Note to callers: this method assumes the stream is positioned after the 9-byte header,
+        // and before the deflate header.
         uint32_t deflatedSize = 0;
         uint32_t inflatedSize = 0;
         int width = 0;
         int height = 0;
 
-        // Case 1: Compressed image data
-        if (isCompressed != 0U)
+        // Ignore byte marker for packed data size.
+        SDL_ReadU8(stream, nullptr);
+        SDL_ReadU32LE(stream, &deflatedSize);
+        SDL_ReadU32LE(stream, &inflatedSize);
+
+        auto* sourceImageData = static_cast<uint8_t*>(SDL_malloc(deflatedSize));
+        if (SDL_ReadIO(stream, sourceImageData, deflatedSize) != deflatedSize)
         {
-            // Case 1.1: Deflate-compressed image data, 4-plane/32-bit-plane RGBA
-            if (FrameHasDeflateHeader(stream))
-            {
-                // Ignore byte marker for packed data size.
-                SDL_ReadU8(stream, nullptr);
-                SDL_ReadU32LE(stream, &deflatedSize);
-                SDL_ReadU32LE(stream, &inflatedSize);
-
-                auto* sourceImageData = static_cast<uint8_t*>(SDL_malloc(deflatedSize));
-                if (SDL_ReadIO(stream, sourceImageData, deflatedSize) != deflatedSize)
-                {
-                    SDL_free(sourceImageData);
-                    return false;
-                }
-
-                auto* imageData = static_cast<uint8_t*>(SDL_malloc(inflatedSize));
-                if (Inflate(imageData, &inflatedSize, sourceImageData, &deflatedSize) != Z_OK)
-                {
-                    SDL_free(sourceImageData);
-                    SDL_free(imageData);
-                    return false;
-                }
-                SDL_free(sourceImageData);
-
-                SDL_ReadS32LE(stream, &width);
-                SDL_ReadS32LE(stream, &height);
-
-                // Create SDL surface from decompressed image data
-                frame->mSurface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
-                if (frame->mSurface == nullptr)
-                {
-                    SDL_free(imageData);
-                    return false;
-                }
-
-                // Process 4 planes of RGBA data with row offset addition
-                for (int plane = 0; plane < 4; plane++)
-                {
-                    MergeBitPlane(plane, plane, width, height, imageData, frame->mSurface);
-                }
-
-                SDL_free(imageData);
-            }
-            // Case 1.2: Packed image data, 32-bit RGBA8888
-            else
-            {
-                SDL_ReadU32LE(stream, &inflatedSize);
-                auto* imageData = static_cast<uint8_t*>(SDL_malloc(inflatedSize));
-                if (SDL_ReadIO(stream, imageData, inflatedSize) != inflatedSize)
-                {
-                    SDL_free(imageData);
-                    return false;
-                }
-
-                SDL_ReadS32LE(stream, &width);
-                SDL_ReadS32LE(stream, &height);
-
-                frame->mSurface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
-                if (frame->mSurface == nullptr)
-                {
-                    SDL_free(imageData);
-                    return false;
-                }
-
-                SDL_memcpy(frame->mSurface->pixels, imageData, inflatedSize);
-                SDL_free(imageData);
-            }
+            SDL_free(sourceImageData);
+            return false;
         }
-        else
-        {
-            // Case 2: JPEG image data
-            uint32_t imageSize = 0;
-            SDL_ReadU32LE(stream, &imageSize);
 
-            void* imageData = SDL_malloc(imageSize);
-            if (SDL_ReadIO(stream, imageData, imageSize) != imageSize)
+        auto* imageData = static_cast<uint8_t*>(SDL_malloc(inflatedSize));
+        if (Inflate(imageData, &inflatedSize, sourceImageData, &deflatedSize) != Z_OK)
+        {
+            SDL_free(sourceImageData);
+            SDL_free(imageData);
+            return false;
+        }
+        SDL_free(sourceImageData);
+
+        SDL_ReadS32LE(stream, &width);
+        SDL_ReadS32LE(stream, &height);
+
+        // Create SDL surface from decompressed image data
+        frame->mSurface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
+        if (frame->mSurface == nullptr)
+        {
+            SDL_free(imageData);
+            return false;
+        }
+
+        // Process 4 planes of RGBA data with row offset addition
+        for (int plane = 0; plane < 4; plane++)
+        {
+            MergeBitPlane(plane, plane, width, height, imageData, frame->mSurface);
+        }
+
+        SDL_free(imageData);
+        return true;
+    }
+
+    bool AssetManager::LoadCompressedPackedFrame(StandAloneFrame* frame, SDL_IOStream* stream)
+    {
+        // Note to callers: this method assumes the stream is positioned after the 9-byte header.
+        uint32_t inflatedSize = 0;
+        int width = 0;
+        int height = 0;
+
+        SDL_ReadU32LE(stream, &inflatedSize);
+        auto* imageData = static_cast<uint8_t*>(SDL_malloc(inflatedSize));
+        if (SDL_ReadIO(stream, imageData, inflatedSize) != inflatedSize)
+        {
+            SDL_free(imageData);
+            return false;
+        }
+
+        SDL_ReadS32LE(stream, &width);
+        SDL_ReadS32LE(stream, &height);
+
+        // Create SDL surface from packed image data
+        frame->mSurface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
+        if (frame->mSurface == nullptr)
+        {
+            SDL_free(imageData);
+            return false;
+        }
+
+        SDL_memcpy(frame->mSurface->pixels, imageData, inflatedSize);
+        SDL_free(imageData);
+        return true;
+    }
+
+    bool AssetManager::LoadJpegFrame(StandAloneFrame* frame, SDL_IOStream* stream)
+    {
+        // Note to callers: this method assumes the stream is positioned after the 9-byte header.
+        uint32_t imageSize = 0;
+        SDL_ReadU32LE(stream, &imageSize);
+
+        void* imageData = SDL_malloc(imageSize);
+        if (SDL_ReadIO(stream, imageData, imageSize) != imageSize)
+        {
+            SDL_free(imageData);
+            return false;
+        }
+
+        SDL_IOStream* imageStream = SDL_IOFromConstMem(imageData, imageSize);
+        frame->mSurface = IMG_LoadJPG_IO(imageStream);
+        SDL_free(imageData);
+        SDL_CloseIO(imageStream);
+
+        if (frame->mSurface == nullptr)
+        {
+            return false;
+        }
+
+        // The original surface does not have an alpha channel.
+        if (SDL_ReadIO(stream, nullptr, 0) == 0 && SDL_GetIOStatus(stream) != SDL_IO_STATUS_EOF)
+        {
+            uint32_t inflatedSize = 0;
+            uint32_t deflatedSize = 0;
+
+            // The original surface does not have an alpha channel.
+            SDL_Surface* output =
+                SDL_CreateSurface(frame->mSurface->w, frame->mSurface->h, SDL_PIXELFORMAT_RGBA32);
+            if (output == nullptr)
             {
-                SDL_free(imageData);
                 return false;
             }
 
-            SDL_IOStream* imageStream = SDL_IOFromConstMem(imageData, imageSize);
-            frame->mSurface = IMG_LoadJPG_IO(imageStream);
-            SDL_free(imageData);
-            SDL_CloseIO(imageStream);
+            // Ignore padding byte.
+            SDL_ReadU8(stream, nullptr);
+            SDL_ReadU32LE(stream, &inflatedSize);
+            deflatedSize = SDL_GetIOSize(stream) - SDL_TellIO(stream);
 
-            if (SDL_ReadIO(stream, nullptr, 0) == 0 && SDL_GetIOStatus(stream) != SDL_IO_STATUS_EOF)
+            auto* sourceMaskData = static_cast<uint8_t*>(SDL_malloc(deflatedSize));
+            if (SDL_ReadIO(stream, sourceMaskData, deflatedSize) != deflatedSize)
             {
-                // The original surface does not have an alpha channel.
-                SDL_Surface* output = SDL_CreateSurface(frame->mSurface->w, frame->mSurface->h,
-                                                        SDL_PIXELFORMAT_RGBA32);
-                if (output == nullptr)
-                {
-                    return false;
-                }
-
-                // Ignore padding byte.
-                SDL_ReadU8(stream, nullptr);
-                SDL_ReadU32LE(stream, &inflatedSize);
-                deflatedSize = SDL_GetIOSize(stream) - SDL_TellIO(stream);
-
-                auto* sourceMaskData = static_cast<uint8_t*>(SDL_malloc(deflatedSize));
-                if (SDL_ReadIO(stream, sourceMaskData, deflatedSize) != deflatedSize)
-                {
-                    SDL_free(sourceMaskData);
-                    return false;
-                }
-
-                auto* maskData = static_cast<uint8_t*>(SDL_malloc(inflatedSize));
-                if (Inflate(maskData, &inflatedSize, sourceMaskData, &deflatedSize) != Z_OK)
-                {
-                    return false;
-                }
-
-                SDL_BlitSurface(frame->mSurface, nullptr, output, nullptr);
-                SDL_DestroySurface(frame->mSurface);
-                frame->mSurface = output;
-
-                MergeBitPlane(0, 3, frame->mSurface->w, frame->mSurface->h, maskData,
-                              frame->mSurface);
-
-                SDL_free(maskData);
+                SDL_free(sourceMaskData);
+                return false;
             }
+
+            auto* maskData = static_cast<uint8_t*>(SDL_malloc(inflatedSize));
+            if (Inflate(maskData, &inflatedSize, sourceMaskData, &deflatedSize) != Z_OK)
+            {
+                SDL_free(sourceMaskData);
+                SDL_free(maskData);
+                return false;
+            }
+            SDL_free(sourceMaskData);
+
+            SDL_BlitSurface(frame->mSurface, nullptr, output, nullptr);
+            SDL_DestroySurface(frame->mSurface);
+            frame->mSurface = output;
+
+            MergeBitPlane(0, 3, frame->mSurface->w, frame->mSurface->h, maskData,
+                          frame->mSurface);
+            SDL_free(maskData);
         }
 
         return true;
