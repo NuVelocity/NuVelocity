@@ -33,11 +33,23 @@ set_source_files_properties(${NVE_OBJECT_REGISTRATION_CPP} PROPERTIES GENERATED 
 target_sources(
     NuVelocity PRIVATE
     BlitType.h
+    BlitTypeConverter.h
     EngineObjectTypes.def
     ObjectRegistration.h
     ${NVE_OBJECT_REGISTRATION_CPP}
+    Font.cpp
+    Font.h
+    FontBitmap.cpp
+    FontBitmap.h
+    FrameInfo.cpp
+    FrameInfo.h
     Frame.cpp
     Frame.h
+    SequenceFlags.h
+    Sequence.cpp
+    Sequence.h
+    SequenceFrameInfoList.cpp
+    SequenceFrameInfoList.h
     StandAloneFrame.cpp
     StandAloneFrame.h
     PaletteHolder.cpp
