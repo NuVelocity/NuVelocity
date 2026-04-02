@@ -47,6 +47,9 @@ namespace nuvelocity
         static bool Deserialize(const std::string& input, T*& output, ClassInfo*& info);
 
         template <typename T>
+        static bool Deserialize(std::istream& input, T*& output, ClassInfo*& info);
+
+        template <typename T>
         static bool Deserialize(const std::string& input, T*& output);
 
     private:
@@ -629,6 +632,12 @@ namespace nuvelocity
     bool PropertySerializer::Deserialize(const std::string& input, T*& output, ClassInfo*& info)
     {
         std::stringstream stream(input);
+        return Deserialize(stream, output, info);
+    }
+
+    template <typename T>
+    bool PropertySerializer::Deserialize(std::istream& stream, T*& output, ClassInfo*& info)
+    {
         std::string line;
 
         info = nullptr;
@@ -674,6 +683,13 @@ namespace nuvelocity
             if (line == kTokenCloseBrace)
             {
                 HandleCloseBrace(context);
+
+                // Stop at the first fully parsed root object.
+                if (output != nullptr && context.scope == ParserScope::None &&
+                    context.scopeStack.empty())
+                {
+                    break;
+                }
                 continue;
             }
 
