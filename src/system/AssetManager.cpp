@@ -298,6 +298,7 @@ namespace nuvelocity
             if (SDL_ReadIO(stream, sourceMaskData, deflatedSize) != deflatedSize)
             {
                 SDL_free(sourceMaskData);
+                SDL_DestroySurface(output);
                 return false;
             }
 
@@ -306,6 +307,7 @@ namespace nuvelocity
             {
                 SDL_free(sourceMaskData);
                 SDL_free(maskData);
+                SDL_DestroySurface(output);
                 return false;
             }
             SDL_free(sourceMaskData);
