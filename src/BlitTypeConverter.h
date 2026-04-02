@@ -34,7 +34,7 @@ namespace nuvelocity
     class BlitTypeConverter
     {
     public:
-        static std::optional<::BlitType> Int32ToType1(int type)
+        static std::optional<BlitType> Int32ToType1(int type)
         {
             switch (type)
             {
@@ -57,7 +57,7 @@ namespace nuvelocity
             }
         }
 
-        static std::optional<::BlitType> Int32ToType2(int type)
+        static std::optional<BlitType> Int32ToType2(int type)
         {
             switch (type)
             {
@@ -80,7 +80,7 @@ namespace nuvelocity
             }
         }
 
-        static std::optional<::BlitType> Int32ToType3(int type)
+        static std::optional<BlitType> Int32ToType3(int type)
         {
             switch (type)
             {
@@ -102,7 +102,7 @@ namespace nuvelocity
             }
         }
 
-        static std::optional<::BlitType> Int32ToType4(int type)
+        static std::optional<BlitType> Int32ToType4(int type)
         {
             switch (type)
             {
@@ -122,7 +122,7 @@ namespace nuvelocity
             }
         }
 
-        static std::optional<::BlitType> Int32ToType5(int type)
+        static std::optional<BlitType> Int32ToType5(int type)
         {
             switch (type)
             {
@@ -142,7 +142,7 @@ namespace nuvelocity
             }
         }
 
-        static std::optional<::BlitType> Int32ToType(int type, BlitTypeRevision revision)
+        static std::optional<BlitType> Int32ToType(int type, BlitTypeRevision revision)
         {
             switch (revision)
             {
@@ -161,7 +161,7 @@ namespace nuvelocity
             }
         }
 
-        static std::optional<int> ToType1(::BlitType type)
+        static std::optional<int> ToType1(BlitType type)
         {
             switch (type)
             {
@@ -184,7 +184,7 @@ namespace nuvelocity
             }
         }
 
-        static std::optional<int> ToType2(::BlitType type)
+        static std::optional<int> ToType2(BlitType type)
         {
             switch (type)
             {
@@ -207,7 +207,7 @@ namespace nuvelocity
             }
         }
 
-        static std::optional<int> ToType3(::BlitType type)
+        static std::optional<int> ToType3(BlitType type)
         {
             switch (type)
             {
@@ -229,7 +229,7 @@ namespace nuvelocity
             }
         }
 
-        static std::optional<int> ToType4(::BlitType type)
+        static std::optional<int> ToType4(BlitType type)
         {
             switch (type)
             {
@@ -249,7 +249,7 @@ namespace nuvelocity
             }
         }
 
-        static std::optional<int> ToType5(::BlitType type)
+        static std::optional<int> ToType5(BlitType type)
         {
             switch (type)
             {
@@ -269,7 +269,7 @@ namespace nuvelocity
             }
         }
 
-        static std::optional<int> ToInt(::BlitType type, BlitTypeRevision revision)
+        static std::optional<int> ToInt(BlitType type, BlitTypeRevision revision)
         {
             switch (revision)
             {

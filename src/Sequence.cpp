@@ -83,11 +83,11 @@ namespace nuvelocity
     {
         ApplySequenceFlags(flags);
 
-        const std::optional<::BlitType> converted =
+        const std::optional<BlitType> converted =
             BlitTypeConverter::Int32ToType(rawBlitType, revision);
         if (converted.has_value())
         {
-            mBlitType = static_cast<int>(converted.value());
+            mBlitType = converted.value();
         }
 
         mFramesPerSecond = framesPerSecond;

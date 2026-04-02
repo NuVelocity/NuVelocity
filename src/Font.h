@@ -22,7 +22,8 @@ namespace nuvelocity
         {
             aInfo.mName = "CFont";
             AddProperty(aInfo, "Font Family", &Font::mFontFamily);
-            AddProperty(aInfo, "Blit Type", &Font::mBlitType);
+            AddEnumProperty<BlitType>(aInfo, "Blit Type", &Font::mBlitType,
+                            GetBlitTypeSerializedValues());
 
             // FIXME: colors are not handled by serialization code.
             AddProperty(aInfo, "Generated Color", &Font::mGeneratedColor);
@@ -33,7 +34,7 @@ namespace nuvelocity
 
     protected:
         std::string mFontFamily;
-        int mBlitType;
+        BlitType mBlitType;
         // FIXME: Stored as text because color serialization is not implemented yet.
         std::string mGeneratedColor;
         int mPointSize;

@@ -31,7 +31,8 @@ namespace nuvelocity
             aInfo.mName = "CSequence";
 
             AddProperty(aInfo, "Frames Per Second", &Sequence::mFramesPerSecond);
-            AddProperty(aInfo, "Blit Type", &Sequence::mBlitType);
+            AddEnumProperty<BlitType>(aInfo, "Blit Type", &Sequence::mBlitType,
+                            GetBlitTypeSerializedValues());
             AddProperty(aInfo, "X Offset", &Sequence::mXOffset);
             AddProperty(aInfo, "Y Offset", &Sequence::mYOffset);
             AddProperty(aInfo, "Center Hot Spot", &Sequence::mCenterHotSpot);
@@ -98,7 +99,7 @@ namespace nuvelocity
 #endif
 
         float mFramesPerSecond;
-        int mBlitType;
+        BlitType mBlitType;
         int mXOffset;
         int mYOffset;
 #if 0
