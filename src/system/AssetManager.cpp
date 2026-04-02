@@ -19,6 +19,68 @@
 namespace nuvelocity
 {
     constexpr uint8_t kSequenceSignatureStandard = 0x01;
+    constexpr const char* kSequenceClassName = "CSequence";
+    constexpr const char* kSequenceFrameInfoListClassName = "CSequenceFrameInfoList";
+
+    static bool DeserializeSequenceRoots(const std::string& listText, Sequence*& sequence,
+                                         SequenceFrameInfoList*& frameInfoList)
+    {
+        sequence = nullptr;
+        frameInfoList = nullptr;
+
+        std::stringstream listStream(listText);
+        bool sawKnownRoot = false;
+
+        // A sequence list blob carries up to two top-level roots:
+        // CSequence and CSequenceFrameInfoList.
+        for (int i = 0; i < 2; ++i)
+        {
+            ObjectBase* root = nullptr;
+            ClassInfo* info = nullptr;
+            if (!PropertySerializer::Deserialize(listStream, root, info) || root == nullptr ||
+                info == nullptr)
+            {
+                delete root;
+                return i > 0 ? sawKnownRoot : false;
+            }
+
+            if (info->mName == kSequenceClassName)
+            {
+                sawKnownRoot = true;
+                if (sequence == nullptr)
+                {
+                    sequence = static_cast<Sequence*>(root);
+                }
+                else
+                {
+                    delete root;
+                }
+                continue;
+            }
+
+            if (info->mName == kSequenceFrameInfoListClassName)
+            {
+                sawKnownRoot = true;
+                if (frameInfoList == nullptr)
+                {
+                    frameInfoList = static_cast<SequenceFrameInfoList*>(root);
+                }
+                else
+                {
+                    delete root;
+                }
+                continue;
+            }
+
+            delete root;
+            if (i == 0)
+            {
+                return false;
+            }
+        }
+
+        return sawKnownRoot;
+    }
 
     AssetManager::AssetManager() = default;
 
@@ -191,20 +253,23 @@ namespace nuvelocity
 
         std::string listText(reinterpret_cast<const char*>(listData.data()), listData.size());
 
+        SequenceFrameInfoList* frameInfoList = nullptr;
         Sequence* sequence = nullptr;
-        ClassInfo* info = nullptr;
-        if (!PropertySerializer::Deserialize(listText, sequence, info) || sequence == nullptr)
+        bool hasFrameInfoList = false;
+
+        if (!DeserializeSequenceRoots(listText, sequence, frameInfoList))
         {
             return nullptr;
         }
 
-        SequenceFrameInfoList* frameInfoList = nullptr;
-        ClassInfo* frameInfoClass = nullptr;
-        const bool hasFrameInfoList =
-            PropertySerializer::Deserialize(listText, frameInfoList, frameInfoClass) &&
-            frameInfoList != nullptr;
-        if (hasFrameInfoList)
+        if (sequence == nullptr)
         {
+            sequence = new Sequence();
+        }
+
+        if (frameInfoList != nullptr)
+        {
+            hasFrameInfoList = true;
             frameInfoList->CopyTo(*sequence, BlitTypeRevision::Type1);
         }
 
