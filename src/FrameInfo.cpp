@@ -13,4 +13,34 @@ namespace nuvelocity
     }
 
     FrameInfo::~FrameInfo() = default;
+
+    int FrameInfo::GetLeft() const
+    {
+        return mLeft;
+    }
+
+    int FrameInfo::GetTop() const
+    {
+        return mTop;
+    }
+
+    int FrameInfo::GetRight() const
+    {
+        return mRight;
+    }
+
+    int FrameInfo::GetBottom() const
+    {
+        return mBottom;
+    }
+
+    int FrameInfo::GetUpperLeftXOffset() const
+    {
+        return mUpperLeftXOffset;
+    }
+
+    int FrameInfo::GetUpperLeftYOffset() const
+    {
+        return mUpperLeftYOffset;
+    }
 } // namespace nuvelocity

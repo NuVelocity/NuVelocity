@@ -4,7 +4,10 @@
 #include "BlitType.h"
 #include "SequenceFlags.h"
 #include "model/Model.h"
+#include <SDL3/SDL.h>
+#include <cstddef>
 #include <string>
+#include <vector>
 
 namespace nuvelocity
 {
@@ -25,6 +28,15 @@ namespace nuvelocity
         Sequence();
         explicit Sequence(ImagePropertyListFormat format);
         ~Sequence();
+
+        int GetXOffset() const;
+        int GetYOffset() const;
+        bool GetCenterHotSpot() const;
+
+        void SetFrames(std::vector<SDL_Surface*>&& surfaces);
+        std::size_t GetFrameCount() const;
+        SDL_Surface* GetSurface(std::size_t index) const;
+        SDL_Texture* GetTexture(std::size_t index, SDL_Renderer* renderer);
 
         static void InitClassInfo(ClassInfo& aInfo)
         {
@@ -116,6 +128,9 @@ namespace nuvelocity
         bool mDoDither;
         bool mIsLossless;
         int mJpegQuality;
+
+        std::vector<SDL_Surface*> mFrameSurfaces;
+        std::vector<SDL_Texture*> mFrameTextures;
 
 #if 0
         bool mIsDds;

@@ -30,6 +30,7 @@ namespace nuvelocity
         }
 
         void CopyTo(Sequence& sequence, BlitTypeRevision revision) const;
+        const std::vector<FrameInfo*>& GetValues() const;
 
     private:
         bool mHasTextBlitType;

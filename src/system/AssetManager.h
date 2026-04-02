@@ -5,9 +5,12 @@
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>
 #include <string>
+#include <vector>
 #include <zlib.h>
 
 #include "Manager.h"
+#include "Sequence.h"
+#include "SequenceFrameInfoList.h"
 #include "StandAloneFrame.h"
 
 namespace nuvelocity
@@ -48,6 +51,30 @@ namespace nuvelocity
         static bool LoadCompressedDeflateFrame(StandAloneFrame* frame, SDL_IOStream* stream);
         static bool LoadCompressedPackedFrame(StandAloneFrame* frame, SDL_IOStream* stream);
         static bool LoadJpegFrame(StandAloneFrame* frame, SDL_IOStream* stream);
+
+        static Sequence* LoadSequenceFromStream(SDL_IOStream* stream);
+        static bool DecodeSequenceStandardHeader(SDL_IOStream* stream, std::vector<uint8_t>& listData,
+                             std::vector<uint8_t>& imageData,
+                             std::vector<uint8_t>& alphaChannelData,
+                             bool& isCompressed, bool& isEmpty,
+                             int& atlasWidth, int& atlasHeight);
+        static bool DecodeSequenceHDHeader(SDL_IOStream* stream, std::vector<uint8_t>& listData,
+                           std::vector<uint8_t>& imageData, bool& isEmpty,
+                           int& atlasWidth, int& atlasHeight);
+        static SDL_Surface* BuildSequenceAtlasSurface(bool isHD, bool isCompressed,
+                                  int atlasWidth, int atlasHeight,
+                                  const std::vector<uint8_t>& imageData,
+                                  const std::vector<uint8_t>& alphaChannelData);
+        static SDL_Surface* BuildInterleavedRgbaAtlasSurface(int width, int height,
+                                     const std::vector<uint8_t>& imageData);
+        static SDL_Surface* TryLoadDdsSurface(const std::vector<uint8_t>& imageData);
+        static SDL_Surface* BuildPlanarRgbaAtlasSurface(int width, int height,
+                                const std::vector<uint8_t>& imageData);
+        static SDL_Surface* BuildJpegAtlasSurface(const std::vector<uint8_t>& imageData,
+                              const std::vector<uint8_t>& alphaChannelData);
+        static SDL_Surface* BuildSequenceFrameSurface(SDL_Surface* atlas, const FrameInfo* info);
+        static SDL_Surface* BuildOffsetSurface(SDL_Surface* source, int offsetX, int offsetY);
+        static SDL_Surface* BuildTransparentSurface(int width, int height);
 
         static inline const char* GetErrorMessage();
 
@@ -118,6 +145,7 @@ namespace nuvelocity
         NVE_API static SDL_IOStream* Load(const std::string& path);
 
         NVE_API static StandAloneFrame* LoadStandAloneFrame(const std::string& path);
+        NVE_API static Sequence* LoadSequence(const std::string& path);
 
         NVE_API static std::string LoadTextFile(const std::string& path);
 

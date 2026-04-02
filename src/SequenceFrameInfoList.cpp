@@ -25,4 +25,9 @@ namespace nuvelocity
         SequenceFlags flags = static_cast<SequenceFlags>(mFlags);
         sequence.ApplyFrameInfoList(flags, mBlitType, mFramesPerSecond, revision);
     }
+
+    const std::vector<FrameInfo*>& SequenceFrameInfoList::GetValues() const
+    {
+        return mValues;
+    }
 } // namespace nuvelocity

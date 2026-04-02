@@ -11,6 +11,13 @@ namespace nuvelocity
         FrameInfo();
         ~FrameInfo();
 
+        int GetLeft() const;
+        int GetTop() const;
+        int GetRight() const;
+        int GetBottom() const;
+        int GetUpperLeftXOffset() const;
+        int GetUpperLeftYOffset() const;
+
         static void InitClassInfo(ClassInfo& aInfo)
         {
             aInfo.mName = "CFrameInfo";
