@@ -569,7 +569,7 @@ namespace nuvelocity
     };
 
     template <typename T>
-    class ArrayProperty : public Property
+    class VectorProperty : public Property
     {
     private:
         std::string mItemKey; // Custom key name for array items (e.g., "Round")
@@ -579,7 +579,7 @@ namespace nuvelocity
         static constexpr bool is_pointer_v = std::is_pointer_v<U>;
 
     public:
-        ArrayProperty(const std::string& name, size_t offset, size_t size,
+        VectorProperty(const std::string& name, size_t offset, size_t size,
                       const std::string& itemKey = "")
                 : Property(name, offset, size)
                 , mItemKey(itemKey)

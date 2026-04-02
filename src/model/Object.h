@@ -153,8 +153,8 @@ namespace nuvelocity
             else if constexpr (is_vector<MemberType>::value)
             {
                 using ElementType = typename is_vector<MemberType>::element_type;
-                auto* arrayProp = new ArrayProperty<ElementType>(name, offset, size, arrayItemKey);
-                prop = arrayProp;
+                auto* vectorProp = new VectorProperty<ElementType>(name, offset, size, arrayItemKey);
+                prop = vectorProp;
             }
             else if constexpr (is_map<MemberType>::value)
             {
