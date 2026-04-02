@@ -141,6 +141,19 @@ namespace nuvelocity
                         "Map entry insertion not supported for property '%s'", mName.c_str());
         }
 
+        virtual void AddArrayEntry(void* obj, const std::string& value)
+        {
+            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                        "Array entry insertion not supported for property '%s'", mName.c_str());
+        }
+
+        virtual void AddArrayObjectEntry(void* obj, void* valueObj)
+        {
+            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                        "Array object entry insertion not supported for property '%s'",
+                        mName.c_str());
+        }
+
         virtual void AddMapObjectEntry(void* obj, const std::string& key, void* valueObj)
         {
             SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
@@ -618,6 +631,58 @@ namespace nuvelocity
             SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                         "String assignment not directly supported for array property '%s'",
                         mName.c_str());
+        }
+
+        void AddArrayEntry(void* obj, const std::string& value) override
+        {
+            if constexpr (std::is_pointer_v<T>)
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "String array entry insertion not supported for pointer array '%s'",
+                            mName.c_str());
+            }
+            else
+            {
+                try
+                {
+                    T convertedValue;
+                    if constexpr (std::is_constructible_v<T, const std::string&>)
+                    {
+                        convertedValue = T(value);
+                    }
+                    else
+                    {
+                        std::istringstream iss(value);
+                        iss >> convertedValue;
+                        if (iss.fail())
+                        {
+                            throw std::runtime_error("failed stream conversion");
+                        }
+                    }
+
+                    PushElement(obj, convertedValue);
+                }
+                catch (const std::exception& e)
+                {
+                    SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                                "Failed to add array entry for property '%s': %s",
+                                mName.c_str(), e.what());
+                }
+            }
+        }
+
+        void AddArrayObjectEntry(void* obj, void* valueObj) override
+        {
+            if constexpr (std::is_pointer_v<T>)
+            {
+                PushElement(obj, static_cast<T>(valueObj));
+            }
+            else
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "AddArrayObjectEntry called on non-pointer array property '%s'",
+                            mName.c_str());
+            }
         }
 
         void DumpValue(void* obj) const override
