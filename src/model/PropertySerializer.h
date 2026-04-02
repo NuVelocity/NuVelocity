@@ -61,6 +61,11 @@ namespace nuvelocity
             ClassInfo* currentInfo = nullptr;
             void* currentObject = nullptr;
             ParserScope scope = ParserScope::None;
+
+            // Set when an object is assigned but we haven't seen '{' yet.
+            // Scope is pushed only if '{' follows; cleared otherwise.
+            ClassInfo* pendingChildInfo = nullptr;
+            void* pendingChildObject = nullptr;
         };
 
         static std::pair<ClassInfo*, void*> InstantiateObject(const std::string& className,
@@ -195,7 +200,7 @@ namespace nuvelocity
                 return false;
             }
 
-            if (line != kTokenCloseBrace)
+            if (line != kTokenOpenBrace && line != kTokenCloseBrace)
             {
                 ParseHexLine(line, context.hexArrayData);
                 return true;
@@ -303,18 +308,22 @@ namespace nuvelocity
 
                 if (containerType == PropertyType::Array)
                 {
-                    prop->SetValue(context.currentObject, childObject);
+                    prop->AddArrayObjectEntry(context.currentObject, childObject);
                 }
                 else
                 {
                     prop->AddMapObjectEntry(context.currentObject, key, childObject);
                 }
+
+                // Defer scope push until we confirm a '{' block follows.
+                context.pendingChildInfo = childInfo;
+                context.pendingChildObject = childObject;
                 return;
             }
 
             if (containerType == PropertyType::Array)
             {
-                prop->SetValue(context.currentObject, value);
+                prop->AddArrayEntry(context.currentObject, value);
             }
             else
             {
@@ -375,6 +384,10 @@ namespace nuvelocity
                     context.containerStack.push(prop);
                     PushScope(context, ParserScope::Container);
                 }
+                else if (context.scope == ParserScope::Container)
+                {
+                    HandleContainerElement(prop, key, value, context);
+                }
                 break;
             case PropertyType::Object:
             {
@@ -387,9 +400,9 @@ namespace nuvelocity
                 }
 
                 prop->SetValue(context.currentObject, childObject);
-                PushScope(context, ParserScope::Child);
-                context.currentInfo = childInfo;
-                context.currentObject = childObject;
+                // Defer scope push until we confirm a '{' block follows.
+                context.pendingChildInfo = childInfo;
+                context.pendingChildObject = childObject;
                 break;
             }
             default:
@@ -589,7 +602,7 @@ namespace nuvelocity
             }
             case PropertyType::Object:
             {
-                void* childObject = *(void**) prop->GetValue(const_cast<void*>(object));
+                void* childObject = *(void**)prop->GetValue(const_cast<void*>(object));
                 if (childObject != nullptr)
                 {
                     ClassInfo* childInfo = prop->GetChildClassInfo();
@@ -655,6 +668,18 @@ namespace nuvelocity
 
             if (line == kTokenOpenBrace)
             {
+                if (context.pendingChildInfo != nullptr)
+                {
+                    ParserScope childScope =
+                        context.pendingChildInfo->mSerializationMode == SerializationMode::HexArray
+                            ? ParserScope::HexArray
+                            : ParserScope::Child;
+                    PushScope(context, childScope);
+                    context.currentInfo = context.pendingChildInfo;
+                    context.currentObject = context.pendingChildObject;
+                    context.pendingChildInfo = nullptr;
+                    context.pendingChildObject = nullptr;
+                }
                 continue;
             }
 
@@ -663,6 +688,10 @@ namespace nuvelocity
                 HandleCloseBrace(context);
                 continue;
             }
+
+            // A non-'{' line means the previous pending object has no block; discard pending.
+            context.pendingChildInfo = nullptr;
+            context.pendingChildObject = nullptr;
 
             if (auto* kvp = parseKeyValuePair(line); kvp != nullptr)
             {
