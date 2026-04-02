@@ -17,6 +17,9 @@ namespace nuvelocity
         ~StandAloneFrame();
 
         NVE_API SDL_Texture* GetTexture(SDL_Renderer* aRenderer);
+        NVE_API bool Render(SDL_Renderer* renderer, const SDL_FRect* destRect = nullptr,
+                    const SDL_FRect* srcRect = nullptr);
+        NVE_API bool RenderCentered(SDL_Renderer* renderer, SDL_Window* window);
 
         SDL_Surface* mSurface;
 

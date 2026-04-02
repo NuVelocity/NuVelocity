@@ -6,6 +6,8 @@
 #include "model/Model.h"
 #include <SDL3/SDL.h>
 #include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -37,6 +39,10 @@ namespace nuvelocity
         std::size_t GetFrameCount() const;
         SDL_Surface* GetSurface(std::size_t index) const;
         SDL_Texture* GetTexture(std::size_t index, SDL_Renderer* renderer);
+        bool Render(SDL_Renderer* renderer,
+                    const SDL_FRect* destRect = nullptr,
+                    const SDL_FRect* srcRect = nullptr);
+        bool RenderCentered(SDL_Renderer* renderer, SDL_Window* window);
 
         static void InitClassInfo(ClassInfo& aInfo)
         {
@@ -131,6 +137,9 @@ namespace nuvelocity
 
         std::vector<SDL_Surface*> mFrameSurfaces;
         std::vector<SDL_Texture*> mFrameTextures;
+        uint64_t mAnimationStartTick;
+
+        std::size_t GetAnimatedFrameIndex() const;
 
 #if 0
         bool mIsDds;
