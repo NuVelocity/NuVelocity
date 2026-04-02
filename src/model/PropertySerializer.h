@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cctype>
+#include <cstring>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
@@ -57,7 +58,8 @@ namespace nuvelocity
             std::stack<size_t> arrayCountStack = {};
             std::stack<ParserScope> scopeStack = {};
 
-            std::vector<uint8_t> hexArrayData = {};
+            uint8_t** hexArrayData = nullptr;       // Pointer to the array pointer held by property
+            size_t hexArraySize = 0;                // Current size of data written
             ClassInfo* currentInfo = nullptr;
             void* currentObject = nullptr;
             ParserScope scope = ParserScope::None;
@@ -101,7 +103,7 @@ namespace nuvelocity
             return {nullptr, nullptr};
         }
 
-        static void ParseHexLine(const std::string& line, std::vector<uint8_t>& binaryData)
+        static void ParseHexLine(const std::string& line, DeserializeContext& context)
         {
             std::string cleanLine = trim(const_cast<std::string&>(line));
 
@@ -110,7 +112,12 @@ namespace nuvelocity
                 return;
             }
 
-            // Parse pairs of hex characters
+            if (context.hexArrayData == nullptr)
+            {
+                throw std::runtime_error("Hex array target pointer not initialized");
+            }
+
+            // Parse pairs of hex characters and write directly to target array
             for (size_t i = 0; i < cleanLine.length(); i += 2)
             {
                 if (i + 1 >= cleanLine.length())
@@ -123,7 +130,7 @@ namespace nuvelocity
                 try
                 {
                     uint8_t byte = static_cast<uint8_t>(std::stoul(hexPair, nullptr, 16));
-                    binaryData.push_back(byte);
+                    (*context.hexArrayData)[context.hexArraySize++] = byte;
                 }
                 catch (const std::exception& e)
                 {
@@ -133,31 +140,43 @@ namespace nuvelocity
             }
         }
 
-        static void StoreHexArrayData(std::vector<uint8_t>& binaryData, void* object,
-                                      ClassInfo* classInfo)
+        static void InitializeHexArrayData(DeserializeContext& context)
         {
-            if (classInfo == nullptr || object == nullptr)
+            if (context.currentInfo == nullptr || context.currentObject == nullptr)
             {
                 throw std::runtime_error(
                     "Invalid object or class info for hex array deserialization");
             }
 
-            if (classInfo->mHexArrayProperty == nullptr)
+            if (context.currentInfo->mHexArrayProperty == nullptr)
             {
                 throw std::runtime_error(std::string("No hex array property defined for class '") +
-                                         classInfo->mName + "'");
+                                         context.currentInfo->mName + "'");
             }
 
-            // Set the parsed binary data to the designated hex array property
-            // Convert vector<uint8_t> to string representation for property setting
-            std::string binaryString(binaryData.begin(), binaryData.end());
-            classInfo->mHexArrayProperty->SetValue(object, binaryString);
+            // Get pointer to the array pointer held by the property
+            context.hexArrayData = static_cast<uint8_t**>(
+                context.currentInfo->mHexArrayProperty->GetValuePtr(context.currentObject));
+            if (context.hexArrayData == nullptr)
+            {
+                throw std::runtime_error(std::string("Failed to get hex array pointer for property '") +
+                                         context.currentInfo->mHexArrayProperty->GetName() + "'");
+            }
+            context.hexArraySize = 0;
+        }
 
-            SDL_LogWarn(
-                NVE_LOG_CATEGORY_PROPSYS,
-                "Deserialized %zu bytes of hex array data for class '%s' into property '%s'",
-                binaryData.size(), classInfo->mName.c_str(),
-                classInfo->mHexArrayProperty->GetName().c_str());
+        static void FinalizeHexArrayData(DeserializeContext& context)
+        {
+            if (context.hexArraySize > 0)
+            {
+                SDL_LogWarn(
+                    NVE_LOG_CATEGORY_PROPSYS,
+                    "Deserialized %zu bytes of hex array data for class '%s' into property '%s'",
+                    context.hexArraySize, context.currentInfo->mName.c_str(),
+                    context.currentInfo->mHexArrayProperty->GetName().c_str());
+            }
+            context.hexArrayData = nullptr;
+            context.hexArraySize = 0;
         }
 
         static void PushScope(DeserializeContext& context, ParserScope newScope)
@@ -202,7 +221,7 @@ namespace nuvelocity
 
             if (line != kTokenOpenBrace && line != kTokenCloseBrace)
             {
-                ParseHexLine(line, context.hexArrayData);
+                ParseHexLine(line, context);
                 return true;
             }
 
@@ -238,8 +257,7 @@ namespace nuvelocity
         {
             if (context.scope == ParserScope::HexArray)
             {
-                StoreHexArrayData(context.hexArrayData, context.currentObject, context.currentInfo);
-                context.hexArrayData.clear();
+                FinalizeHexArrayData(context);
             }
             else if (context.scope == ParserScope::Container)
             {
@@ -437,11 +455,6 @@ namespace nuvelocity
             if (context.scopeStack.empty())
             {
                 context.scope = ParserScope::Root;
-
-                if (context.currentInfo->mSerializationMode == SerializationMode::HexArray)
-                {
-                    PushScope(context, ParserScope::HexArray);
-                }
             }
         }
 
@@ -679,6 +692,16 @@ namespace nuvelocity
                     context.currentObject = context.pendingChildObject;
                     context.pendingChildInfo = nullptr;
                     context.pendingChildObject = nullptr;
+                    if (childScope == ParserScope::HexArray)
+                    {
+                        InitializeHexArrayData(context);
+                    }
+                }
+                else if (context.scope == ParserScope::Root &&
+                         context.currentInfo->mSerializationMode == SerializationMode::HexArray)
+                {
+                    InitializeHexArrayData(context);
+                    PushScope(context, ParserScope::HexArray);
                 }
                 continue;
             }
