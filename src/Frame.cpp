@@ -18,7 +18,10 @@ namespace nuvelocity
         mPixelData = new uint32_t[static_cast<size_t>(width) * height];
     }
 
-    Frame::~Frame() = default;
+    Frame::~Frame()
+    {
+        delete[] mPixelData;
+    }
 
     uint32_t Frame::GetPixel(uint32_t pointX, uint32_t pointY) const
     {
