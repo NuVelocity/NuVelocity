@@ -523,7 +523,7 @@ namespace nuvelocity
         case PropertyType::Enum:
         {
             EnumProperty* enumProp = static_cast<EnumProperty*>(prop);
-            return std::to_string(enumProp->GetIntValue(const_cast<void*>(object)));
+            return enumProp->GetSerializedValue(const_cast<void*>(object));
         }
         default:
             return "";

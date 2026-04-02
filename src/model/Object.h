@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <typeinfo>
+#include <utility>
 #include <vector>
 
 namespace nuvelocity
@@ -207,6 +208,28 @@ namespace nuvelocity
             static_assert(is_vector<MemberType>::value,
                           "arrayItemKey can only be provided for std::vector properties");
             AddPropertyImpl(info, name, memberPtr, arrayItemKey);
+        }
+
+        // Helper to register an enum/int property with custom serialized value text.
+        template <typename MemberType, typename MappingContainer>
+        static void AddEnumProperty(ClassInfo& info, const char* name,
+                                    MemberType Derived::* memberPtr,
+                                    const MappingContainer& serializedValues)
+        {
+            static_assert(std::is_enum_v<MemberType> || std::is_integral_v<MemberType>,
+                          "MemberType must be enum or integral for enum-backed properties");
+
+            size_t offset = reinterpret_cast<size_t>(&(reinterpret_cast<Derived*>(0)->*memberPtr));
+            size_t size = sizeof(MemberType);
+
+            constexpr bool storageIsInt32 = std::is_integral_v<MemberType>;
+            auto* prop = new EnumProperty(name, offset, size, storageIsInt32);
+            for (const auto& [value, text] : serializedValues)
+            {
+                prop->AddSerializedValue(value, text);
+            }
+
+            info.AddProperty(prop);
         }
 
     public:

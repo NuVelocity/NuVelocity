@@ -513,31 +513,124 @@ namespace nuvelocity
 
     class EnumProperty : public Property
     {
+    private:
+        std::unordered_map<int, std::string> mValueToText;
+        std::unordered_map<std::string, int> mTextToValue;
+        bool mStorageIsInt32;
+
     public:
-        EnumProperty(const std::string& name, size_t offset, size_t size)
+        EnumProperty(const std::string& name, size_t offset, size_t size,
+                     bool storageIsInt32 = true)
                 : Property(name, offset, size)
+                , mStorageIsInt32(storageIsInt32)
         {
+        }
+
+        void AddSerializedValue(int value, const std::string& text)
+        {
+            mValueToText[value] = text;
+            mTextToValue[text] = value;
         }
 
         int GetIntValue(void* obj) const
         {
-            return *(int*) GetValuePtr(obj);
+            void* valuePtr = GetValuePtr(obj);
+            if (mStorageIsInt32)
+            {
+                return *(int*) valuePtr;
+            }
+
+            if (mSize == 1)
+            {
+                return static_cast<int>(*(uint8_t*) valuePtr);
+            }
+            if (mSize == 2)
+            {
+                return static_cast<int>(*(uint16_t*) valuePtr);
+            }
+            if (mSize == 4)
+            {
+                return static_cast<int>(*(uint32_t*) valuePtr);
+            }
+
+            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                        "Unsupported enum storage size (%zu) for property '%s'", mSize,
+                        mName.c_str());
+            return 0;
         }
 
         void SetIntValue(void* obj, int value)
         {
-            *(int*) GetValuePtr(obj) = value;
+            void* valuePtr = GetValuePtr(obj);
+            if (mStorageIsInt32)
+            {
+                *(int*) valuePtr = value;
+                return;
+            }
+
+            if (mSize == 1)
+            {
+                *(uint8_t*) valuePtr = static_cast<uint8_t>(value);
+                return;
+            }
+            if (mSize == 2)
+            {
+                *(uint16_t*) valuePtr = static_cast<uint16_t>(value);
+                return;
+            }
+            if (mSize == 4)
+            {
+                *(uint32_t*) valuePtr = static_cast<uint32_t>(value);
+                return;
+            }
+
+            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                        "Unsupported enum storage size (%zu) for property '%s'", mSize,
+                        mName.c_str());
         }
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            *(int*) GetValuePtr(obj) = *(const int*) valuePtr;
+            SetIntValue(obj, *(const int*) valuePtr);
+        }
+
+        void SetValue(void* obj, const std::string& value) override
+        {
+            const auto namedIt = mTextToValue.find(value);
+            if (namedIt != mTextToValue.end())
+            {
+                SetIntValue(obj, namedIt->second);
+                return;
+            }
+
+            try
+            {
+                int enumValue = std::stoi(value);
+                SetIntValue(obj, enumValue);
+            }
+            catch (const std::exception& e)
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "Failed to convert '%s' to enum for property '%s': %s",
+                            value.c_str(), mName.c_str(), e.what());
+            }
+        }
+
+        std::string GetSerializedValue(void* obj) const
+        {
+            const int intValue = GetIntValue(obj);
+            const auto textIt = mValueToText.find(intValue);
+            if (textIt != mValueToText.end())
+            {
+                return textIt->second;
+            }
+
+            return std::to_string(intValue);
         }
 
         void DumpValue(void* obj) const override
         {
-            int intValue = GetIntValue(obj);
-            SDL_Log("  %s: %d", mName.c_str(), intValue);
+            SDL_Log("  %s: %s", mName.c_str(), GetSerializedValue(obj).c_str());
         }
 
         PropertyType GetType() const override
