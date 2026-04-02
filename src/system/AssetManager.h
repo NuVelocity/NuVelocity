@@ -119,6 +119,8 @@ namespace nuvelocity
         NVE_API static std::string LoadTextFile(const std::string& path);
 
         NVE_API static void DumpPropertyFile(const std::string& path);
+
+        NVE_API static void* LoadPropertyFile(const std::string& path);
     };
 } // namespace nuvelocity
 

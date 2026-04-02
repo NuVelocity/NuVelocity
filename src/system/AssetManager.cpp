@@ -326,4 +326,17 @@ namespace nuvelocity
             info->DumpFor(dest);
         }
     }
+
+    void* AssetManager::LoadPropertyFile(const std::string& path)
+    {
+        auto text = LoadTextFile(path);
+        void* dest = nullptr;
+        ClassInfo* info = nullptr;
+
+        if (PropertySerializer::Deserialize(text, dest, info))
+        {
+            return dest;
+        }
+        return nullptr;
+    }
 } // namespace nuvelocity
