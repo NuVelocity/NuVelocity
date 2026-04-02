@@ -399,7 +399,7 @@ namespace nuvelocity
                                              "' for property '" + key + "'");
                 }
 
-                prop->SetValue(context.currentObject, childObject);
+                prop->SetValue(context.currentObject, &childObject);
                 // Defer scope push until we confirm a '{' block follows.
                 context.pendingChildInfo = childInfo;
                 context.pendingChildObject = childObject;
