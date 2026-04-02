@@ -1,6 +1,7 @@
 #include <SDL3/SDL_log.h>
 
 #include "Game.h"
+#include "ObjectRegistration.h"
 
 constexpr std::uint16_t NVE_DEFAULT_WINDOW_WIDTH = 640;
 constexpr std::uint16_t NVE_DEFAULT_WINDOW_HEIGHT = 480;
@@ -73,6 +74,8 @@ namespace nuvelocity
         }
 
         SDL_SetRenderVSync(mRenderer, -1);
+
+        RegisterEngineObjectTypes();
 
         mAsset = new AssetManager();
         if (!mAsset->Initialize(argv))

@@ -11,22 +11,11 @@
 
 #include "AssetManager.h"
 
-#include "Frame.h"
-#include "ModuleInfo.h"
-#include "PaletteHolder.h"
 #include "Utils.h"
-#include "model/Model.h"
 
 namespace nuvelocity
 {
-    AssetManager::AssetManager()
-    {
-        // FIXME: THIS SHOULD NOT BE HERE!
-        ObjectRegistry::Get().Register(StandAloneFrame::GetClassInfo());
-        ObjectRegistry::Get().Register(ModuleInfo::GetClassInfo());
-        ObjectRegistry::Get().Register(PaletteHolder::GetClassInfo());
-        ObjectRegistry::Get().Register(Frame::GetClassInfo());
-    }
+    AssetManager::AssetManager() = default;
 
     AssetManager::~AssetManager()
     {
