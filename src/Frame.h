@@ -9,11 +9,11 @@ namespace nuvelocity
     class Frame : public Object<Frame>
     {
     public:
-        using iterator = uint32_t*;
-        using const_iterator = const uint32_t*;
+        using iterator = uint8_t*;
+        using const_iterator = const uint8_t*;
 
         Frame();
-        Frame(uint32_t width, uint32_t height, uint32_t bpp);
+        Frame(uint32_t width, uint32_t height, uint8_t bpp);
         ~Frame();
 
         void InitFromArgs(const std::vector<std::string>& args) override;
@@ -34,7 +34,7 @@ namespace nuvelocity
         uint32_t GetPixel(uint32_t pointX, uint32_t pointY) const;
         uint32_t GetWidth() const;
         uint32_t GetHeight() const;
-        uint32_t GetBitsPerPixel() const;
+        uint8_t GetBitsPerPixel() const;
 
         iterator begin();
         iterator end();
@@ -44,11 +44,15 @@ namespace nuvelocity
         const_iterator cend() const;
 
     private:
+        void Initialize(uint32_t width, uint32_t height, uint8_t bpp);
+
         uint32_t mWidth;
         uint32_t mHeight;
-        uint32_t mBitsPerPixel;
+        uint8_t mBitsPerPixel;
+        size_t mPixelCount;
+        size_t mBytesPerPixel;
 
-        uint32_t* mPixelData;
+        uint8_t* mPixelData;
     };
 } // namespace nuvelocity
 
