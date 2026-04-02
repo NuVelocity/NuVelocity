@@ -98,28 +98,21 @@ namespace nuvelocity
 
         static void ParseHexLine(const std::string& line, DeserializeContext& context)
         {
-            std::string cleanLine = trim(const_cast<std::string&>(line));
-
-            if (cleanLine.empty())
-            {
-                return;
-            }
-
             if (context.hexArrayData == nullptr)
             {
                 throw std::runtime_error("Hex array target pointer not initialized");
             }
 
             // Parse pairs of hex characters and write directly to target array
-            for (size_t i = 0; i < cleanLine.length(); i += 2)
+            for (size_t i = 0; i < line.length(); i += 2)
             {
-                if (i + 1 >= cleanLine.length())
+                if (i + 1 >= line.length())
                 {
                     throw std::runtime_error(std::string("Invalid hex data length (") +
                                              "expected even number of characters)");
                 }
 
-                std::string hexPair = cleanLine.substr(i, 2);
+                std::string hexPair = line.substr(i, 2);
                 try
                 {
                     uint8_t byte = static_cast<uint8_t>(std::stoul(hexPair, nullptr, 16));
@@ -203,22 +196,6 @@ namespace nuvelocity
             {
                 context.objectStack.pop();
             }
-        }
-
-        static bool AccumulateHexArrayLine(const std::string& line, DeserializeContext& context)
-        {
-            if (context.scope != ParserScope::HexArray)
-            {
-                return false;
-            }
-
-            if (line != kTokenOpenBrace && line != kTokenCloseBrace)
-            {
-                ParseHexLine(line, context);
-                return true;
-            }
-
-            return false;
         }
 
         static void ValidateAndPopContainer(DeserializeContext& context)
@@ -667,11 +644,6 @@ namespace nuvelocity
                 continue;
             }
 
-            if (AccumulateHexArrayLine(line, context))
-            {
-                continue;
-            }
-
             if (line == kTokenOpenBrace)
             {
                 if (context.pendingChildInfo != nullptr)
@@ -702,6 +674,12 @@ namespace nuvelocity
             if (line == kTokenCloseBrace)
             {
                 HandleCloseBrace(context);
+                continue;
+            }
+
+            if (context.scope == ParserScope::HexArray)
+            {
+                ParseHexLine(line, context);
                 continue;
             }
 
