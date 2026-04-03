@@ -2,6 +2,7 @@ target_sources(
     NuVelocity PRIVATE
     AssetManager.cpp
     AssetManager.h
+    DecodeUtils.h
     AudioManager.cpp
     AudioManager.h
     Game.cpp
@@ -16,3 +17,5 @@ target_include_directories(
     NuVelocity PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+add_subdirectory(decoders)
