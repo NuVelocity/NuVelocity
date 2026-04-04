@@ -91,9 +91,12 @@ namespace nuvelocity
             return nullptr;
         }
 
-        std::vector<uint8_t> listData;
-        std::vector<uint8_t> imageData;
-        std::vector<uint8_t> alphaChannelData;
+        uint8_t* listData = nullptr;
+        size_t listDataSize = 0;
+        uint8_t* imageData = nullptr;
+        size_t imageDataSize = 0;
+        uint8_t* alphaChannelData = nullptr;
+        size_t alphaChannelDataSize = 0;
         bool isCompressed = false;
         bool isEmpty = false;
         bool isHD = false;
@@ -110,23 +113,34 @@ namespace nuvelocity
             isHD = !hasFontLikeHeader;
         }
 
-        const bool decoded =
-            isHD ? DecodeSequenceHDHeader(
-                       stream, listData, imageData, isEmpty, atlasWidth, atlasHeight)
-                 : DecodeSequenceStandardHeader(stream,
-                                                listData,
-                                                imageData,
-                                                alphaChannelData,
-                                                isCompressed,
-                                                isEmpty,
-                                                atlasWidth,
-                                                atlasHeight);
+        const bool decoded = isHD ? DecodeSequenceHDHeader(stream,
+                                                           listData,
+                                                           listDataSize,
+                                                           imageData,
+                                                           imageDataSize,
+                                                           isEmpty,
+                                                           atlasWidth,
+                                                           atlasHeight)
+                                  : DecodeSequenceStandardHeader(stream,
+                                                                 listData,
+                                                                 listDataSize,
+                                                                 imageData,
+                                                                 imageDataSize,
+                                                                 alphaChannelData,
+                                                                 alphaChannelDataSize,
+                                                                 isCompressed,
+                                                                 isEmpty,
+                                                                 atlasWidth,
+                                                                 atlasHeight);
         if (!decoded)
         {
+            SDL_free(listData);
+            SDL_free(imageData);
+            SDL_free(alphaChannelData);
             return nullptr;
         }
 
-        std::string listText(reinterpret_cast<const char*>(listData.data()), listData.size());
+        std::string listText(reinterpret_cast<const char*>(listData), listDataSize);
 
         SequenceFrameInfoList* frameInfoList = nullptr;
         Sequence* sequence = nullptr;
@@ -134,6 +148,9 @@ namespace nuvelocity
 
         if (!DeserializeSequenceRoots(listText, sequence, frameInfoList))
         {
+            SDL_free(listData);
+            SDL_free(imageData);
+            SDL_free(alphaChannelData);
             return nullptr;
         }
 
@@ -148,7 +165,7 @@ namespace nuvelocity
             frameInfoList->CopyTo(*sequence, BlitTypeRevision::Type1);
         }
 
-        if (imageData.empty())
+        if (imageDataSize == 0)
         {
             if (isEmpty)
             {
@@ -157,12 +174,24 @@ namespace nuvelocity
                 sequence->SetFrames(std::move(emptyFrames));
             }
 
+            SDL_free(listData);
+            SDL_free(imageData);
+            SDL_free(alphaChannelData);
             delete frameInfoList;
             return sequence;
         }
 
-        SDL_Surface* spriteAtlas = BuildSequenceAtlasSurface(
-            isHD, isCompressed, atlasWidth, atlasHeight, imageData, alphaChannelData);
+        SDL_Surface* spriteAtlas = BuildSequenceAtlasSurface(isHD,
+                                                             isCompressed,
+                                                             atlasWidth,
+                                                             atlasHeight,
+                                                             imageData,
+                                                             imageDataSize,
+                                                             alphaChannelData,
+                                                             alphaChannelDataSize);
+        SDL_free(listData);
+        SDL_free(imageData);
+        SDL_free(alphaChannelData);
         if (spriteAtlas == nullptr)
         {
             delete frameInfoList;
@@ -301,14 +330,38 @@ namespace nuvelocity
     }
 
     bool SequenceLoaderMode3::DecodeSequenceStandardHeader(SDL_IOStream* stream,
-                                                           std::vector<uint8_t>& listData,
-                                                           std::vector<uint8_t>& imageData,
-                                                           std::vector<uint8_t>& alphaChannelData,
+                                                           uint8_t*& listData,
+                                                           size_t& listDataSize,
+                                                           uint8_t*& imageData,
+                                                           size_t& imageDataSize,
+                                                           uint8_t*& alphaChannelData,
+                                                           size_t& alphaChannelDataSize,
                                                            bool& isCompressed,
                                                            bool& isEmpty,
                                                            int& atlasWidth,
                                                            int& atlasHeight)
     {
+        listData = nullptr;
+        listDataSize = 0;
+        imageData = nullptr;
+        imageDataSize = 0;
+        alphaChannelData = nullptr;
+        alphaChannelDataSize = 0;
+
+        const auto fail = [&]()
+        {
+            SDL_free(listData);
+            SDL_free(imageData);
+            SDL_free(alphaChannelData);
+            listData = nullptr;
+            listDataSize = 0;
+            imageData = nullptr;
+            imageDataSize = 0;
+            alphaChannelData = nullptr;
+            alphaChannelDataSize = 0;
+            return false;
+        };
+
         uint8_t signature = 0;
         if (!SDL_ReadU8(stream, &signature) || signature != kSequenceSignatureStandard)
         {
@@ -323,23 +376,45 @@ namespace nuvelocity
             return false;
         }
 
-        std::vector<uint8_t> compressedList(frameInfoDeflatedSize);
-        if (SDL_ReadIO(stream, compressedList.data(), frameInfoDeflatedSize) !=
-            frameInfoDeflatedSize)
+        uint8_t* compressedList = nullptr;
+        if (frameInfoDeflatedSize > 0)
         {
-            return false;
+            compressedList = static_cast<uint8_t*>(SDL_malloc(frameInfoDeflatedSize));
+            if (compressedList == nullptr)
+            {
+                return false;
+            }
+
+            if (SDL_ReadIO(stream, compressedList, frameInfoDeflatedSize) != frameInfoDeflatedSize)
+            {
+                SDL_free(compressedList);
+                return false;
+            }
         }
 
-        listData.resize(frameInfoInflatedSize);
-        uint32_t frameInfoDeflatedSizeCopy = frameInfoDeflatedSize;
-        uint32_t frameInfoInflatedSizeCopy = frameInfoInflatedSize;
-        if (DecodeUtils::Inflate(listData.data(),
-                                 &frameInfoInflatedSizeCopy,
-                                 compressedList.data(),
-                                 &frameInfoDeflatedSizeCopy) != Z_OK ||
-            frameInfoInflatedSizeCopy != frameInfoInflatedSize)
+        listDataSize = static_cast<size_t>(frameInfoInflatedSize);
+        if (frameInfoInflatedSize > 0)
         {
-            return false;
+            listData = static_cast<uint8_t*>(SDL_malloc(frameInfoInflatedSize));
+            if (listData == nullptr)
+            {
+                SDL_free(compressedList);
+                return false;
+            }
+
+            uint32_t frameInfoDeflatedSizeCopy = frameInfoDeflatedSize;
+            uint32_t frameInfoInflatedSizeCopy = frameInfoInflatedSize;
+            const int inflateResult = DecodeUtils::Inflate(
+                listData, &frameInfoInflatedSizeCopy, compressedList, &frameInfoDeflatedSizeCopy);
+            SDL_free(compressedList);
+            if (inflateResult != Z_OK || frameInfoInflatedSizeCopy != frameInfoInflatedSize)
+            {
+                return fail();
+            }
+        }
+        else
+        {
+            SDL_free(compressedList);
         }
 
         isEmpty = SDL_TellIO(stream) >= SDL_GetIOSize(stream);
@@ -351,7 +426,7 @@ namespace nuvelocity
         uint8_t compressedFlag = 0;
         if (!SDL_ReadU8(stream, &compressedFlag))
         {
-            return false;
+            return fail();
         }
         isCompressed = compressedFlag != 0U;
 
@@ -366,30 +441,53 @@ namespace nuvelocity
             if (!SDL_ReadU32LE(stream, &imageDeflatedSize) ||
                 !SDL_ReadU32LE(stream, &imageInflatedSize))
             {
-                return false;
+                return fail();
             }
 
-            std::vector<uint8_t> compressedImage(imageDeflatedSize);
-            if (SDL_ReadIO(stream, compressedImage.data(), imageDeflatedSize) != imageDeflatedSize)
+            uint8_t* compressedImage = nullptr;
+            if (imageDeflatedSize > 0)
             {
-                return false;
+                compressedImage = static_cast<uint8_t*>(SDL_malloc(imageDeflatedSize));
+                if (compressedImage == nullptr)
+                {
+                    return fail();
+                }
+
+                if (SDL_ReadIO(stream, compressedImage, imageDeflatedSize) != imageDeflatedSize)
+                {
+                    SDL_free(compressedImage);
+                    return fail();
+                }
             }
 
-            imageData.resize(imageInflatedSize);
-            uint32_t imageDeflatedSizeCopy = imageDeflatedSize;
-            uint32_t imageInflatedSizeCopy = imageInflatedSize;
-            if (DecodeUtils::Inflate(imageData.data(),
-                                     &imageInflatedSizeCopy,
-                                     compressedImage.data(),
-                                     &imageDeflatedSizeCopy) != Z_OK ||
-                imageInflatedSizeCopy != imageInflatedSize)
+            imageDataSize = static_cast<size_t>(imageInflatedSize);
+            if (imageInflatedSize > 0)
             {
-                return false;
+                imageData = static_cast<uint8_t*>(SDL_malloc(imageInflatedSize));
+                if (imageData == nullptr)
+                {
+                    SDL_free(compressedImage);
+                    return fail();
+                }
+
+                uint32_t imageDeflatedSizeCopy = imageDeflatedSize;
+                uint32_t imageInflatedSizeCopy = imageInflatedSize;
+                const int inflateResult = DecodeUtils::Inflate(
+                    imageData, &imageInflatedSizeCopy, compressedImage, &imageDeflatedSizeCopy);
+                SDL_free(compressedImage);
+                if (inflateResult != Z_OK || imageInflatedSizeCopy != imageInflatedSize)
+                {
+                    return fail();
+                }
+            }
+            else
+            {
+                SDL_free(compressedImage);
             }
 
             if (!SDL_ReadS32LE(stream, &atlasWidth) || !SDL_ReadS32LE(stream, &atlasHeight))
             {
-                return false;
+                return fail();
             }
 
             return true;
@@ -398,12 +496,22 @@ namespace nuvelocity
         uint32_t imageSize = 0;
         if (!SDL_ReadU32LE(stream, &imageSize))
         {
-            return false;
+            return fail();
         }
-        imageData.resize(imageSize);
-        if (SDL_ReadIO(stream, imageData.data(), imageSize) != imageSize)
+
+        imageDataSize = static_cast<size_t>(imageSize);
+        if (imageSize > 0)
         {
-            return false;
+            imageData = static_cast<uint8_t*>(SDL_malloc(imageSize));
+            if (imageData == nullptr)
+            {
+                return fail();
+            }
+
+            if (SDL_ReadIO(stream, imageData, imageSize) != imageSize)
+            {
+                return fail();
+            }
         }
 
         // 1-byte padding.
@@ -413,53 +521,104 @@ namespace nuvelocity
         uint32_t maskInflatedSize = 0;
         if (!SDL_ReadU32LE(stream, &maskInflatedSize))
         {
-            return false;
+            return fail();
         }
 
         const int64_t remaining = SDL_GetIOSize(stream) - SDL_TellIO(stream);
         if (remaining < 0)
         {
-            return false;
+            return fail();
         }
 
-        std::vector<uint8_t> compressedMask(static_cast<size_t>(remaining));
-        if (remaining > 0 &&
-            SDL_ReadIO(stream, compressedMask.data(), static_cast<size_t>(remaining)) !=
-                static_cast<size_t>(remaining))
+        uint8_t* compressedMask = nullptr;
+        if (remaining > 0)
         {
-            return false;
+            compressedMask = static_cast<uint8_t*>(SDL_malloc(static_cast<size_t>(remaining)));
+            if (compressedMask == nullptr)
+            {
+                return fail();
+            }
+
+            if (SDL_ReadIO(stream, compressedMask, static_cast<size_t>(remaining)) !=
+                static_cast<size_t>(remaining))
+            {
+                SDL_free(compressedMask);
+                return fail();
+            }
         }
 
-        alphaChannelData.resize(maskInflatedSize);
-        uint32_t compressedMaskSize = static_cast<uint32_t>(compressedMask.size());
+        alphaChannelDataSize = static_cast<size_t>(maskInflatedSize);
+        if (maskInflatedSize == 0)
+        {
+            SDL_free(compressedMask);
+            return true;
+        }
+
+        alphaChannelData = static_cast<uint8_t*>(SDL_malloc(maskInflatedSize));
+        if (alphaChannelData == nullptr)
+        {
+            SDL_free(compressedMask);
+            return fail();
+        }
+
+        uint32_t compressedMaskSize = static_cast<uint32_t>(remaining);
         uint32_t maskInflatedSizeCopy = maskInflatedSize;
-        const bool hasValidAlphaMask =
-            maskInflatedSize == 0 || (DecodeUtils::Inflate(alphaChannelData.data(),
-                                                           &maskInflatedSizeCopy,
-                                                           compressedMask.data(),
-                                                           &compressedMaskSize) == Z_OK &&
-                                      maskInflatedSizeCopy == maskInflatedSize);
-        return hasValidAlphaMask;
+        const int inflateResult = DecodeUtils::Inflate(
+            alphaChannelData, &maskInflatedSizeCopy, compressedMask, &compressedMaskSize);
+        SDL_free(compressedMask);
+
+        if (inflateResult != Z_OK || maskInflatedSizeCopy != maskInflatedSize)
+        {
+            return fail();
+        }
+
+        return true;
     }
 
     bool SequenceLoaderMode3::DecodeSequenceHDHeader(SDL_IOStream* stream,
-                                                     std::vector<uint8_t>& listData,
-                                                     std::vector<uint8_t>& imageData,
+                                                     uint8_t*& listData,
+                                                     size_t& listDataSize,
+                                                     uint8_t*& imageData,
+                                                     size_t& imageDataSize,
                                                      bool& isEmpty,
                                                      int& atlasWidth,
                                                      int& atlasHeight)
     {
+        listData = nullptr;
+        listDataSize = 0;
+        imageData = nullptr;
+        imageDataSize = 0;
+
+        const auto fail = [&]()
+        {
+            SDL_free(listData);
+            SDL_free(imageData);
+            listData = nullptr;
+            listDataSize = 0;
+            imageData = nullptr;
+            imageDataSize = 0;
+            return false;
+        };
+
         uint32_t embeddedListsSize = 0;
         if (!SDL_ReadU32LE(stream, &embeddedListsSize))
         {
             return false;
         }
 
-        listData.resize(embeddedListsSize);
-        if (embeddedListsSize > 0 &&
-            SDL_ReadIO(stream, listData.data(), embeddedListsSize) != embeddedListsSize)
+        listDataSize = static_cast<size_t>(embeddedListsSize);
+        if (embeddedListsSize > 0)
         {
-            return false;
+            listData = static_cast<uint8_t*>(SDL_malloc(embeddedListsSize));
+            if (listData == nullptr)
+            {
+                return false;
+            }
+
+            if (SDL_ReadIO(stream, listData, embeddedListsSize) != embeddedListsSize)
+            {
+                return fail();
+            }
         }
 
         isEmpty = SDL_TellIO(stream) >= SDL_GetIOSize(stream);
@@ -472,7 +631,7 @@ namespace nuvelocity
         const int64_t imageEnd = SDL_GetIOSize(stream);
         if (imageStart < 0 || imageEnd < imageStart)
         {
-            return false;
+            return fail();
         }
 
         std::array<uint8_t, 4> ddsSignature{0, 0, 0, 0};
@@ -480,7 +639,7 @@ namespace nuvelocity
         {
             if (SDL_ReadIO(stream, ddsSignature.data(), 4) != 4)
             {
-                return false;
+                return fail();
             }
             SDL_SeekIO(stream, imageStart, SDL_IO_SEEK_SET);
 
@@ -488,10 +647,19 @@ namespace nuvelocity
                 ddsSignature[3] == ' ')
             {
                 const size_t ddsSize = static_cast<size_t>(imageEnd - imageStart);
-                imageData.resize(ddsSize);
-                if (SDL_ReadIO(stream, imageData.data(), ddsSize) != ddsSize)
+                imageDataSize = ddsSize;
+                if (ddsSize > 0)
                 {
-                    return false;
+                    imageData = static_cast<uint8_t*>(SDL_malloc(ddsSize));
+                    if (imageData == nullptr)
+                    {
+                        return fail();
+                    }
+
+                    if (SDL_ReadIO(stream, imageData, ddsSize) != ddsSize)
+                    {
+                        return fail();
+                    }
                 }
 
                 atlasWidth = 0;
@@ -507,55 +675,69 @@ namespace nuvelocity
         uint32_t imageSize = 0;
         if (!SDL_ReadU32LE(stream, &imageSize))
         {
-            return false;
+            return fail();
         }
 
-        imageData.resize(imageSize);
-        if (imageSize > 0 && SDL_ReadIO(stream, imageData.data(), imageSize) != imageSize)
+        imageDataSize = static_cast<size_t>(imageSize);
+        if (imageSize > 0)
         {
-            return false;
+            imageData = static_cast<uint8_t*>(SDL_malloc(imageSize));
+            if (imageData == nullptr)
+            {
+                return fail();
+            }
+
+            if (SDL_ReadIO(stream, imageData, imageSize) != imageSize)
+            {
+                return fail();
+            }
         }
 
         if (!SDL_ReadS32LE(stream, &atlasWidth) || !SDL_ReadS32LE(stream, &atlasHeight))
         {
-            return false;
+            return fail();
         }
 
         return true;
     }
 
-    SDL_Surface*
-    SequenceLoaderMode3::BuildSequenceAtlasSurface(bool isHD,
-                                                   bool isCompressed,
-                                                   int atlasWidth,
-                                                   int atlasHeight,
-                                                   const std::vector<uint8_t>& imageData,
-                                                   const std::vector<uint8_t>& alphaChannelData)
+    SDL_Surface* SequenceLoaderMode3::BuildSequenceAtlasSurface(bool isHD,
+                                                                bool isCompressed,
+                                                                int atlasWidth,
+                                                                int atlasHeight,
+                                                                const uint8_t* imageData,
+                                                                size_t imageDataSize,
+                                                                const uint8_t* alphaChannelData,
+                                                                size_t alphaChannelDataSize)
     {
-        if (imageData.empty())
+        if (imageData == nullptr || imageDataSize == 0)
         {
             return nullptr;
         }
 
         if (isHD)
         {
-            if (SDL_Surface* ddsSurface = TryLoadDdsSurface(imageData))
+            if (SDL_Surface* ddsSurface = TryLoadDdsSurface(imageData, imageDataSize))
             {
                 return ddsSurface;
             }
-            return BuildInterleavedRgbaAtlasSurface(atlasWidth, atlasHeight, imageData);
+            return BuildInterleavedRgbaAtlasSurface(
+                atlasWidth, atlasHeight, imageData, imageDataSize);
         }
 
         if (isCompressed)
         {
-            return BuildPlanarRgbaAtlasSurface(atlasWidth, atlasHeight, imageData);
+            return BuildPlanarRgbaAtlasSurface(atlasWidth, atlasHeight, imageData, imageDataSize);
         }
 
-        return BuildJpegAtlasSurface(imageData, alphaChannelData);
+        return BuildJpegAtlasSurface(
+            imageData, imageDataSize, alphaChannelData, alphaChannelDataSize);
     }
 
-    SDL_Surface* SequenceLoaderMode3::BuildInterleavedRgbaAtlasSurface(
-        int width, int height, const std::vector<uint8_t>& imageData)
+    SDL_Surface* SequenceLoaderMode3::BuildInterleavedRgbaAtlasSurface(int width,
+                                                                       int height,
+                                                                       const uint8_t* imageData,
+                                                                       size_t imageDataSize)
     {
         if (width <= 0 || height <= 0)
         {
@@ -563,7 +745,7 @@ namespace nuvelocity
         }
 
         const size_t expectedSize = static_cast<size_t>(width) * static_cast<size_t>(height) * 4U;
-        if (imageData.size() < expectedSize)
+        if (imageDataSize < expectedSize)
         {
             return nullptr;
         }
@@ -574,13 +756,14 @@ namespace nuvelocity
             return nullptr;
         }
 
-        SDL_memcpy(surface->pixels, imageData.data(), expectedSize);
+        SDL_memcpy(surface->pixels, imageData, expectedSize);
         return surface;
     }
 
-    SDL_Surface* SequenceLoaderMode3::TryLoadDdsSurface(const std::vector<uint8_t>& imageData)
+    SDL_Surface* SequenceLoaderMode3::TryLoadDdsSurface(const uint8_t* imageData,
+                                                        size_t imageDataSize)
     {
-        if (imageData.size() < 4)
+        if (imageData == nullptr || imageDataSize < 4)
         {
             return nullptr;
         }
@@ -591,8 +774,7 @@ namespace nuvelocity
             return nullptr;
         }
 
-        SDL_IOStream* ddsStream =
-            SDL_IOFromConstMem(imageData.data(), static_cast<int>(imageData.size()));
+        SDL_IOStream* ddsStream = SDL_IOFromConstMem(imageData, static_cast<int>(imageDataSize));
         if (ddsStream == nullptr)
         {
             return nullptr;
@@ -603,8 +785,10 @@ namespace nuvelocity
         return decoded;
     }
 
-    SDL_Surface* SequenceLoaderMode3::BuildPlanarRgbaAtlasSurface(
-        int width, int height, const std::vector<uint8_t>& imageData)
+    SDL_Surface* SequenceLoaderMode3::BuildPlanarRgbaAtlasSurface(int width,
+                                                                  int height,
+                                                                  const uint8_t* imageData,
+                                                                  size_t imageDataSize)
     {
         if (width <= 0 || height <= 0)
         {
@@ -613,7 +797,7 @@ namespace nuvelocity
 
         const size_t planeSize = static_cast<size_t>(width) * static_cast<size_t>(height);
         const size_t expectedSize = planeSize * 4U;
-        if (imageData.size() < expectedSize)
+        if (imageDataSize < expectedSize)
         {
             return nullptr;
         }
@@ -630,24 +814,24 @@ namespace nuvelocity
                                        plane,
                                        static_cast<uint32_t>(width),
                                        static_cast<uint32_t>(height),
-                                       const_cast<uint8_t*>(imageData.data()),
+                                       const_cast<uint8_t*>(imageData),
                                        surface);
         }
 
         return surface;
     }
 
-    SDL_Surface*
-    SequenceLoaderMode3::BuildJpegAtlasSurface(const std::vector<uint8_t>& imageData,
-                                               const std::vector<uint8_t>& alphaChannelData)
+    SDL_Surface* SequenceLoaderMode3::BuildJpegAtlasSurface(const uint8_t* imageData,
+                                                            size_t imageDataSize,
+                                                            const uint8_t* alphaChannelData,
+                                                            size_t alphaChannelDataSize)
     {
-        if (imageData.empty())
+        if (imageData == nullptr || imageDataSize == 0)
         {
             return nullptr;
         }
 
-        SDL_IOStream* imageStream =
-            SDL_IOFromConstMem(imageData.data(), static_cast<int>(imageData.size()));
+        SDL_IOStream* imageStream = SDL_IOFromConstMem(imageData, static_cast<int>(imageDataSize));
         if (imageStream == nullptr)
         {
             return nullptr;
@@ -660,7 +844,7 @@ namespace nuvelocity
             return nullptr;
         }
 
-        if (alphaChannelData.empty())
+        if (alphaChannelData == nullptr || alphaChannelDataSize == 0)
         {
             return loaded;
         }
@@ -679,7 +863,7 @@ namespace nuvelocity
                                    3,
                                    static_cast<uint32_t>(output->w),
                                    static_cast<uint32_t>(output->h),
-                                   const_cast<uint8_t*>(alphaChannelData.data()),
+                                   const_cast<uint8_t*>(alphaChannelData),
                                    output);
         return output;
     }
