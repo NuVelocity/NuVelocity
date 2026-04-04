@@ -6,6 +6,8 @@ target_sources(
     Widget.h
     Button.cpp
     Button.h
+    FocusContainer.cpp
+    FocusContainer.h
     SkinnedButton.cpp
     SkinnedButton.h
     TextBox.cpp
