@@ -12,40 +12,9 @@ namespace nuvelocity
             , mLossless(false)
             , mQuality(kDefaultQuality)
             , mCenterHotSpot(false)
-            , mSurface(nullptr)
-            , mTexture(nullptr)
     {
     }
 
-    StandAloneFrame::~StandAloneFrame()
-    {
-        if (mSurface != nullptr)
-        {
-            SDL_DestroySurface(mSurface);
-        }
-        if (mTexture != nullptr)
-        {
-            SDL_DestroyTexture(mTexture);
-        }
-    }
-
-    SDL_Texture* StandAloneFrame::GetTexture(SDL_Renderer* aRenderer)
-    {
-        if (mTexture != nullptr)
-        {
-            return mTexture;
-        }
-        if (mSurface != nullptr)
-        {
-            mTexture = SDL_CreateTextureFromSurface(aRenderer, mSurface);
-            return mTexture;
-        }
-        return nullptr;
-    }
-
-    SDL_Surface* StandAloneFrame::GetSurface() const
-    {
-        return mSurface;
-    }
+    StandAloneFrame::~StandAloneFrame() = default;
 
 } // namespace nuvelocity

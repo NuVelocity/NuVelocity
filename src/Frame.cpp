@@ -12,13 +12,31 @@ namespace nuvelocity
     constexpr uint8_t kShift16 = 16;
     constexpr uint8_t kShift24 = 24;
 
+    SDL_PixelFormat GetPixelFormatForBpp(uint8_t bpp)
+    {
+        switch (bpp)
+        {
+        case kBpp8:
+            return SDL_PIXELFORMAT_INDEX8;
+        case kBpp16:
+            return SDL_PIXELFORMAT_RGB565;
+        case kBpp24:
+            return SDL_PIXELFORMAT_RGB24;
+        case kBpp32:
+            return SDL_PIXELFORMAT_RGBA32;
+        default:
+            throw std::invalid_argument("Unsupported bits-per-pixel value");
+        }
+    }
+
     Frame::Frame()
             : mWidth(0)
             , mHeight(0)
             , mBitsPerPixel(0)
-            , mPixelCount(0)
-            , mBytesPerPixel(0)
             , mPixelData(nullptr)
+            , mSurface(nullptr)
+            , mTexture(nullptr)
+            , mTextureRenderer(nullptr)
     {
     }
 
@@ -26,52 +44,56 @@ namespace nuvelocity
             : mWidth(0)
             , mHeight(0)
             , mBitsPerPixel(0)
-            , mPixelCount(0)
-            , mBytesPerPixel(0)
             , mPixelData(nullptr)
+            , mSurface(nullptr)
+            , mTexture(nullptr)
+            , mTextureRenderer(nullptr)
     {
         Initialize(width, height, bpp);
     }
 
     Frame::~Frame()
     {
-        delete[] mPixelData;
+        if (mSurface != nullptr)
+        {
+            SDL_DestroySurface(mSurface);
+        }
+        if (mTexture != nullptr)
+        {
+            SDL_DestroyTexture(mTexture);
+        }
     }
 
-    void Frame::Initialize(uint32_t width, uint32_t height, uint8_t bpp)
+    void Frame::Initialize(int width, int height, uint8_t bpp)
     {
         if (bpp == 0 || (bpp % kBitsPerByte) != 0)
         {
             throw std::invalid_argument("Bits per pixel must be a non-zero multiple of 8");
         }
 
-        delete[] mPixelData;
-        mPixelData = nullptr;
-
         mWidth = width;
         mHeight = height;
         mBitsPerPixel = bpp;
-        mBytesPerPixel = static_cast<size_t>(bpp / kBitsPerByte);
 
         if (width == 0 || height == 0)
         {
-            mPixelCount = 0;
+            SetSurface(nullptr);
             return;
         }
 
-        if (static_cast<size_t>(width) >
-            std::numeric_limits<size_t>::max() / static_cast<size_t>(height))
+        if (width > 0 && height > 0 &&
+            static_cast<size_t>(width) >
+                std::numeric_limits<size_t>::max() / static_cast<size_t>(height))
         {
             throw std::overflow_error("Frame pixel count overflow");
         }
 
-        mPixelCount = static_cast<size_t>(width) * static_cast<size_t>(height);
-        if (mPixelCount > std::numeric_limits<size_t>::max() / mBytesPerPixel)
+        SDL_Surface* surface = SDL_CreateSurface(width, height, GetPixelFormatForBpp(bpp));
+        SetSurface(surface);
+        if (surface == nullptr)
         {
-            throw std::overflow_error("Frame buffer size overflow");
+            throw std::runtime_error("Failed to create frame surface");
         }
-
-        mPixelData = new uint8_t[mPixelCount * mBytesPerPixel]();
     }
 
     void Frame::InitFromArgs(const std::vector<std::string>& args)
@@ -100,51 +122,53 @@ namespace nuvelocity
         Initialize(width, height, static_cast<uint8_t>(bpp));
     }
 
-    uint32_t Frame::GetPixel(uint32_t pointX, uint32_t pointY) const
+    uint32_t Frame::GetPixel(int pointX, int pointY) const
     {
-        if (pointX >= mWidth || pointY >= mHeight)
-        {
-            throw std::out_of_range("Pixel coordinates out of bounds");
-        }
-
-        if (mPixelData == nullptr)
+        if (mSurface == nullptr)
         {
             return 0;
         }
 
-        const size_t pixelIndex = (static_cast<size_t>(pointY) * static_cast<size_t>(mWidth)) +
-                                  static_cast<size_t>(pointX);
-        const size_t byteIndex = pixelIndex * mBytesPerPixel;
+        if (pointX < 0 || pointY < 0 || pointX >= mSurface->w || pointY >= mSurface->h)
+        {
+            throw std::out_of_range("Pixel coordinates out of bounds");
+        }
+
+        const size_t bytesPerPixel = static_cast<size_t>(SDL_BYTESPERPIXEL(mSurface->format));
+        const size_t byteIndex =
+            (static_cast<size_t>(pointY) * static_cast<size_t>(mSurface->pitch)) +
+            (static_cast<size_t>(pointX) * bytesPerPixel);
+        const uint8_t* bytes = static_cast<const uint8_t*>(mSurface->pixels);
 
         switch (mBitsPerPixel)
         {
         case kBpp8:
-            return mPixelData[byteIndex];
+            return bytes[byteIndex];
         case kBpp16:
-            return static_cast<uint32_t>(mPixelData[byteIndex]) |
-                   (static_cast<uint32_t>(mPixelData[byteIndex + 1]) << kShift8);
+            return static_cast<uint32_t>(bytes[byteIndex]) |
+                   (static_cast<uint32_t>(bytes[byteIndex + 1]) << kShift8);
         case kBpp24:
-            return static_cast<uint32_t>(mPixelData[byteIndex]) |
-                   (static_cast<uint32_t>(mPixelData[byteIndex + 1]) << kShift8) |
-                   (static_cast<uint32_t>(mPixelData[byteIndex + 2]) << kShift16);
+            return static_cast<uint32_t>(bytes[byteIndex]) |
+                   (static_cast<uint32_t>(bytes[byteIndex + 1]) << kShift8) |
+                   (static_cast<uint32_t>(bytes[byteIndex + 2]) << kShift16);
         case kBpp32:
-            return static_cast<uint32_t>(mPixelData[byteIndex]) |
-                   (static_cast<uint32_t>(mPixelData[byteIndex + 1]) << kShift8) |
-                   (static_cast<uint32_t>(mPixelData[byteIndex + 2]) << kShift16) |
-                   (static_cast<uint32_t>(mPixelData[byteIndex + 3]) << kShift24);
+            return static_cast<uint32_t>(bytes[byteIndex]) |
+                   (static_cast<uint32_t>(bytes[byteIndex + 1]) << kShift8) |
+                   (static_cast<uint32_t>(bytes[byteIndex + 2]) << kShift16) |
+                   (static_cast<uint32_t>(bytes[byteIndex + 3]) << kShift24);
         default:
             throw std::logic_error("Unsupported bits-per-pixel value");
         }
     }
 
-    uint32_t Frame::GetWidth() const
+    int Frame::GetWidth() const
     {
-        return mWidth;
+        return mSurface != nullptr ? mSurface->w : mWidth;
     }
 
-    uint32_t Frame::GetHeight() const
+    int Frame::GetHeight() const
     {
-        return mHeight;
+        return mSurface != nullptr ? mSurface->h : mHeight;
     }
 
     uint8_t Frame::GetBitsPerPixel() const
@@ -152,24 +176,106 @@ namespace nuvelocity
         return mBitsPerPixel;
     }
 
+    SDL_Surface* Frame::GetSurface() const
+    {
+        return mSurface;
+    }
+
+    void Frame::SetSurface(SDL_Surface* surface)
+    {
+        if (mSurface != nullptr)
+        {
+            SDL_DestroySurface(mSurface);
+        }
+        mSurface = surface;
+
+        if (mSurface != nullptr)
+        {
+            mWidth = static_cast<uint32_t>(mSurface->w);
+            mHeight = static_cast<uint32_t>(mSurface->h);
+            mBitsPerPixel = static_cast<uint8_t>(SDL_BITSPERPIXEL(mSurface->format));
+            mPixelData = static_cast<uint8_t*>(mSurface->pixels);
+        }
+        else
+        {
+            mWidth = 0;
+            mHeight = 0;
+            mBitsPerPixel = 0;
+            mPixelData = nullptr;
+        }
+
+        if (mTexture != nullptr)
+        {
+            SDL_DestroyTexture(mTexture);
+            mTexture = nullptr;
+            mTextureRenderer = nullptr;
+        }
+    }
+
+    SDL_Texture* Frame::GetTexture(SDL_Renderer* renderer)
+    {
+        if (renderer == nullptr || mSurface == nullptr)
+        {
+            return nullptr;
+        }
+
+        if (mTexture != nullptr && renderer == mTextureRenderer)
+        {
+            return mTexture;
+        }
+
+        if (mTexture != nullptr)
+        {
+            SDL_DestroyTexture(mTexture);
+            mTexture = nullptr;
+        }
+        mTextureRenderer = nullptr;
+
+        mTexture = SDL_CreateTextureFromSurface(renderer, mSurface);
+        if (mTexture != nullptr)
+        {
+            mTextureRenderer = renderer;
+        }
+
+        return mTexture;
+    }
+
     Frame::iterator Frame::begin()
     {
-        return mPixelData;
+        if (mSurface == nullptr || mSurface->pixels == nullptr)
+        {
+            return nullptr;
+        }
+        return static_cast<uint8_t*>(mSurface->pixels);
     }
 
     Frame::iterator Frame::end()
     {
-        return mPixelData != nullptr ? mPixelData + (mPixelCount * mBytesPerPixel) : mPixelData;
+        if (mSurface == nullptr || mSurface->pixels == nullptr)
+        {
+            return nullptr;
+        }
+        return static_cast<uint8_t*>(mSurface->pixels) +
+               (static_cast<size_t>(mSurface->pitch) * static_cast<size_t>(mSurface->h));
     }
 
     Frame::const_iterator Frame::begin() const
     {
-        return mPixelData;
+        if (mSurface == nullptr || mSurface->pixels == nullptr)
+        {
+            return nullptr;
+        }
+        return static_cast<const uint8_t*>(mSurface->pixels);
     }
 
     Frame::const_iterator Frame::end() const
     {
-        return mPixelData != nullptr ? mPixelData + (mPixelCount * mBytesPerPixel) : mPixelData;
+        if (mSurface == nullptr || mSurface->pixels == nullptr)
+        {
+            return nullptr;
+        }
+        return static_cast<const uint8_t*>(mSurface->pixels) +
+               (static_cast<size_t>(mSurface->pitch) * static_cast<size_t>(mSurface->h));
     }
 
     Frame::const_iterator Frame::cbegin() const

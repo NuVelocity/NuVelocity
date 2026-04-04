@@ -1,7 +1,7 @@
 #include "Image.h"
 
+#include "Frame.h"
 #include "Sequence.h"
-#include "StandAloneFrame.h"
 
 #include <cmath>
 
@@ -23,8 +23,8 @@ namespace nuvelocity
     {
     }
 
-    Image::Image(StandAloneFrame& frame)
-            : mKind(Kind::StandAloneFrame)
+    Image::Image(Frame& frame)
+            : mKind(Kind::Frame)
             , mSequence(nullptr)
             , mFrame(&frame)
             , mAnimationStartTick(0)
@@ -41,9 +41,9 @@ namespace nuvelocity
         return mKind == Kind::Sequence;
     }
 
-    bool Image::IsStandAloneFrame() const
+    bool Image::IsFrame() const
     {
-        return mKind == Kind::StandAloneFrame;
+        return mKind == Kind::Frame;
     }
 
     void Image::ResetAnimation()
@@ -61,7 +61,7 @@ namespace nuvelocity
             return mSequence->GetFrameCount();
         }
 
-        if (mKind == Kind::StandAloneFrame && mFrame != nullptr)
+        if (mKind == Kind::Frame && mFrame != nullptr)
         {
             return 1;
         }
@@ -102,7 +102,7 @@ namespace nuvelocity
             return mSequence->GetSurface(GetAnimatedFrameIndex());
         }
 
-        if (mKind == Kind::StandAloneFrame && mFrame != nullptr)
+        if (mKind == Kind::Frame && mFrame != nullptr)
         {
             return mFrame->GetSurface();
         }
@@ -117,7 +117,7 @@ namespace nuvelocity
             return mSequence->GetTexture(GetAnimatedFrameIndex(), renderer);
         }
 
-        if (mKind == Kind::StandAloneFrame && mFrame != nullptr)
+        if (mKind == Kind::Frame && mFrame != nullptr)
         {
             return mFrame->GetTexture(renderer);
         }

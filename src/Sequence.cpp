@@ -1,6 +1,7 @@
 #include "Sequence.h"
 
 #include "BlitTypeConverter.h"
+#include "Frame.h"
 #include <stdexcept>
 #include <utility>
 
@@ -65,24 +66,7 @@ namespace nuvelocity
     {
     }
 
-    Sequence::~Sequence()
-    {
-        for (SDL_Surface* surface : mFrameSurfaces)
-        {
-            if (surface != nullptr)
-            {
-                SDL_DestroySurface(surface);
-            }
-        }
-
-        for (SDL_Texture* texture : mFrameTextures)
-        {
-            if (texture != nullptr)
-            {
-                SDL_DestroyTexture(texture);
-            }
-        }
-    }
+    Sequence::~Sequence() = default;
 
     int Sequence::GetXOffset() const
     {
@@ -101,30 +85,20 @@ namespace nuvelocity
 
     void Sequence::SetFrames(std::vector<SDL_Surface*>&& surfaces)
     {
-        for (SDL_Texture* texture : mFrameTextures)
-        {
-            if (texture != nullptr)
-            {
-                SDL_DestroyTexture(texture);
-            }
-        }
-        mFrameTextures.clear();
+        mFrames.clear();
+        mFrames.reserve(surfaces.size());
 
-        for (SDL_Surface* surface : mFrameSurfaces)
+        for (SDL_Surface* surface : surfaces)
         {
-            if (surface != nullptr)
-            {
-                SDL_DestroySurface(surface);
-            }
+            auto frame = std::make_unique<Frame>();
+            frame->SetSurface(surface);
+            mFrames.push_back(std::move(frame));
         }
-
-        mFrameSurfaces = std::move(surfaces);
-        mFrameTextures.resize(mFrameSurfaces.size(), nullptr);
     }
 
     std::size_t Sequence::GetFrameCount() const
     {
-        return mFrameSurfaces.size();
+        return mFrames.size();
     }
 
     float Sequence::GetFramesPerSecond() const
@@ -132,41 +106,36 @@ namespace nuvelocity
         return mFramesPerSecond;
     }
 
-    SDL_Surface* Sequence::GetSurface(std::size_t index) const
+    Frame* Sequence::GetFrame(std::size_t index) const
     {
-        if (index >= mFrameSurfaces.size())
+        if (index >= mFrames.size())
         {
             return nullptr;
         }
 
-        return mFrameSurfaces[index];
+        return mFrames[index].get();
     }
 
-    SDL_Texture* Sequence::GetTexture(std::size_t index, SDL_Renderer* renderer)
+    SDL_Surface* Sequence::GetSurface(std::size_t index) const
     {
-        if (renderer == nullptr || index >= mFrameSurfaces.size())
+        Frame* frame = GetFrame(index);
+        if (frame == nullptr)
         {
             return nullptr;
         }
 
-        if (index >= mFrameTextures.size())
-        {
-            throw std::out_of_range("Sequence texture index out of range");
-        }
+        return frame->GetSurface();
+    }
 
-        if (mFrameTextures[index] != nullptr)
-        {
-            return mFrameTextures[index];
-        }
-
-        SDL_Surface* source = mFrameSurfaces[index];
-        if (source == nullptr)
+    SDL_Texture* Sequence::GetTexture(std::size_t index, SDL_Renderer* renderer) const
+    {
+        Frame* frame = GetFrame(index);
+        if (frame == nullptr)
         {
             return nullptr;
         }
 
-        mFrameTextures[index] = SDL_CreateTextureFromSurface(renderer, source);
-        return mFrameTextures[index];
+        return frame->GetTexture(renderer);
     }
 
     void Sequence::ApplySequenceFlags(SequenceFlags flags)

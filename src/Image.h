@@ -7,19 +7,19 @@
 
 namespace nuvelocity
 {
+    class Frame;
     class Sequence;
-    class StandAloneFrame;
 
     class Image
     {
     public:
         Image();
         explicit Image(Sequence& sequence);
-        explicit Image(StandAloneFrame& frame);
+        explicit Image(Frame& frame);
 
         bool IsValid() const;
         bool IsSequence() const;
-        bool IsStandAloneFrame() const;
+        bool IsFrame() const;
 
         void ResetAnimation();
         std::size_t GetFrameCount() const;
@@ -32,12 +32,12 @@ namespace nuvelocity
         {
             None,
             Sequence,
-            StandAloneFrame
+            Frame
         };
 
         Kind mKind;
         Sequence* mSequence;
-        StandAloneFrame* mFrame;
+        Frame* mFrame;
         uint64_t mAnimationStartTick;
     };
 } // namespace nuvelocity

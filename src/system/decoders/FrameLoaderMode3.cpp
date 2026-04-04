@@ -85,8 +85,9 @@ namespace nuvelocity
         SDL_ReadS32LE(stream, &height);
 
         // Create SDL surface from decompressed image data
-        frame->mSurface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
-        if (frame->mSurface == nullptr)
+        SDL_Surface* surface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
+        frame->SetSurface(surface);
+        if (surface == nullptr)
         {
             SDL_free(imageData);
             return false;
@@ -95,7 +96,7 @@ namespace nuvelocity
         // Process 4 planes of RGBA data with row offset addition
         for (int plane = 0; plane < 4; plane++)
         {
-            DecodeUtils::MergeBitPlane(plane, plane, width, height, imageData, frame->mSurface);
+            DecodeUtils::MergeBitPlane(plane, plane, width, height, imageData, surface);
         }
 
         SDL_free(imageData);
@@ -121,14 +122,15 @@ namespace nuvelocity
         SDL_ReadS32LE(stream, &height);
 
         // Create SDL surface from packed image data
-        frame->mSurface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
-        if (frame->mSurface == nullptr)
+        SDL_Surface* surface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
+        frame->SetSurface(surface);
+        if (surface == nullptr)
         {
             SDL_free(imageData);
             return false;
         }
 
-        SDL_memcpy(frame->mSurface->pixels, imageData, inflatedSize);
+        SDL_memcpy(surface->pixels, imageData, inflatedSize);
         SDL_free(imageData);
         return true;
     }
@@ -147,11 +149,12 @@ namespace nuvelocity
         }
 
         SDL_IOStream* imageStream = SDL_IOFromConstMem(imageData, imageSize);
-        frame->mSurface = IMG_LoadJPG_IO(imageStream);
+        SDL_Surface* surface = IMG_LoadJPG_IO(imageStream);
+        frame->SetSurface(surface);
         SDL_free(imageData);
         SDL_CloseIO(imageStream);
 
-        if (frame->mSurface == nullptr)
+        if (surface == nullptr)
         {
             return false;
         }
@@ -163,8 +166,7 @@ namespace nuvelocity
             uint32_t deflatedSize = 0;
 
             // The original surface does not have an alpha channel.
-            SDL_Surface* output =
-                SDL_CreateSurface(frame->mSurface->w, frame->mSurface->h, SDL_PIXELFORMAT_RGBA32);
+            SDL_Surface* output = SDL_CreateSurface(surface->w, surface->h, SDL_PIXELFORMAT_RGBA32);
             if (output == nullptr)
             {
                 return false;
@@ -194,12 +196,11 @@ namespace nuvelocity
             }
             SDL_free(sourceMaskData);
 
-            SDL_BlitSurface(frame->mSurface, nullptr, output, nullptr);
-            SDL_DestroySurface(frame->mSurface);
-            frame->mSurface = output;
+            SDL_BlitSurface(surface, nullptr, output, nullptr);
+            frame->SetSurface(output);
+            surface = output;
 
-            DecodeUtils::MergeBitPlane(
-                0, 3, frame->mSurface->w, frame->mSurface->h, maskData, frame->mSurface);
+            DecodeUtils::MergeBitPlane(0, 3, surface->w, surface->h, maskData, surface);
             SDL_free(maskData);
         }
 

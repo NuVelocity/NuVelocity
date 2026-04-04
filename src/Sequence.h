@@ -2,12 +2,13 @@
 #define NVE_SEQUENCE_H
 
 #include "BlitType.h"
+#include "Frame.h"
 #include "SequenceFlags.h"
 #include "model/Model.h"
-#include <SDL3/SDL.h>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -38,8 +39,9 @@ namespace nuvelocity
         void SetFrames(std::vector<SDL_Surface*>&& surfaces);
         std::size_t GetFrameCount() const;
         float GetFramesPerSecond() const;
+        Frame* GetFrame(std::size_t index) const;
         SDL_Surface* GetSurface(std::size_t index) const;
-        SDL_Texture* GetTexture(std::size_t index, SDL_Renderer* renderer);
+        SDL_Texture* GetTexture(std::size_t index, SDL_Renderer* renderer) const;
 
         static void InitClassInfo(ClassInfo& aInfo)
         {
@@ -134,8 +136,7 @@ namespace nuvelocity
         bool mIsLossless;
         int mJpegQuality;
 
-        std::vector<SDL_Surface*> mFrameSurfaces;
-        std::vector<SDL_Texture*> mFrameTextures;
+        std::vector<std::unique_ptr<Frame>> mFrames;
 
 #if 0
         bool mIsDds;

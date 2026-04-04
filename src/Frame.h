@@ -1,6 +1,8 @@
 #ifndef NVE_FRAME_H
 #define NVE_FRAME_H
 
+#include <SDL3/SDL.h>
+
 #include "model/Model.h"
 #include <string>
 
@@ -31,10 +33,14 @@ namespace nuvelocity
             aInfo.SetHexArrayProperty(aInfo.GetProperty("Pixel Data"));
         }
 
-        uint32_t GetPixel(uint32_t pointX, uint32_t pointY) const;
-        uint32_t GetWidth() const;
-        uint32_t GetHeight() const;
+        uint32_t GetPixel(int pointX, int pointY) const;
+        int GetWidth() const;
+        int GetHeight() const;
         uint8_t GetBitsPerPixel() const;
+
+        NVE_API SDL_Surface* GetSurface() const;
+        NVE_API void SetSurface(SDL_Surface* surface);
+        NVE_API SDL_Texture* GetTexture(SDL_Renderer* renderer);
 
         iterator begin();
         iterator end();
@@ -44,15 +50,15 @@ namespace nuvelocity
         const_iterator cend() const;
 
     private:
-        void Initialize(uint32_t width, uint32_t height, uint8_t bpp);
+        void Initialize(int width, int height, uint8_t bpp);
 
-        uint32_t mWidth;
-        uint32_t mHeight;
+        int mWidth;
+        int mHeight;
         uint8_t mBitsPerPixel;
-        size_t mPixelCount;
-        size_t mBytesPerPixel;
-
         uint8_t* mPixelData;
+        SDL_Surface* mSurface;
+        SDL_Texture* mTexture;
+        SDL_Renderer* mTextureRenderer;
     };
 } // namespace nuvelocity
 

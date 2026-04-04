@@ -6,20 +6,16 @@
 
 #include "API.h"
 #include "BlitType.h"
+#include "Frame.h"
 #include "model/Model.h"
 
 namespace nuvelocity
 {
-    class StandAloneFrame : public Object<StandAloneFrame>
+    class StandAloneFrame : public Object<StandAloneFrame, Frame>
     {
     public:
         StandAloneFrame();
         ~StandAloneFrame();
-
-        NVE_API SDL_Texture* GetTexture(SDL_Renderer* aRenderer);
-        SDL_Surface* GetSurface() const;
-
-        SDL_Surface* mSurface;
 
         static void InitClassInfo(ClassInfo& aInfo)
         {
@@ -32,9 +28,6 @@ namespace nuvelocity
             AddProperty(aInfo, "Quality", &StandAloneFrame::mQuality);
             AddProperty(aInfo, "Center Hot Spot", &StandAloneFrame::mCenterHotSpot);
         }
-
-    protected:
-        SDL_Texture* mTexture;
 
     private:
         bool mRle;
