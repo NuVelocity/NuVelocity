@@ -37,8 +37,8 @@ namespace nuvelocity
 
         if (PHYSFS_init(argv[0]) == 0)
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to initialize PhysFS: %s",
-                         GetErrorMessage());
+            SDL_LogError(
+                NVE_LOG_CATEGORY_ENGINE, "Failed to initialize PhysFS: %s", GetErrorMessage());
             return false;
         }
 
@@ -54,8 +54,8 @@ namespace nuvelocity
         std::string dataPath = std::format("{}Data.dat", basePath);
         if (PHYSFS_mount(dataPath.c_str(), nullptr, 0) == 0)
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ASSETS, "Failed to mount Data.dat: %s\n",
-                         GetErrorMessage());
+            SDL_LogError(
+                NVE_LOG_CATEGORY_ASSETS, "Failed to mount Data.dat: %s\n", GetErrorMessage());
         }
 
         mInitialized = true;
@@ -107,8 +107,8 @@ namespace nuvelocity
             cachedPath += ".Sequence";
             break;
         default:
-            SDL_LogError(NVE_LOG_CATEGORY_ASSETS, "Unknown cache kind for asset '%s'",
-                         path.c_str());
+            SDL_LogError(
+                NVE_LOG_CATEGORY_ASSETS, "Unknown cache kind for asset '%s'", path.c_str());
             break;
         }
         if (Exists(cachedPath))
@@ -123,7 +123,9 @@ namespace nuvelocity
         auto* stream = LoadFromCache(path, CACHE_KIND_STANDALONE_FRAME);
         if (stream == nullptr)
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ASSETS, "Failed to load frame '%s': %s", path.c_str(),
+            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
+                         "Failed to load frame '%s': %s",
+                         path.c_str(),
                          GetErrorMessage());
             return nullptr;
         }
@@ -138,7 +140,9 @@ namespace nuvelocity
         auto* stream = LoadFromCache(path, CACHE_KIND_SEQUENCE);
         if (stream == nullptr)
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ASSETS, "Failed to load sequence '%s': %s", path.c_str(),
+            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
+                         "Failed to load sequence '%s': %s",
+                         path.c_str(),
                          GetErrorMessage());
             return nullptr;
         }
