@@ -4,7 +4,10 @@
 #include "API.h"
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>
+#include <filesystem>
+#include <physfs.h>
 #include <string>
+#include <vector>
 
 #include "Manager.h"
 #include "Sequence.h"
@@ -12,22 +15,32 @@
 
 namespace nuvelocity
 {
+    class SequenceFrameInfoList;
+
     class AssetManager : public Manager
     {
     private:
-        enum CacheKind
+        enum class CacheKind
         {
-            CACHE_KIND_UNKNOWN = 0,
-            CACHE_KIND_STANDALONE_FRAME = 1,
-            CACHE_KIND_SEQUENCE = 2
+            Unknown = 0,
+            StandAloneFrame = 1,
+            Sequence = 2
         };
 
         static SDL_IOStream* LoadWithExtension(const std::string& path,
                                                const std::string& extension);
+        static SDL_IOStream*
+        LoadFromCache(const std::string& path, CacheKind kind, bool& loadedFromCache);
+        static SDL_Surface* LoadSurfaceFromAssetPath(const std::string& assetPath);
+        static bool LoadFrameSurfaces(const std::filesystem::path& sequenceDirectoryPath,
+                                      std::vector<SDL_Surface*>& frames);
+        static void DestroyFrameSurfaces(std::vector<SDL_Surface*>& frames);
+        static Sequence* LoadSourceSequenceFrames(const std::string& path);
 
-        static SDL_IOStream* LoadFromCache(const std::string& path, CacheKind kind);
-
-        static inline const char* GetErrorMessage();
+        static inline const char* GetErrorMessage()
+        {
+            return PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
+        }
 
     public:
         NVE_API AssetManager();

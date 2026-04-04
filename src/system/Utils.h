@@ -1,6 +1,7 @@
 #ifndef NVE_UTILS_H
 #define NVE_UTILS_H
 
+#include <cctype>
 #include <string>
 
 inline const char* ws = " \t\n\r\f\v";
@@ -40,6 +41,29 @@ inline std::pair<std::string, std::string>* parseKeyValuePair(const std::string&
     std::string value = line.substr(pos + 1);
 
     return new std::pair<std::string, std::string>(trim(key), trim(value));
+}
+
+inline bool endsWithCaseInsensitive(const std::string& value, const std::string& suffix)
+{
+    if (value.size() < suffix.size())
+    {
+        return false;
+    }
+
+    const std::size_t offset = value.size() - suffix.size();
+    for (std::size_t index = 0; index < suffix.size(); ++index)
+    {
+        const char currentCharacter =
+            static_cast<char>(std::tolower(static_cast<unsigned char>(value[offset + index])));
+        const char suffixCharacter =
+            static_cast<char>(std::tolower(static_cast<unsigned char>(suffix[index])));
+        if (currentCharacter != suffixCharacter)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 #endif // NVE_UTILS_H

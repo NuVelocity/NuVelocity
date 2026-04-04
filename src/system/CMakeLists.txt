@@ -1,5 +1,7 @@
 target_sources(
     NuVelocity PRIVATE
+    AssetExporter.cpp
+    AssetExporter.h
     AssetManager.cpp
     AssetManager.h
     AudioManager.cpp

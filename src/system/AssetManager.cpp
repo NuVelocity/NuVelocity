@@ -1,12 +1,17 @@
+#include "AssetManager.h"
+
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_log.h>
+#include <SDL3_image/SDL_image.h>
+#include <filesystem>
 #include <format>
 #include <physfs.h>
 #include <physfssdl3.h>
-#include <string>
+#include <string_view>
+#include <vector>
 
-#include "AssetManager.h"
-
+#include "AssetExporter.h"
+#include "SequenceFrameInfoList.h"
 #include "Utils.h"
 #include "decoders/DecodeUtils.h"
 #include "decoders/FrameLoaderMode3.h"
@@ -16,16 +21,14 @@
 
 namespace nuvelocity
 {
+    constexpr const char* kPropertiesFileName = "Properties.txt";
+    constexpr const char* kTgaExtension = ".tga";
+
     AssetManager::AssetManager() = default;
 
     AssetManager::~AssetManager()
     {
         PHYSFS_deinit();
-    }
-
-    inline const char* AssetManager::GetErrorMessage()
-    {
-        return PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
     }
 
     bool AssetManager::Initialize(char** argv)
@@ -43,7 +46,7 @@ namespace nuvelocity
         }
 
         // Mount the executable's directory as the base search path
-        std::string basePath = SDL_GetBasePath();
+        const std::string basePath = SDL_GetBasePath();
         if (basePath.empty())
         {
             SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to get base path: %s", SDL_GetError());
@@ -51,11 +54,48 @@ namespace nuvelocity
         }
         SDL_Log("Working directory: %s", basePath.c_str());
 
-        std::string dataPath = std::format("{}Data.dat", basePath);
+        const std::string dataPath = std::format("{}Data.dat", basePath);
         if (PHYSFS_mount(dataPath.c_str(), nullptr, 0) == 0)
         {
             SDL_LogError(
                 NVE_LOG_CATEGORY_ASSETS, "Failed to mount Data.dat: %s\n", GetErrorMessage());
+            return false;
+        }
+
+        if (PHYSFS_setWriteDir(basePath.c_str()) == 0)
+        {
+            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
+                         "Failed to set PhysFS write dir '%s': %s",
+                         basePath.c_str(),
+                         GetErrorMessage());
+            return false;
+        }
+
+        if (PHYSFS_mkdir("Data") == 0)
+        {
+            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
+                         "Failed to create CWD Data directory: %s",
+                         GetErrorMessage());
+            return false;
+        }
+
+        const std::string baseDataPathText = basePath + "Data";
+        if (PHYSFS_mount(baseDataPathText.c_str(), nullptr, 0) == 0)
+        {
+            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
+                         "Failed to mount basepath Data directory '%s': %s",
+                         baseDataPathText.c_str(),
+                         GetErrorMessage());
+            return false;
+        }
+
+        if (PHYSFS_setWriteDir(baseDataPathText.c_str()) == 0)
+        {
+            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
+                         "Failed to set PhysFS write dir '%s': %s",
+                         baseDataPathText.c_str(),
+                         GetErrorMessage());
+            return false;
         }
 
         mInitialized = true;
@@ -88,62 +128,121 @@ namespace nuvelocity
     SDL_IOStream* AssetManager::LoadWithExtension(const std::string& path,
                                                   const std::string& extension)
     {
-        std::string fullPath = path + extension;
-        return Load(fullPath);
+        return PHYSFSSDL3_openRead((path + extension).c_str());
     }
 
-    SDL_IOStream* AssetManager::LoadFromCache(const std::string& path, CacheKind kind)
+    SDL_IOStream*
+    AssetManager::LoadFromCache(const std::string& path, CacheKind kind, bool& loadedFromCache)
     {
-        std::string fullPath = path;
-        std::string cachedPath = "Cache/" + fullPath;
+        loadedFromCache = false;
+
+        const std::string sourcePath = path + kTgaExtension;
+        std::string cachePath = "Cache/" + path;
+
         switch (kind)
         {
-        case CACHE_KIND_STANDALONE_FRAME:
-            fullPath += ".tga";
-            cachedPath += ".Frame";
+        case CacheKind::StandAloneFrame:
+            cachePath += ".Frame";
             break;
-        case CACHE_KIND_SEQUENCE:
-            fullPath += ".tga";
-            cachedPath += ".Sequence";
+        case CacheKind::Sequence:
+            cachePath += ".Sequence";
             break;
         default:
-            SDL_LogError(
-                NVE_LOG_CATEGORY_ASSETS, "Unknown cache kind for asset '%s'", path.c_str());
             break;
         }
-        if (Exists(cachedPath))
+
+        if (PHYSFS_exists(sourcePath.c_str()) != 0)
         {
-            return Load(cachedPath);
+            return PHYSFSSDL3_openRead(sourcePath.c_str());
         }
-        return Load(fullPath);
+
+        if (PHYSFS_exists(cachePath.c_str()) != 0)
+        {
+            loadedFromCache = true;
+            return PHYSFSSDL3_openRead(cachePath.c_str());
+        }
+
+        return nullptr;
     }
 
     StandAloneFrame* AssetManager::LoadStandAloneFrame(const std::string& path)
     {
-        auto* stream = LoadFromCache(path, CACHE_KIND_STANDALONE_FRAME);
-        if (stream == nullptr)
+        StandAloneFrame* frame = nullptr;
+        bool loadedFromCache = false;
+
+        SDL_IOStream* sourceStream = LoadWithExtension(path, kTgaExtension);
+        if (sourceStream != nullptr)
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
-                         "Failed to load frame '%s': %s",
-                         path.c_str(),
-                         GetErrorMessage());
-            return nullptr;
+            SDL_Surface* sourceSurface = IMG_LoadTGA_IO(sourceStream);
+            SDL_CloseIO(sourceStream);
+            if (sourceSurface == nullptr)
+            {
+                SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
+                             "Failed to decode source frame '%s.tga': %s",
+                             path.c_str(),
+                             SDL_GetError());
+                return nullptr;
+            }
+
+            frame = new StandAloneFrame();
+            frame->SetSurface(sourceSurface);
+            frame->SetSource(AssetSource::SourceAsset);
+        }
+        else
+        {
+            SDL_IOStream* stream = LoadFromCache(path, CacheKind::StandAloneFrame, loadedFromCache);
+            if (stream == nullptr)
+            {
+                SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
+                             "Failed to load frame '%s': %s",
+                             path.c_str(),
+                             PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+                return nullptr;
+            }
+
+            frame = FrameLoaderMode3::Load(stream);
+            SDL_CloseIO(stream);
+            if (frame != nullptr)
+            {
+                frame->SetSource(loadedFromCache ? AssetSource::Cache : AssetSource::SourceAsset);
+                if (loadedFromCache && !AssetExporter::ExportStandAloneFrameToTga(path, *frame))
+                {
+                    SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                                "Failed to export stand-alone frame '%s' to source TGA",
+                                path.c_str());
+                }
+            }
         }
 
-        StandAloneFrame* frame = FrameLoaderMode3::Load(stream);
-        SDL_CloseIO(stream);
+        if (frame != nullptr)
+        {
+            const std::string sourcePropertiesPath = path + ".txt";
+            const std::string propertiesText = LoadTextFile(sourcePropertiesPath);
+            if (!propertiesText.empty())
+            {
+                void* dest = frame;
+                PropertySerializer::Deserialize(propertiesText, dest);
+            }
+        }
         return frame;
     }
 
     Sequence* AssetManager::LoadSequence(const std::string& path)
     {
-        auto* stream = LoadFromCache(path, CACHE_KIND_SEQUENCE);
+        Sequence* sourceSequence = LoadSourceSequenceFrames(path);
+        if (sourceSequence != nullptr)
+        {
+            return sourceSequence;
+        }
+
+        bool loadedFromCache = false;
+        SDL_IOStream* stream = LoadFromCache(path, CacheKind::Sequence, loadedFromCache);
         if (stream == nullptr)
         {
             SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
                          "Failed to load sequence '%s': %s",
                          path.c_str(),
-                         GetErrorMessage());
+                         PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
             return nullptr;
         }
 
@@ -177,18 +276,35 @@ namespace nuvelocity
         }
 
         SDL_CloseIO(stream);
+
+        if (sequence == nullptr)
+        {
+            return nullptr;
+        }
+
+        if (loadedFromCache)
+        {
+            sequence->SetSource(AssetSource::Cache);
+            if (!AssetExporter::ExportSequenceToTga(path, *sequence))
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "Failed to export sequence '%s' to source TGA frames",
+                            path.c_str());
+            }
+        }
+
         return sequence;
     }
 
     std::string AssetManager::LoadTextFile(const std::string& path)
     {
-        auto* stream = Load(path);
+        SDL_IOStream* stream = PHYSFSSDL3_openRead(path.c_str());
         if (stream == nullptr)
         {
             return "";
         }
 
-        int64_t fileSize = SDL_GetIOSize(stream);
+        const int64_t fileSize = SDL_GetIOSize(stream);
         if (fileSize <= 0)
         {
             SDL_CloseIO(stream);
@@ -208,7 +324,7 @@ namespace nuvelocity
 
     void AssetManager::DumpPropertyFile(const std::string& path)
     {
-        auto text = LoadTextFile(path);
+        const std::string text = LoadTextFile(path);
         void* dest = nullptr;
         ClassInfo* info = nullptr;
 
@@ -220,7 +336,7 @@ namespace nuvelocity
 
     void* AssetManager::LoadPropertyFile(const std::string& path)
     {
-        auto text = LoadTextFile(path);
+        const std::string text = LoadTextFile(path);
         void* dest = nullptr;
         ClassInfo* info = nullptr;
 
@@ -229,5 +345,109 @@ namespace nuvelocity
             return dest;
         }
         return nullptr;
+    }
+
+    SDL_Surface* AssetManager::LoadSurfaceFromAssetPath(const std::string& assetPath)
+    {
+        SDL_IOStream* frameStream = PHYSFSSDL3_openRead(assetPath.c_str());
+        if (frameStream == nullptr)
+        {
+            return nullptr;
+        }
+
+        SDL_Surface* surface = IMG_LoadTGA_IO(frameStream);
+        SDL_CloseIO(frameStream);
+        return surface;
+    }
+
+    bool AssetManager::LoadFrameSurfaces(const std::filesystem::path& sequenceDirectoryPath,
+                                         std::vector<SDL_Surface*>& frames)
+    {
+        char** files = PHYSFS_enumerateFiles(sequenceDirectoryPath.generic_string().c_str());
+        if (files == nullptr)
+        {
+            return false;
+        }
+
+        frames.clear();
+
+        for (char** entry = files; *entry != nullptr; ++entry)
+        {
+            const std::string fileName(*entry);
+            if (!endsWithCaseInsensitive(fileName, kTgaExtension))
+            {
+                continue;
+            }
+            const std::filesystem::path framePath = sequenceDirectoryPath / fileName;
+            SDL_Surface* frameSurface = LoadSurfaceFromAssetPath(framePath.generic_string());
+            if (frameSurface == nullptr)
+            {
+                PHYSFS_freeList(static_cast<void*>(files));
+                return false;
+            }
+
+            frames.push_back(frameSurface);
+        }
+
+        PHYSFS_freeList(static_cast<void*>(files));
+
+        return !frames.empty();
+    }
+
+    void AssetManager::DestroyFrameSurfaces(std::vector<SDL_Surface*>& frames)
+    {
+        for (SDL_Surface* frame : frames)
+        {
+            SDL_DestroySurface(frame);
+        }
+        frames.clear();
+    }
+
+    Sequence* AssetManager::LoadSourceSequenceFrames(const std::string& path)
+    {
+        const std::filesystem::path sourcePath(path);
+        const std::string baseName = sourcePath.filename().string();
+        if (baseName.empty())
+        {
+            return nullptr;
+        }
+
+        const std::filesystem::path sequenceDirectoryPath =
+            sourcePath.parent_path() / ("-" + baseName);
+        const std::filesystem::path propertiesPath = sequenceDirectoryPath / kPropertiesFileName;
+        if (PHYSFS_exists(propertiesPath.generic_string().c_str()) == 0)
+        {
+            return nullptr;
+        }
+
+        std::vector<SDL_Surface*> frames;
+        if (!LoadFrameSurfaces(sequenceDirectoryPath, frames))
+        {
+            DestroyFrameSurfaces(frames);
+            return nullptr;
+        }
+
+        Sequence* sequence = nullptr;
+        SequenceFrameInfoList* frameInfoList = nullptr;
+        const std::string propertyText = LoadTextFile(propertiesPath.generic_string());
+        if (!propertyText.empty())
+        {
+            DecodeUtils::DeserializeSequenceRoots(propertyText, sequence, frameInfoList);
+        }
+
+        if (sequence == nullptr)
+        {
+            sequence = new Sequence();
+        }
+
+        if (frameInfoList != nullptr)
+        {
+            frameInfoList->CopyTo(*sequence, BlitTypeRevision::Type1);
+            delete frameInfoList;
+        }
+
+        sequence->SetFrames(std::move(frames));
+        sequence->SetSource(AssetSource::SourceAsset);
+        return sequence;
     }
 } // namespace nuvelocity
