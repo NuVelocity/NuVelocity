@@ -21,3 +21,5 @@ BreakConstructorInitializers: BeforeComma
 ConstructorInitializerIndentWidth: 8
 PackConstructorInitializers: Never
 BreakBeforeTernaryOperators: true
+BinPackParameters: false
+BinPackArguments: false
