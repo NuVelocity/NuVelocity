@@ -205,12 +205,14 @@ namespace nuvelocity
             if (frame != nullptr)
             {
                 frame->SetSource(loadedFromCache ? AssetSource::Cache : AssetSource::SourceAsset);
+#ifdef NVE_RESTORE_TGA
                 if (loadedFromCache && !AssetExporter::ExportStandAloneFrameToTga(path, *frame))
                 {
                     SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                                 "Failed to export stand-alone frame '%s' to source TGA",
                                 path.c_str());
                 }
+#endif
             }
         }
 
@@ -282,6 +284,7 @@ namespace nuvelocity
             return nullptr;
         }
 
+#ifdef NVE_RESTORE_TGA
         if (loadedFromCache)
         {
             sequence->SetSource(AssetSource::Cache);
@@ -292,6 +295,7 @@ namespace nuvelocity
                             path.c_str());
             }
         }
+#endif
 
         return sequence;
     }
