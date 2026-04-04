@@ -5,6 +5,7 @@ Checks: >
     modernize-*,
     bugprone-*,
     performance-*,
+    -readability-avoid-unconditional-preprocessor-if,
     -modernize-use-trailing-return-type,
     -modernize-use-auto,
     -bugprone-easily-swappable-parameters
