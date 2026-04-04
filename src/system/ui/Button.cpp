@@ -35,6 +35,7 @@ namespace nuvelocity
             : mHovered(false)
             , mPressed(false)
             , mFocused(false)
+            , mSuppressFocusAfterClick(false)
             , mMnemonicScancode(SDL_SCANCODE_UNKNOWN)
             , mMnemonicIndex(-1)
             , mCaption("")
@@ -66,6 +67,8 @@ namespace nuvelocity
             mPressed = false;
             if (activate && mOnClick)
             {
+                mFocused = false;
+                mSuppressFocusAfterClick = true;
                 mOnClick();
             }
         }
@@ -133,7 +136,7 @@ namespace nuvelocity
                                 true,
                                 mMnemonicIndex);
 
-        if (mFocused && !mHovered)
+        if (mButtonStyle.showFocusRing && mFocused && !mHovered)
         {
             const SDL_FRect focusRect{.x = rect.x + 2.0F,
                                       .y = rect.y + 2.0F,
@@ -173,7 +176,20 @@ namespace nuvelocity
 
     void Button::SetFocused(bool focused)
     {
-        mFocused = focused;
+        if (!focused)
+        {
+            mFocused = false;
+            mSuppressFocusAfterClick = false;
+            return;
+        }
+
+        if (mSuppressFocusAfterClick)
+        {
+            mFocused = false;
+            return;
+        }
+
+        mFocused = true;
     }
 
     bool Button::IsFocused() const

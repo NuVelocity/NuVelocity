@@ -18,6 +18,7 @@ namespace nuvelocity
             SDL_Color pressedColor = SDL_Color{.r = 176, .g = 176, .b = 176, .a = 255};
             SDL_Color textColor = SDL_Color{.r = 0, .g = 0, .b = 0, .a = 255};
             int fontPointSize = 12;
+            bool showFocusRing = true;
         };
 
         Button();
@@ -45,6 +46,7 @@ namespace nuvelocity
         bool mHovered;
         bool mPressed;
         bool mFocused;
+        bool mSuppressFocusAfterClick;
         SDL_Scancode mMnemonicScancode;
         int mMnemonicIndex;
         std::string mCaption;
