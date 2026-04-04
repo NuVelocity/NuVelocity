@@ -52,6 +52,7 @@ namespace nuvelocity
             , mDoDither(true)
             , mIsLossless(false)
             , mJpegQuality(kDefaultJpegQuality)
+            , mSource(AssetSource::Unknown)
 #endif
     {
 #if 0
@@ -136,6 +137,26 @@ namespace nuvelocity
         }
 
         return frame->GetTexture(renderer);
+    }
+
+    void Sequence::SetSource(AssetSource source)
+    {
+        mSource = source;
+    }
+
+    AssetSource Sequence::GetSource() const
+    {
+        return mSource;
+    }
+
+    bool Sequence::IsSourceCache() const
+    {
+        return mSource == AssetSource::Cache;
+    }
+
+    bool Sequence::IsSourceAsset() const
+    {
+        return mSource == AssetSource::SourceAsset;
     }
 
     void Sequence::ApplySequenceFlags(SequenceFlags flags)

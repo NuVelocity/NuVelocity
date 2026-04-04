@@ -5,6 +5,7 @@
 #include <string>
 
 #include "API.h"
+#include "AssetSource.h"
 #include "BlitType.h"
 #include "Frame.h"
 #include "model/Model.h"
@@ -16,6 +17,11 @@ namespace nuvelocity
     public:
         StandAloneFrame();
         ~StandAloneFrame();
+
+        void SetSource(AssetSource source);
+        AssetSource GetSource() const;
+        bool IsSourceCache() const;
+        bool IsSourceAsset() const;
 
         static void InitClassInfo(ClassInfo& aInfo)
         {
@@ -37,6 +43,7 @@ namespace nuvelocity
         bool mLossless;
         int16_t mQuality;
         bool mCenterHotSpot;
+        AssetSource mSource;
     };
 } // namespace nuvelocity
 

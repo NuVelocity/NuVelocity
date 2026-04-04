@@ -1,6 +1,7 @@
 #ifndef NVE_SEQUENCE_H
 #define NVE_SEQUENCE_H
 
+#include "AssetSource.h"
 #include "BlitType.h"
 #include "Frame.h"
 #include "SequenceFlags.h"
@@ -42,6 +43,11 @@ namespace nuvelocity
         Frame* GetFrame(std::size_t index) const;
         SDL_Surface* GetSurface(std::size_t index) const;
         SDL_Texture* GetTexture(std::size_t index, SDL_Renderer* renderer) const;
+
+        void SetSource(AssetSource source);
+        AssetSource GetSource() const;
+        bool IsSourceCache() const;
+        bool IsSourceAsset() const;
 
         static void InitClassInfo(ClassInfo& aInfo)
         {
@@ -137,6 +143,7 @@ namespace nuvelocity
         int mJpegQuality;
 
         std::vector<std::unique_ptr<Frame>> mFrames;
+        AssetSource mSource;
 
 #if 0
         bool mIsDds;

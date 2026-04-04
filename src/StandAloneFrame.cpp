@@ -12,9 +12,30 @@ namespace nuvelocity
             , mLossless(false)
             , mQuality(kDefaultQuality)
             , mCenterHotSpot(false)
+            , mSource(AssetSource::Unknown)
     {
     }
 
     StandAloneFrame::~StandAloneFrame() = default;
+
+    void StandAloneFrame::SetSource(AssetSource source)
+    {
+        mSource = source;
+    }
+
+    AssetSource StandAloneFrame::GetSource() const
+    {
+        return mSource;
+    }
+
+    bool StandAloneFrame::IsSourceCache() const
+    {
+        return mSource == AssetSource::Cache;
+    }
+
+    bool StandAloneFrame::IsSourceAsset() const
+    {
+        return mSource == AssetSource::SourceAsset;
+    }
 
 } // namespace nuvelocity
