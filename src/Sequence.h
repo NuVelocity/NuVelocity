@@ -37,12 +37,9 @@ namespace nuvelocity
 
         void SetFrames(std::vector<SDL_Surface*>&& surfaces);
         std::size_t GetFrameCount() const;
+        float GetFramesPerSecond() const;
         SDL_Surface* GetSurface(std::size_t index) const;
         SDL_Texture* GetTexture(std::size_t index, SDL_Renderer* renderer);
-        bool Render(SDL_Renderer* renderer,
-                    const SDL_FRect* destRect = nullptr,
-                    const SDL_FRect* srcRect = nullptr);
-        bool RenderCentered(SDL_Renderer* renderer, SDL_Window* window);
 
         static void InitClassInfo(ClassInfo& aInfo)
         {
@@ -139,9 +136,6 @@ namespace nuvelocity
 
         std::vector<SDL_Surface*> mFrameSurfaces;
         std::vector<SDL_Texture*> mFrameTextures;
-        uint64_t mAnimationStartTick;
-
-        std::size_t GetAnimatedFrameIndex() const;
 
 #if 0
         bool mIsDds;

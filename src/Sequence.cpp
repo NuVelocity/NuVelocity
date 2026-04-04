@@ -1,7 +1,6 @@
 #include "Sequence.h"
 
 #include "BlitTypeConverter.h"
-#include <cmath>
 #include <stdexcept>
 #include <utility>
 
@@ -52,7 +51,6 @@ namespace nuvelocity
             , mDoDither(true)
             , mIsLossless(false)
             , mJpegQuality(kDefaultJpegQuality)
-            , mAnimationStartTick(SDL_GetTicks())
 #endif
     {
 #if 0
@@ -122,12 +120,16 @@ namespace nuvelocity
 
         mFrameSurfaces = std::move(surfaces);
         mFrameTextures.resize(mFrameSurfaces.size(), nullptr);
-        mAnimationStartTick = SDL_GetTicks();
     }
 
     std::size_t Sequence::GetFrameCount() const
     {
         return mFrameSurfaces.size();
+    }
+
+    float Sequence::GetFramesPerSecond() const
+    {
+        return mFramesPerSecond;
     }
 
     SDL_Surface* Sequence::GetSurface(std::size_t index) const
@@ -165,73 +167,6 @@ namespace nuvelocity
 
         mFrameTextures[index] = SDL_CreateTextureFromSurface(renderer, source);
         return mFrameTextures[index];
-    }
-
-    std::size_t Sequence::GetAnimatedFrameIndex() const
-    {
-        const std::size_t frameCount = mFrameSurfaces.size();
-        if (frameCount == 0)
-        {
-            return 0;
-        }
-
-        const double fps = static_cast<double>(mFramesPerSecond);
-        if (fps <= 0.0)
-        {
-            return 0;
-        }
-
-        const uint64_t now = SDL_GetTicks();
-        const uint64_t elapsed = now - mAnimationStartTick;
-        const double frameProgress = (static_cast<double>(elapsed) * fps) / 1000.0;
-        const std::size_t frameIndex = static_cast<std::size_t>(std::floor(frameProgress));
-        return frameIndex % frameCount;
-    }
-
-    bool
-    Sequence::Render(SDL_Renderer* renderer, const SDL_FRect* destRect, const SDL_FRect* srcRect)
-    {
-        const std::size_t index = GetAnimatedFrameIndex();
-        SDL_Texture* texture = GetTexture(index, renderer);
-        if (texture == nullptr)
-        {
-            return false;
-        }
-
-        return SDL_RenderTexture(renderer, texture, srcRect, destRect);
-    }
-
-    bool Sequence::RenderCentered(SDL_Renderer* renderer, SDL_Window* window)
-    {
-        if (renderer == nullptr || window == nullptr)
-        {
-            return false;
-        }
-
-        const std::size_t index = GetAnimatedFrameIndex();
-
-        SDL_Texture* texture = GetTexture(index, renderer);
-        if (texture == nullptr)
-        {
-            return false;
-        }
-
-        int winWidth = 0;
-        int winHeight = 0;
-        SDL_GetWindowSizeInPixels(window, &winWidth, &winHeight);
-
-        float texWidth = 0.0F;
-        float texHeight = 0.0F;
-        if (!SDL_GetTextureSize(texture, &texWidth, &texHeight))
-        {
-            return false;
-        }
-
-        SDL_FRect destRect = {.x = (static_cast<float>(winWidth) - texWidth) / 2.0F,
-                              .y = (static_cast<float>(winHeight) - texHeight) / 2.0F,
-                              .w = texWidth,
-                              .h = texHeight};
-        return SDL_RenderTexture(renderer, texture, nullptr, &destRect);
     }
 
     void Sequence::ApplySequenceFlags(SequenceFlags flags)

@@ -11,6 +11,8 @@
 
 namespace nuvelocity
 {
+    class SpriteBatch;
+
     class Game
     {
     public:
@@ -25,6 +27,7 @@ namespace nuvelocity
 
         AssetManager* mAsset;
         AudioManager* mAudio;
+        SpriteBatch* mSpriteBatch;
 
         NVE_API Game(const char* aWindowTitle, int aWidth, int aHeight);
         NVE_API Game(const char* aWindowTitle);
@@ -37,6 +40,7 @@ namespace nuvelocity
 
         NVE_API void SetScene(Scene* aScene);
         NVE_API Scene* GetScene();
+        NVE_API SpriteBatch* GetSpriteBatch() const;
 
     protected:
         Scene* mScene;

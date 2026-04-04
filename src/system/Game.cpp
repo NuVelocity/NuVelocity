@@ -1,7 +1,9 @@
 #include <SDL3/SDL_log.h>
 
+#include "GPUSpriteBatch.h"
 #include "Game.h"
 #include "ObjectRegistration.h"
+#include "RendererSpriteBatch.h"
 
 constexpr std::uint16_t NVE_DEFAULT_WINDOW_WIDTH = 640;
 constexpr std::uint16_t NVE_DEFAULT_WINDOW_HEIGHT = 480;
@@ -14,6 +16,7 @@ namespace nuvelocity
             , mWindowHeight(aHeight)
             , mInitialized(false)
             , mScene(nullptr)
+            , mSpriteBatch(nullptr)
     {
     }
 
@@ -55,6 +58,16 @@ namespace nuvelocity
         if (mRenderer == nullptr)
         {
             return Fail();
+        }
+
+        SDL_GPUDevice* rendererDevice = SDL_GetGPURendererDevice(mRenderer);
+        if (rendererDevice != nullptr)
+        {
+            mSpriteBatch = new GPUSpriteBatch(rendererDevice, mWindow);
+        }
+        else
+        {
+            mSpriteBatch = new RendererSpriteBatch(mRenderer, mWindow);
         }
 
         SDL_ShowWindow(mWindow);
@@ -119,10 +132,18 @@ namespace nuvelocity
         return mScene;
     }
 
+    SpriteBatch* Game::GetSpriteBatch() const
+    {
+        return mSpriteBatch;
+    }
+
     Game::~Game()
     {
         delete mScene;
         mScene = nullptr;
+
+        delete mSpriteBatch;
+        mSpriteBatch = nullptr;
 
         SDL_DestroyRenderer(mRenderer);
         SDL_DestroyWindow(mWindow);

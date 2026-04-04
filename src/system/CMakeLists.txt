@@ -7,9 +7,14 @@ target_sources(
     AudioManager.h
     Game.cpp
     Game.h
+    GPUSpriteBatch.cpp
+    GPUSpriteBatch.h
     LogCategory.h
     Manager.h
     Scene.h
+    RendererSpriteBatch.cpp
+    RendererSpriteBatch.h
+    SpriteBatch.h
     Utils.h
 )
 

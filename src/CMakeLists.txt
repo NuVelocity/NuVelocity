@@ -45,6 +45,8 @@ target_sources(
     FrameInfo.h
     Frame.cpp
     Frame.h
+    Image.cpp
+    Image.h
     SequenceFlags.h
     Sequence.cpp
     Sequence.h
