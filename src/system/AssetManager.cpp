@@ -7,8 +7,8 @@
 
 #include "AssetManager.h"
 
-#include "DecodeUtils.h"
 #include "Utils.h"
+#include "decoders/DecodeUtils.h"
 #include "decoders/FrameLoaderMode3.h"
 #include "decoders/SequenceLoaderMode3.h"
 #include "decoders/SequenceLoaderMode4.h"

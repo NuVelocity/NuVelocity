@@ -2,7 +2,6 @@ target_sources(
     NuVelocity PRIVATE
     AssetManager.cpp
     AssetManager.h
-    DecodeUtils.h
     AudioManager.cpp
     AudioManager.h
     Game.cpp

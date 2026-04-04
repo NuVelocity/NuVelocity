@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-#include "SequenceLoaderShared.h"
+#include "DecodeUtils.h"
 
 #include "BlitType.h"
 #include "FrameInfo.h"
@@ -31,10 +31,10 @@ namespace nuvelocity
         const int frameHeight = info->GetBottom() - info->GetTop();
         if (frameWidth <= 0 || frameHeight <= 0)
         {
-            return SequenceLoaderShared::BuildTransparentSurface(1, 1);
+            return DecodeUtils::BuildTransparentSurface(1, 1);
         }
 
-        SDL_Surface* frame = SequenceLoaderShared::BuildTransparentSurface(frameWidth, frameHeight);
+        SDL_Surface* frame = DecodeUtils::BuildTransparentSurface(frameWidth, frameHeight);
         if (frame == nullptr)
         {
             return nullptr;
@@ -57,7 +57,7 @@ namespace nuvelocity
         const int width = source->w + std::abs(offsetX);
         const int height = source->h + std::abs(offsetY);
 
-        SDL_Surface* offsetSurface = SequenceLoaderShared::BuildTransparentSurface(width, height);
+        SDL_Surface* offsetSurface = DecodeUtils::BuildTransparentSurface(width, height);
         if (offsetSurface == nullptr)
         {
             return nullptr;
@@ -107,7 +107,7 @@ namespace nuvelocity
             const FrameInfo* frameInfo = frameInfos[i];
             if (frameInfo == nullptr)
             {
-                frames[i] = SequenceLoaderShared::BuildTransparentSurface(1, 1);
+                frames[i] = DecodeUtils::BuildTransparentSurface(1, 1);
                 continue;
             }
 
@@ -118,7 +118,7 @@ namespace nuvelocity
             SDL_Surface* frameSurface = BuildSequenceFrameSurface(spriteAtlas, frameInfo);
             if (frameSurface == nullptr)
             {
-                frameSurface = SequenceLoaderShared::BuildTransparentSurface(1, 1);
+                frameSurface = DecodeUtils::BuildTransparentSurface(1, 1);
             }
 
             if (!centerHotSpot)
@@ -127,7 +127,7 @@ namespace nuvelocity
                 SDL_DestroySurface(frameSurface);
                 if (offsetSurface == nullptr)
                 {
-                    offsetSurface = SequenceLoaderShared::BuildTransparentSurface(1, 1);
+                    offsetSurface = DecodeUtils::BuildTransparentSurface(1, 1);
                 }
 
                 frames[i] = offsetSurface;
@@ -186,14 +186,13 @@ namespace nuvelocity
             SDL_Surface* frameSurface = frames[i];
             if (frameSurface == nullptr)
             {
-                frameSurface = SequenceLoaderShared::BuildTransparentSurface(1, 1);
+                frameSurface = DecodeUtils::BuildTransparentSurface(1, 1);
             }
 
             const int dstX = centerHotSpot ? hotSpotX + offsets[i].first : 0;
             const int dstY = centerHotSpot ? hotSpotY + offsets[i].second : 0;
 
-            SDL_Surface* padded =
-                SequenceLoaderShared::BuildTransparentSurface(maxWidth, maxHeight);
+            SDL_Surface* padded = DecodeUtils::BuildTransparentSurface(maxWidth, maxHeight);
             if (padded == nullptr)
             {
                 if (frameSurface != nullptr)
@@ -212,12 +211,12 @@ namespace nuvelocity
         return true;
     }
 
-    void SequenceLoaderShared::FreeDecodedBuffers(uint8_t*& listData,
-                                                  size_t& listDataSize,
-                                                  uint8_t*& imageData,
-                                                  size_t& imageDataSize,
-                                                  uint8_t*& alphaChannelData,
-                                                  size_t& alphaChannelDataSize)
+    void DecodeUtils::FreeDecodedBuffers(uint8_t*& listData,
+                                         size_t& listDataSize,
+                                         uint8_t*& imageData,
+                                         size_t& imageDataSize,
+                                         uint8_t*& alphaChannelData,
+                                         size_t& alphaChannelDataSize)
     {
         SDL_free(listData);
         SDL_free(imageData);
@@ -230,9 +229,9 @@ namespace nuvelocity
         alphaChannelDataSize = 0;
     }
 
-    bool SequenceLoaderShared::DeserializeSequenceRoots(const std::string& listText,
-                                                        Sequence*& sequence,
-                                                        SequenceFrameInfoList*& frameInfoList)
+    bool DecodeUtils::DeserializeSequenceRoots(const std::string& listText,
+                                               Sequence*& sequence,
+                                               SequenceFrameInfoList*& frameInfoList)
     {
         sequence = nullptr;
         frameInfoList = nullptr;
@@ -291,9 +290,9 @@ namespace nuvelocity
         return sawKnownRoot;
     }
 
-    bool SequenceLoaderShared::BuildFramesFromAtlas(Sequence* sequence,
-                                                    SequenceFrameInfoList* frameInfoList,
-                                                    SDL_Surface* spriteAtlas)
+    bool DecodeUtils::BuildFramesFromAtlas(Sequence* sequence,
+                                           SequenceFrameInfoList* frameInfoList,
+                                           SDL_Surface* spriteAtlas)
     {
         if (sequence == nullptr || frameInfoList == nullptr || spriteAtlas == nullptr)
         {
@@ -339,7 +338,7 @@ namespace nuvelocity
         return true;
     }
 
-    SDL_Surface* SequenceLoaderShared::BuildTransparentSurface(int width, int height)
+    SDL_Surface* DecodeUtils::BuildTransparentSurface(int width, int height)
     {
         const int safeWidth = width > 0 ? width : 1;
         const int safeHeight = height > 0 ? height : 1;

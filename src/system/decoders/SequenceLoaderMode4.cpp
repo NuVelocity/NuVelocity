@@ -7,8 +7,8 @@
 #include "SequenceLoaderMode4.h"
 
 #include "BlitType.h"
+#include "DecodeUtils.h"
 #include "SequenceFrameInfoList.h"
-#include "SequenceLoaderShared.h"
 
 namespace nuvelocity
 {
@@ -62,12 +62,12 @@ namespace nuvelocity
                                     atlasWidth,
                                     atlasHeight))
         {
-            SequenceLoaderShared::FreeDecodedBuffers(listData,
-                                                     listDataSize,
-                                                     imageData,
-                                                     imageDataSize,
-                                                     alphaChannelData,
-                                                     alphaChannelDataSize);
+            DecodeUtils::FreeDecodedBuffers(listData,
+                                            listDataSize,
+                                            imageData,
+                                            imageDataSize,
+                                            alphaChannelData,
+                                            alphaChannelDataSize);
             return nullptr;
         }
 
@@ -77,14 +77,14 @@ namespace nuvelocity
         Sequence* sequence = nullptr;
         bool hasFrameInfoList = false;
 
-        if (!SequenceLoaderShared::DeserializeSequenceRoots(listText, sequence, frameInfoList))
+        if (!DecodeUtils::DeserializeSequenceRoots(listText, sequence, frameInfoList))
         {
-            SequenceLoaderShared::FreeDecodedBuffers(listData,
-                                                     listDataSize,
-                                                     imageData,
-                                                     imageDataSize,
-                                                     alphaChannelData,
-                                                     alphaChannelDataSize);
+            DecodeUtils::FreeDecodedBuffers(listData,
+                                            listDataSize,
+                                            imageData,
+                                            imageDataSize,
+                                            alphaChannelData,
+                                            alphaChannelDataSize);
             return nullptr;
         }
 
@@ -104,28 +104,28 @@ namespace nuvelocity
             if (isEmpty)
             {
                 std::vector<SDL_Surface*> emptyFrames;
-                emptyFrames.push_back(SequenceLoaderShared::BuildTransparentSurface(1, 1));
+                emptyFrames.push_back(DecodeUtils::BuildTransparentSurface(1, 1));
                 sequence->SetFrames(std::move(emptyFrames));
             }
 
-            SequenceLoaderShared::FreeDecodedBuffers(listData,
-                                                     listDataSize,
-                                                     imageData,
-                                                     imageDataSize,
-                                                     alphaChannelData,
-                                                     alphaChannelDataSize);
+            DecodeUtils::FreeDecodedBuffers(listData,
+                                            listDataSize,
+                                            imageData,
+                                            imageDataSize,
+                                            alphaChannelData,
+                                            alphaChannelDataSize);
             delete frameInfoList;
             return sequence;
         }
 
         SDL_Surface* spriteAtlas =
             BuildSequenceAtlasSurface(atlasWidth, atlasHeight, imageData, imageDataSize);
-        SequenceLoaderShared::FreeDecodedBuffers(listData,
-                                                 listDataSize,
-                                                 imageData,
-                                                 imageDataSize,
-                                                 alphaChannelData,
-                                                 alphaChannelDataSize);
+        DecodeUtils::FreeDecodedBuffers(listData,
+                                        listDataSize,
+                                        imageData,
+                                        imageDataSize,
+                                        alphaChannelData,
+                                        alphaChannelDataSize);
         if (spriteAtlas == nullptr)
         {
             delete frameInfoList;
@@ -142,7 +142,7 @@ namespace nuvelocity
             return sequence;
         }
 
-        if (!SequenceLoaderShared::BuildFramesFromAtlas(sequence, frameInfoList, spriteAtlas))
+        if (!DecodeUtils::BuildFramesFromAtlas(sequence, frameInfoList, spriteAtlas))
         {
             delete frameInfoList;
             delete sequence;
