@@ -7,9 +7,11 @@
 
 #include "AssetManager.h"
 
+#include "DecodeUtils.h"
 #include "Utils.h"
 #include "decoders/FrameLoaderMode3.h"
 #include "decoders/SequenceLoaderMode3.h"
+#include "decoders/SequenceLoaderMode4.h"
 #include "model/PropertySerializer.h"
 
 namespace nuvelocity
@@ -141,7 +143,35 @@ namespace nuvelocity
             return nullptr;
         }
 
-        Sequence* sequence = SequenceLoaderMode3::Load(stream);
+        const bool hasStandardHeader = DecodeUtils::FrameHasDeflateHeader(stream);
+        bool hasFontLikeHeader = false;
+        if (!hasStandardHeader)
+        {
+            hasFontLikeHeader = DecodeUtils::FontFrameHasDeflateHeader(stream);
+        }
+
+        SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+        Sequence* sequence = nullptr;
+        if (hasStandardHeader || hasFontLikeHeader)
+        {
+            sequence = SequenceLoaderMode3::Load(stream);
+            if (sequence == nullptr)
+            {
+                SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+                sequence = SequenceLoaderMode4::Load(stream);
+            }
+        }
+        else
+        {
+            sequence = SequenceLoaderMode4::Load(stream);
+            if (sequence == nullptr)
+            {
+                SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+                sequence = SequenceLoaderMode3::Load(stream);
+            }
+        }
+
         SDL_CloseIO(stream);
         return sequence;
     }
