@@ -64,8 +64,6 @@ namespace nuvelocity
             }
 
             info.mFactoryFunction = []() -> void* { return new Derived(); };
-            info.mInitArgsFunction = [](void* obj, std::vector<std::string> args)
-            { static_cast<Derived*>(obj)->InitFromArgs(args); };
 
             // Call derived class's InitClassInfo
             Derived::InitClassInfo(info);

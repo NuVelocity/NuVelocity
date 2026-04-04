@@ -12,7 +12,7 @@ namespace nuvelocity
     constexpr uint8_t kShift16 = 16;
     constexpr uint8_t kShift24 = 24;
 
-    SDL_PixelFormat GetPixelFormatForBpp(uint8_t bpp)
+    SDL_PixelFormat GetPixelFormatForBpp(int bpp)
     {
         switch (bpp)
         {
@@ -40,7 +40,7 @@ namespace nuvelocity
     {
     }
 
-    Frame::Frame(uint32_t width, uint32_t height, uint8_t bpp)
+    Frame::Frame(int width, int height, int bpp)
             : mWidth(0)
             , mHeight(0)
             , mBitsPerPixel(0)
@@ -64,11 +64,15 @@ namespace nuvelocity
         }
     }
 
-    void Frame::Initialize(int width, int height, uint8_t bpp)
+    void Frame::Initialize(int width, int height, int bpp)
     {
-        if (bpp == 0 || (bpp % kBitsPerByte) != 0)
+        if (bpp <= 0 || (bpp % kBitsPerByte) != 0)
         {
             throw std::invalid_argument("Bits per pixel must be a non-zero multiple of 8");
+        }
+        if (width < 0 || height < 0)
+        {
+            throw std::invalid_argument("Frame dimensions must be non-negative");
         }
 
         mWidth = width;
@@ -81,9 +85,8 @@ namespace nuvelocity
             return;
         }
 
-        if (width > 0 && height > 0 &&
-            static_cast<size_t>(width) >
-                std::numeric_limits<size_t>::max() / static_cast<size_t>(height))
+        if (static_cast<size_t>(width) >
+            std::numeric_limits<size_t>::max() / static_cast<size_t>(height))
         {
             throw std::overflow_error("Frame pixel count overflow");
         }
@@ -100,18 +103,17 @@ namespace nuvelocity
     {
         if (args.size() < 3)
         {
-            throw std::invalid_argument(
-                "Frame::InitFromArgs expects 3 arguments: width,height,bitsPerPixel");
+            throw std::invalid_argument("Frame::InitFromArgs expects 3 arguments: cols,rows,bits");
         }
 
-        uint32_t width = 0;
-        uint32_t height = 0;
-        uint32_t bpp = 0;
+        int cols = 0;
+        int rows = 0;
+        int bits = 0;
         try
         {
-            width = static_cast<uint32_t>(std::stoul(args[0]));
-            height = static_cast<uint32_t>(std::stoul(args[1]));
-            bpp = static_cast<uint32_t>(std::stoul(args[2]));
+            cols = std::stoi(args[0]);
+            rows = std::stoi(args[1]);
+            bits = std::stoi(args[2]);
         }
         catch (const std::exception& e)
         {
@@ -119,7 +121,7 @@ namespace nuvelocity
                                         e.what());
         }
 
-        Initialize(width, height, static_cast<uint8_t>(bpp));
+        Initialize(cols, rows, bits);
     }
 
     uint32_t Frame::GetPixel(int pointX, int pointY) const
@@ -171,7 +173,7 @@ namespace nuvelocity
         return mSurface != nullptr ? mSurface->h : mHeight;
     }
 
-    uint8_t Frame::GetBitsPerPixel() const
+    int Frame::GetBitsPerPixel() const
     {
         return mBitsPerPixel;
     }
@@ -191,9 +193,9 @@ namespace nuvelocity
 
         if (mSurface != nullptr)
         {
-            mWidth = static_cast<uint32_t>(mSurface->w);
-            mHeight = static_cast<uint32_t>(mSurface->h);
-            mBitsPerPixel = static_cast<uint8_t>(SDL_BITSPERPIXEL(mSurface->format));
+            mWidth = mSurface->w;
+            mHeight = mSurface->h;
+            mBitsPerPixel = SDL_BITSPERPIXEL(mSurface->format);
             mPixelData = static_cast<uint8_t*>(mSurface->pixels);
         }
         else

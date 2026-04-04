@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cctype>
 #include <cstring>
+#include <iomanip>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
@@ -34,7 +35,7 @@ namespace nuvelocity
         Root,
         Child,
         Container,
-        HexArray
+        ByteArray
     };
 
     class PropertySerializer
@@ -61,8 +62,8 @@ namespace nuvelocity
             std::stack<size_t> arrayCountStack = {};
             std::stack<ParserScope> scopeStack = {};
 
-            uint8_t** hexArrayData = nullptr; // Pointer to the array pointer held by property
-            size_t hexArraySize = 0;          // Current size of data written
+            ByteArrayTarget byteArrayTarget = {};
+            size_t byteArraySize = 0; // Current size of data written
             ClassInfo* currentInfo = nullptr;
             void* currentObject = nullptr;
             ParserScope scope = ParserScope::None;
@@ -74,24 +75,31 @@ namespace nuvelocity
         };
 
         static std::pair<ClassInfo*, void*> InstantiateObject(const std::string& className,
-                                                              const std::vector<std::string>& args)
+                                                              const ByteArrayInfo& byteArrayInfo)
         {
             ClassInfo* childInfo = ObjectRegistry::Get().Find(className);
             if (childInfo != nullptr)
             {
                 void* childObject = childInfo->mFactoryFunction();
 
-                // If arguments are provided, pass them through the object's init-args hook.
-                if (args.size() > 0)
+                // For byte array classes, initialize immediately with cols, rows, bits
+                if (childInfo->mSerializationMode == SerializationMode::ByteArray)
                 {
-                    if (childInfo->mInitArgsFunction == nullptr)
+                    if (childInfo->mByteArrayInitFunction == nullptr)
                     {
-                        throw std::runtime_error(std::string("Class '") + className +
-                                                 "' does not support argument-based "
-                                                 "instantiation");
+                        throw std::runtime_error(std::string("Byte array class '") + className +
+                                                 "' is missing mByteArrayInitFunction");
                     }
 
-                    childInfo->mInitArgsFunction(childObject, args);
+                    if (!byteArrayInfo.IsValid())
+                    {
+                        throw std::runtime_error(
+                            std::string("Invalid byte array info for class '") + className +
+                            "': expected (cols,rows,bits) with positive values and bits divisible "
+                            "by 8");
+                    }
+
+                    childInfo->mByteArrayInitFunction(childObject, byteArrayInfo);
                 }
 
                 return {childInfo, childObject};
@@ -99,11 +107,11 @@ namespace nuvelocity
             return {nullptr, nullptr};
         }
 
-        static void ParseHexLine(const std::string& line, DeserializeContext& context)
+        static void ParseByteLine(const std::string& line, DeserializeContext& context)
         {
-            if (context.hexArrayData == nullptr)
+            if (context.byteArrayTarget.data == nullptr)
             {
-                throw std::runtime_error("Hex array target pointer not initialized");
+                throw std::runtime_error("Byte array target pointer not initialized");
             }
 
             // Parse pairs of hex characters and write directly to target array
@@ -111,7 +119,7 @@ namespace nuvelocity
             {
                 if (i + 1 >= line.length())
                 {
-                    throw std::runtime_error(std::string("Invalid hex data length (") +
+                    throw std::runtime_error(std::string("Invalid byte array data length (") +
                                              "expected even number of characters)");
                 }
 
@@ -119,7 +127,7 @@ namespace nuvelocity
                 try
                 {
                     uint8_t byte = static_cast<uint8_t>(std::stoul(hexPair, nullptr, 16));
-                    (*context.hexArrayData)[context.hexArraySize++] = byte;
+                    context.byteArrayTarget.data[context.byteArraySize++] = byte;
                 }
                 catch (const std::exception& e)
                 {
@@ -129,45 +137,56 @@ namespace nuvelocity
             }
         }
 
-        static void InitializeHexArrayData(DeserializeContext& context)
+        static void InitializeByteArrayData(DeserializeContext& context)
         {
             if (context.currentInfo == nullptr || context.currentObject == nullptr)
             {
                 throw std::runtime_error(
-                    "Invalid object or class info for hex array deserialization");
+                    "Invalid object or class info for byte array deserialization");
             }
 
-            if (context.currentInfo->mHexArrayProperty == nullptr)
+            if (context.currentInfo->mByteArrayProperty == nullptr)
             {
-                throw std::runtime_error(std::string("No hex array property defined for class '") +
+                throw std::runtime_error(std::string("No byte array property defined for class '") +
                                          context.currentInfo->mName + "'");
             }
 
+            if (context.currentInfo->mByteArrayInfoFunction == nullptr)
+            {
+                throw std::runtime_error(std::string("Byte array class '") +
+                                         context.currentInfo->mName +
+                                         "' is missing mByteArrayInfoFunction");
+            }
+
             // Get pointer to the array pointer held by the property
-            context.hexArrayData = static_cast<uint8_t**>(
-                context.currentInfo->mHexArrayProperty->GetValue(context.currentObject));
-            if (context.hexArrayData == nullptr)
+            uint8_t** byteArrayData = static_cast<uint8_t**>(
+                context.currentInfo->mByteArrayProperty->GetValue(context.currentObject));
+            if (byteArrayData == nullptr || *byteArrayData == nullptr)
             {
                 throw std::runtime_error(
-                    std::string("Failed to get hex array pointer for property '") +
-                    context.currentInfo->mHexArrayProperty->GetName() + "'");
+                    std::string("Failed to get byte array pointer for property '") +
+                    context.currentInfo->mByteArrayProperty->GetName() + "'");
             }
-            context.hexArraySize = 0;
+
+            context.byteArrayTarget.info =
+                context.currentInfo->mByteArrayInfoFunction(context.currentObject);
+            context.byteArrayTarget.data = *byteArrayData;
+            context.byteArraySize = 0;
         }
 
-        static void FinalizeHexArrayData(DeserializeContext& context)
+        static void FinalizeByteArrayData(DeserializeContext& context)
         {
-            if (context.hexArraySize > 0)
+            if (context.byteArraySize > 0)
             {
-                SDL_LogWarn(
-                    NVE_LOG_CATEGORY_PROPSYS,
-                    "Deserialized %zu bytes of hex array data for class '%s' into property '%s'",
-                    context.hexArraySize,
-                    context.currentInfo->mName.c_str(),
-                    context.currentInfo->mHexArrayProperty->GetName().c_str());
+                SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS,
+                            "Deserialized %zu bytes of data for class '%s' into property '%s'",
+                            context.byteArraySize,
+                            context.currentInfo->mName.c_str(),
+                            context.currentInfo->mByteArrayProperty->GetName().c_str());
             }
-            context.hexArrayData = nullptr;
-            context.hexArraySize = 0;
+
+            context.byteArrayTarget = {};
+            context.byteArraySize = 0;
         }
 
         static void PushScope(DeserializeContext& context, ParserScope newScope)
@@ -230,9 +249,9 @@ namespace nuvelocity
 
         static void HandleCloseBrace(DeserializeContext& context)
         {
-            if (context.scope == ParserScope::HexArray)
+            if (context.scope == ParserScope::ByteArray)
             {
-                FinalizeHexArrayData(context);
+                FinalizeByteArrayData(context);
             }
             else if (context.scope == ParserScope::Container)
             {
@@ -294,8 +313,8 @@ namespace nuvelocity
 
             if (hasObjectElements)
             {
-                auto [objValue, arguments] = ParseObjectValue(value);
-                auto [childInfo, childObject] = InstantiateObject(objValue, arguments);
+                auto [className, byteArrayInfo] = ParseObjectValue(value);
+                auto [childInfo, childObject] = InstantiateObject(className, byteArrayInfo);
                 if (childInfo == nullptr || childObject == nullptr)
                 {
                     throw std::runtime_error(
@@ -388,11 +407,11 @@ namespace nuvelocity
                 break;
             case PropertyType::Object:
             {
-                auto [objValue, arguments] = ParseObjectValue(value);
-                auto [childInfo, childObject] = InstantiateObject(objValue, arguments);
+                auto [className, byteArrayInfo] = ParseObjectValue(value);
+                auto [childInfo, childObject] = InstantiateObject(className, byteArrayInfo);
                 if (childInfo == nullptr)
                 {
-                    throw std::runtime_error(std::string("Unknown class '") + objValue +
+                    throw std::runtime_error(std::string("Unknown class '") + className +
                                              "' for property '" + key + "'");
                 }
 
@@ -421,10 +440,11 @@ namespace nuvelocity
                                               ClassInfo*& info,
                                               DeserializeContext& context)
         {
-            auto [classInfo, obj] = InstantiateObject(line, {});
+            auto [className, byteArrayInfo] = ParseObjectValue(line);
+            auto [classInfo, obj] = InstantiateObject(className, byteArrayInfo);
             if (classInfo == nullptr)
             {
-                throw std::runtime_error(std::string("Unknown class: ") + line);
+                throw std::runtime_error(std::string("Unknown class: ") + className);
             }
 
             info = classInfo;
@@ -439,36 +459,56 @@ namespace nuvelocity
             }
         }
 
-        static std::pair<std::string, std::vector<std::string>>
-        ParseObjectValue(const std::string& value)
+        static std::pair<std::string, ByteArrayInfo> ParseObjectValue(const std::string& value)
         {
-            std::string objValue = value;
-            std::vector<std::string> arguments;
+            std::string className = value;
+            ByteArrayInfo byteArrayInfo = {};
 
-            size_t parenPos = objValue.find('(');
+            size_t parenPos = className.find('(');
             if (parenPos != std::string::npos)
             {
-                size_t closeParenPos = objValue.find(')');
+                size_t closeParenPos = className.find(')');
                 if (closeParenPos != std::string::npos)
                 {
                     std::string argsStr =
-                        objValue.substr(parenPos + 1, closeParenPos - parenPos - 1);
+                        className.substr(parenPos + 1, closeParenPos - parenPos - 1);
                     argsStr = trim(argsStr);
                     if (!argsStr.empty())
                     {
                         std::stringstream argStream(argsStr);
                         std::string arg;
+                        std::vector<std::string> arguments;
                         while (std::getline(argStream, arg, ','))
                         {
                             arguments.push_back(trim(arg));
                         }
+
+                        if (arguments.size() != 3)
+                        {
+                            throw std::runtime_error(
+                                "Byte array object values must use exactly 3 arguments: "
+                                "(cols,rows,bits)");
+                        }
+
+                        try
+                        {
+                            byteArrayInfo.cols = std::stoi(arguments[0]);
+                            byteArrayInfo.rows = std::stoi(arguments[1]);
+                            byteArrayInfo.bits = std::stoi(arguments[2]);
+                        }
+                        catch (const std::exception& e)
+                        {
+                            throw std::runtime_error(
+                                std::string("Failed to parse byte array args (cols,rows,bits): ") +
+                                e.what());
+                        }
                     }
-                    objValue = objValue.substr(0, parenPos);
-                    objValue = trim(objValue);
+                    className = className.substr(0, parenPos);
+                    className = trim(className);
                 }
             }
 
-            return {objValue, arguments};
+            return {className, byteArrayInfo};
         }
     };
 
@@ -546,6 +586,61 @@ namespace nuvelocity
     {
         if (classInfo == nullptr || object == nullptr)
         {
+            return;
+        }
+
+        if (classInfo->mSerializationMode == SerializationMode::ByteArray)
+        {
+            ByteArrayInfo byteArrayInfo = {};
+
+            // Get constructor info from byte array info function
+            if (classInfo->mByteArrayInfoFunction != nullptr)
+            {
+                byteArrayInfo = classInfo->mByteArrayInfoFunction(object);
+            }
+
+            if (byteArrayInfo.IsValid())
+            {
+                std::ostringstream header;
+                header << classInfo->mName << "(";
+                header << byteArrayInfo.cols << "," << byteArrayInfo.rows << ","
+                       << byteArrayInfo.bits;
+                header << ")";
+                AppendLine(output, indentLevel, header.str());
+            }
+            else
+            {
+                AppendLine(output, indentLevel, classInfo->mName);
+            }
+
+            AppendLine(output, indentLevel, std::string(kTokenOpenBrace));
+
+            if (classInfo->mByteArrayProperty != nullptr)
+            {
+                auto* pixelData = static_cast<uint8_t**>(
+                    classInfo->mByteArrayProperty->GetValue(const_cast<void*>(object)));
+
+                const bool hasExpectedSize = byteArrayInfo.IsValid();
+                const size_t expectedSize = hasExpectedSize ? byteArrayInfo.ByteCount() : 0;
+
+                if (pixelData != nullptr && *pixelData != nullptr && hasExpectedSize)
+                {
+                    constexpr size_t kBytesPerLine = 32;
+                    for (size_t offset = 0; offset < expectedSize; offset += kBytesPerLine)
+                    {
+                        const size_t chunk = std::min(kBytesPerLine, expectedSize - offset);
+                        std::ostringstream hexLine;
+                        for (size_t i = 0; i < chunk; ++i)
+                        {
+                            hexLine << std::hex << std::setfill('0') << std::setw(2)
+                                    << static_cast<unsigned int>((*pixelData)[offset + i]);
+                        }
+                        AppendLine(output, indentLevel + 1, hexLine.str());
+                    }
+                }
+            }
+
+            AppendLine(output, indentLevel, std::string(kTokenCloseBrace));
             return;
         }
 
@@ -668,24 +763,24 @@ namespace nuvelocity
                 if (context.pendingChildInfo != nullptr)
                 {
                     ParserScope childScope =
-                        context.pendingChildInfo->mSerializationMode == SerializationMode::HexArray
-                            ? ParserScope::HexArray
+                        context.pendingChildInfo->mSerializationMode == SerializationMode::ByteArray
+                            ? ParserScope::ByteArray
                             : ParserScope::Child;
                     PushScope(context, childScope);
                     context.currentInfo = context.pendingChildInfo;
                     context.currentObject = context.pendingChildObject;
                     context.pendingChildInfo = nullptr;
                     context.pendingChildObject = nullptr;
-                    if (childScope == ParserScope::HexArray)
+                    if (childScope == ParserScope::ByteArray)
                     {
-                        InitializeHexArrayData(context);
+                        InitializeByteArrayData(context);
                     }
                 }
                 else if (context.scope == ParserScope::Root &&
-                         context.currentInfo->mSerializationMode == SerializationMode::HexArray)
+                         context.currentInfo->mSerializationMode == SerializationMode::ByteArray)
                 {
-                    InitializeHexArrayData(context);
-                    PushScope(context, ParserScope::HexArray);
+                    InitializeByteArrayData(context);
+                    PushScope(context, ParserScope::ByteArray);
                 }
                 continue;
             }
@@ -703,9 +798,9 @@ namespace nuvelocity
                 continue;
             }
 
-            if (context.scope == ParserScope::HexArray)
+            if (context.scope == ParserScope::ByteArray)
             {
-                ParseHexLine(line, context);
+                ParseByteLine(line, context);
                 continue;
             }
 

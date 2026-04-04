@@ -3,16 +3,41 @@
 
 #include "Property.h"
 #include <cassert>
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace nuvelocity
 {
+    struct ByteArrayInfo
+    {
+        int cols = 0;
+        int rows = 0;
+        int bits = 0;
+
+        bool IsValid() const
+        {
+            return cols > 0 && rows > 0 && bits > 0 && (bits % 8) == 0;
+        }
+
+        size_t ByteCount() const
+        {
+            return static_cast<size_t>(cols) * static_cast<size_t>(rows) *
+                   (static_cast<size_t>(bits) / 8);
+        }
+    };
+
+    struct ByteArrayTarget
+    {
+        ByteArrayInfo info = {};
+        uint8_t* data = nullptr;
+    };
+
     enum class SerializationMode
     {
         Standard, // Normal property-based serialization
-        HexArray  // Special mode for hex array data (e.g., CFrame pixel data)
+        ByteArray // Special mode for byte array data (e.g., CFrame pixel data)
     };
 
     struct ClassInfo
@@ -26,10 +51,11 @@ namespace nuvelocity
         std::unordered_map<std::string, Property*> mProperties;
         ClassInfo* mBaseClassInfo;
         SerializationMode mSerializationMode = SerializationMode::Standard;
-        Property* mHexArrayProperty = nullptr; // Property to receive hex array binary data
+        Property* mByteArrayProperty = nullptr; // Property to receive byte array binary data
 
         void* (*mFactoryFunction)();
-        void (*mInitArgsFunction)(void* obj, std::vector<std::string> args) = nullptr;
+        ByteArrayInfo (*mByteArrayInfoFunction)(const void* obj) = nullptr;
+        void (*mByteArrayInitFunction)(void* obj, const ByteArrayInfo& info) = nullptr;
 
         void AddProperty(Property* prop)
         {
@@ -49,11 +75,11 @@ namespace nuvelocity
             mLastProperty = prop;
         }
 
-        void SetHexArrayProperty(Property* prop)
+        void SetByteArrayProperty(Property* prop)
         {
-            assert(mHexArrayProperty == nullptr && "Cannot set multiple hex array properties: a "
-                                                   "hex array property is already defined");
-            mHexArrayProperty = prop;
+            assert(mByteArrayProperty == nullptr && "Cannot set multiple byte array properties: a "
+                                                    "byte array property is already defined");
+            mByteArrayProperty = prop;
         }
 
         Property* GetFirstProperty() const
