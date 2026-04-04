@@ -7,6 +7,8 @@
 #include "API.h"
 #include "AssetManager.h"
 #include "AudioManager.h"
+#include "FontManager.h"
+#include "InputManager.h"
 #include "Scene.h"
 
 namespace nuvelocity
@@ -27,6 +29,8 @@ namespace nuvelocity
 
         AssetManager* mAsset;
         AudioManager* mAudio;
+        FontManager* mFont;
+        InputManager* mInput;
         SpriteBatch* mSpriteBatch;
 
         NVE_API Game(const char* aWindowTitle, int aWidth, int aHeight);
@@ -37,6 +41,8 @@ namespace nuvelocity
 
         NVE_API void Update();
         NVE_API void Draw();
+        NVE_API void HandleEvent(const SDL_Event& event) const;
+        NVE_API void EndFrame() const;
 
         NVE_API void SetScene(Scene* aScene);
         NVE_API Scene* GetScene();

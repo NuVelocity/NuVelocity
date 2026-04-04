@@ -1,0 +1,17 @@
+target_sources(
+    NuVelocity PRIVATE
+    WidgetUtils.cpp
+    WidgetUtils.h
+    Widget.cpp
+    Widget.h
+    Button.cpp
+    Button.h
+    SkinnedButton.cpp
+    SkinnedButton.h
+    TextBox.cpp
+    TextBox.h
+    Window.cpp
+    Window.h
+    WindowManager.cpp
+    WindowManager.h
+)

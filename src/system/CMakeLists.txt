@@ -4,6 +4,10 @@ target_sources(
     AssetManager.h
     AudioManager.cpp
     AudioManager.h
+    InputManager.cpp
+    InputManager.h
+    FontManager.cpp
+    FontManager.h
     Game.cpp
     Game.h
     GPUSpriteBatch.cpp
@@ -23,3 +27,4 @@ target_include_directories(
 )
 
 add_subdirectory(decoders)
+add_subdirectory(ui)

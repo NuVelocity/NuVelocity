@@ -1,4 +1,5 @@
 #include <SDL3/SDL_log.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "GPUSpriteBatch.h"
 #include "Game.h"
@@ -14,8 +15,14 @@ namespace nuvelocity
             : mWindowTitle(aWindowTitle)
             , mWindowWidth(aWidth)
             , mWindowHeight(aHeight)
+            , mWindow(nullptr)
+            , mRenderer(nullptr)
+            , mAsset(nullptr)
+            , mAudio(nullptr)
+            , mFont(nullptr)
             , mInitialized(false)
             , mScene(nullptr)
+            , mInput(nullptr)
             , mSpriteBatch(nullptr)
     {
     }
@@ -40,6 +47,14 @@ namespace nuvelocity
 
         if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
         {
+            return Fail();
+        }
+
+        mFont = new FontManager();
+        if (!mFont->Initialize(argv))
+        {
+            delete mFont;
+            mFont = nullptr;
             return Fail();
         }
 
@@ -102,6 +117,12 @@ namespace nuvelocity
             return Fail();
         }
 
+        mInput = new InputManager();
+        if (!mInput->Initialize(argv))
+        {
+            return Fail();
+        }
+
         mInitialized = true;
         return true;
     }
@@ -114,6 +135,22 @@ namespace nuvelocity
     void Game::Draw()
     {
         mScene->Draw(this);
+    }
+
+    void Game::HandleEvent(const SDL_Event& event) const
+    {
+        if (mInput != nullptr)
+        {
+            mInput->ProcessEvent(event);
+        }
+    }
+
+    void Game::EndFrame() const
+    {
+        if (mInput != nullptr)
+        {
+            mInput->EndFrame();
+        }
     }
 
     void Game::SetScene(Scene* aScene)
@@ -145,8 +182,14 @@ namespace nuvelocity
         delete mSpriteBatch;
         mSpriteBatch = nullptr;
 
+        delete mInput;
+        mInput = nullptr;
+
         SDL_DestroyRenderer(mRenderer);
         SDL_DestroyWindow(mWindow);
+        delete mFont;
+        mFont = nullptr;
+        delete mAudio;
         delete mAsset;
     }
 } // namespace nuvelocity
