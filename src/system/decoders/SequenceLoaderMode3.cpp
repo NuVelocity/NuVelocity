@@ -1,4 +1,6 @@
 #include <SDL3_image/SDL_image.h>
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <sstream>
 #include <string>
@@ -8,8 +10,8 @@
 #include "SequenceLoaderMode3.h"
 
 #include "BlitType.h"
-#include "FrameInfo.h"
 #include "DecodeUtils.h"
+#include "FrameInfo.h"
 #include "SequenceFrameInfoList.h"
 #include "model/ClassInfo.h"
 #include "model/Object.h"
@@ -21,7 +23,8 @@ namespace nuvelocity
     constexpr const char* kSequenceClassName = "CSequence";
     constexpr const char* kSequenceFrameInfoListClassName = "CSequenceFrameInfoList";
 
-    static bool DeserializeSequenceRoots(const std::string& listText, Sequence*& sequence,
+    static bool DeserializeSequenceRoots(const std::string& listText,
+                                         Sequence*& sequence,
                                          SequenceFrameInfoList*& frameInfoList)
     {
         sequence = nullptr;
@@ -40,7 +43,7 @@ namespace nuvelocity
                 info == nullptr)
             {
                 delete root;
-                return i > 0 ? sawKnownRoot : false;
+                return i > 0 && sawKnownRoot;
             }
 
             if (info->mName == kSequenceClassName)
@@ -107,12 +110,17 @@ namespace nuvelocity
             isHD = !hasFontLikeHeader;
         }
 
-        const bool decoded = isHD
-                                 ? DecodeSequenceHDHeader(stream, listData, imageData, isEmpty,
-                                                          atlasWidth, atlasHeight)
-                                 : DecodeSequenceStandardHeader(stream, listData, imageData,
-                                                                alphaChannelData, isCompressed,
-                                                                isEmpty, atlasWidth, atlasHeight);
+        const bool decoded =
+            isHD ? DecodeSequenceHDHeader(
+                       stream, listData, imageData, isEmpty, atlasWidth, atlasHeight)
+                 : DecodeSequenceStandardHeader(stream,
+                                                listData,
+                                                imageData,
+                                                alphaChannelData,
+                                                isCompressed,
+                                                isEmpty,
+                                                atlasWidth,
+                                                atlasHeight);
         if (!decoded)
         {
             return nullptr;
@@ -153,9 +161,8 @@ namespace nuvelocity
             return sequence;
         }
 
-        SDL_Surface* spriteAtlas =
-            BuildSequenceAtlasSurface(isHD, isCompressed, atlasWidth, atlasHeight, imageData,
-                                      alphaChannelData);
+        SDL_Surface* spriteAtlas = BuildSequenceAtlasSurface(
+            isHD, isCompressed, atlasWidth, atlasHeight, imageData, alphaChannelData);
         if (spriteAtlas == nullptr)
         {
             delete frameInfoList;
@@ -206,31 +213,32 @@ namespace nuvelocity
 
             if (centerHotSpot)
             {
-                const float deltaX =
-                    static_cast<float>(offsetX) - static_cast<float>(frameSurface->w) / 2.0F;
-                const float deltaY =
-                    static_cast<float>(offsetY) - static_cast<float>(frameSurface->h) / 2.0F;
+                const float frameWidth = static_cast<float>(frameSurface->w);
+                const float frameHeight = static_cast<float>(frameSurface->h);
+                const float offsetXF = static_cast<float>(offsetX);
+                const float offsetYF = static_cast<float>(offsetY);
 
-                float newWidth =
-                    static_cast<float>(frameSurface->w) + 2.0F * std::fabs(deltaX);
-                float newHeight =
-                    static_cast<float>(frameSurface->h) + 2.0F * std::fabs(deltaY);
+                const float deltaX = offsetXF - (frameWidth / 2);
+                const float deltaY = offsetYF - (frameHeight / 2);
+
+                float newWidth = frameWidth + (2 * std::fabs(deltaX));
+                float newHeight = frameHeight + (2 * std::fabs(deltaY));
 
                 if (offsetX > 0)
                 {
-                    newWidth += static_cast<float>(frameSurface->w) * 2.0F;
+                    newWidth += frameWidth * 2;
                 }
                 if (offsetY > 0)
                 {
-                    newHeight += static_cast<float>(frameSurface->h) * 2.0F;
+                    newHeight += frameHeight * 2;
                 }
 
-                if (newWidth >= static_cast<float>(maxWidth))
+                if (newWidth >= maxWidth)
                 {
                     maxWidth = static_cast<int>(std::ceil(newWidth));
                     hotSpotX = maxWidth / 2;
                 }
-                if (newHeight >= static_cast<float>(maxHeight))
+                if (newHeight >= maxHeight)
                 {
                     maxHeight = static_cast<int>(std::ceil(newHeight));
                     hotSpotY = maxHeight / 2;
@@ -248,14 +256,8 @@ namespace nuvelocity
                 }
 
                 frames[i] = offsetSurface;
-                if (offsetSurface->w > maxWidth)
-                {
-                    maxWidth = offsetSurface->w;
-                }
-                if (offsetSurface->h > maxHeight)
-                {
-                    maxHeight = offsetSurface->h;
-                }
+                maxWidth = std::max(maxWidth, offsetSurface->w);
+                maxHeight = std::max(maxHeight, offsetSurface->h);
             }
         }
 
@@ -287,7 +289,7 @@ namespace nuvelocity
                 return nullptr;
             }
 
-            SDL_Rect dstRect{dstX, dstY, frameSurface->w, frameSurface->h};
+            SDL_Rect dstRect{.x = dstX, .y = dstY, .w = frameSurface->w, .h = frameSurface->h};
             SDL_BlitSurface(frameSurface, nullptr, padded, &dstRect);
             SDL_DestroySurface(frameSurface);
             frames[i] = padded;
@@ -302,8 +304,10 @@ namespace nuvelocity
                                                            std::vector<uint8_t>& listData,
                                                            std::vector<uint8_t>& imageData,
                                                            std::vector<uint8_t>& alphaChannelData,
-                                                           bool& isCompressed, bool& isEmpty,
-                                                           int& atlasWidth, int& atlasHeight)
+                                                           bool& isCompressed,
+                                                           bool& isEmpty,
+                                                           int& atlasWidth,
+                                                           int& atlasHeight)
     {
         uint8_t signature = 0;
         if (!SDL_ReadU8(stream, &signature) || signature != kSequenceSignatureStandard)
@@ -320,7 +324,8 @@ namespace nuvelocity
         }
 
         std::vector<uint8_t> compressedList(frameInfoDeflatedSize);
-        if (SDL_ReadIO(stream, compressedList.data(), frameInfoDeflatedSize) != frameInfoDeflatedSize)
+        if (SDL_ReadIO(stream, compressedList.data(), frameInfoDeflatedSize) !=
+            frameInfoDeflatedSize)
         {
             return false;
         }
@@ -328,8 +333,10 @@ namespace nuvelocity
         listData.resize(frameInfoInflatedSize);
         uint32_t frameInfoDeflatedSizeCopy = frameInfoDeflatedSize;
         uint32_t frameInfoInflatedSizeCopy = frameInfoInflatedSize;
-        if (DecodeUtils::Inflate(listData.data(), &frameInfoInflatedSizeCopy,
-                     compressedList.data(), &frameInfoDeflatedSizeCopy) != Z_OK ||
+        if (DecodeUtils::Inflate(listData.data(),
+                                 &frameInfoInflatedSizeCopy,
+                                 compressedList.data(),
+                                 &frameInfoDeflatedSizeCopy) != Z_OK ||
             frameInfoInflatedSizeCopy != frameInfoInflatedSize)
         {
             return false;
@@ -371,8 +378,10 @@ namespace nuvelocity
             imageData.resize(imageInflatedSize);
             uint32_t imageDeflatedSizeCopy = imageDeflatedSize;
             uint32_t imageInflatedSizeCopy = imageInflatedSize;
-            if (DecodeUtils::Inflate(imageData.data(), &imageInflatedSizeCopy,
-                                     compressedImage.data(), &imageDeflatedSizeCopy) != Z_OK ||
+            if (DecodeUtils::Inflate(imageData.data(),
+                                     &imageInflatedSizeCopy,
+                                     compressedImage.data(),
+                                     &imageDeflatedSizeCopy) != Z_OK ||
                 imageInflatedSizeCopy != imageInflatedSize)
             {
                 return false;
@@ -424,21 +433,20 @@ namespace nuvelocity
         alphaChannelData.resize(maskInflatedSize);
         uint32_t compressedMaskSize = static_cast<uint32_t>(compressedMask.size());
         uint32_t maskInflatedSizeCopy = maskInflatedSize;
-        if (maskInflatedSize > 0 &&
-            (DecodeUtils::Inflate(alphaChannelData.data(), &maskInflatedSizeCopy,
-                                  compressedMask.data(), &compressedMaskSize) != Z_OK ||
-             maskInflatedSizeCopy != maskInflatedSize))
-        {
-            return false;
-        }
-
-        return true;
+        const bool hasValidAlphaMask =
+            maskInflatedSize == 0 || (DecodeUtils::Inflate(alphaChannelData.data(),
+                                                           &maskInflatedSizeCopy,
+                                                           compressedMask.data(),
+                                                           &compressedMaskSize) == Z_OK &&
+                                      maskInflatedSizeCopy == maskInflatedSize);
+        return hasValidAlphaMask;
     }
 
     bool SequenceLoaderMode3::DecodeSequenceHDHeader(SDL_IOStream* stream,
                                                      std::vector<uint8_t>& listData,
                                                      std::vector<uint8_t>& imageData,
-                                                     bool& isEmpty, int& atlasWidth,
+                                                     bool& isEmpty,
+                                                     int& atlasWidth,
                                                      int& atlasHeight)
     {
         uint32_t embeddedListsSize = 0;
@@ -467,10 +475,10 @@ namespace nuvelocity
             return false;
         }
 
-        uint8_t ddsSignature[4] = {0, 0, 0, 0};
+        std::array<uint8_t, 4> ddsSignature{0, 0, 0, 0};
         if ((imageEnd - imageStart) >= 4)
         {
-            if (SDL_ReadIO(stream, ddsSignature, 4) != 4)
+            if (SDL_ReadIO(stream, ddsSignature.data(), 4) != 4)
             {
                 return false;
             }
@@ -516,9 +524,13 @@ namespace nuvelocity
         return true;
     }
 
-    SDL_Surface* SequenceLoaderMode3::BuildSequenceAtlasSurface(
-        bool isHD, bool isCompressed, int atlasWidth, int atlasHeight,
-        const std::vector<uint8_t>& imageData, const std::vector<uint8_t>& alphaChannelData)
+    SDL_Surface*
+    SequenceLoaderMode3::BuildSequenceAtlasSurface(bool isHD,
+                                                   bool isCompressed,
+                                                   int atlasWidth,
+                                                   int atlasHeight,
+                                                   const std::vector<uint8_t>& imageData,
+                                                   const std::vector<uint8_t>& alphaChannelData)
     {
         if (imageData.empty())
         {
@@ -614,16 +626,20 @@ namespace nuvelocity
 
         for (int plane = 0; plane < 4; ++plane)
         {
-            DecodeUtils::MergeBitPlane(
-                plane, plane, static_cast<uint32_t>(width), static_cast<uint32_t>(height),
-                const_cast<uint8_t*>(imageData.data()), surface);
+            DecodeUtils::MergeBitPlane(plane,
+                                       plane,
+                                       static_cast<uint32_t>(width),
+                                       static_cast<uint32_t>(height),
+                                       const_cast<uint8_t*>(imageData.data()),
+                                       surface);
         }
 
         return surface;
     }
 
-    SDL_Surface* SequenceLoaderMode3::BuildJpegAtlasSurface(
-        const std::vector<uint8_t>& imageData, const std::vector<uint8_t>& alphaChannelData)
+    SDL_Surface*
+    SequenceLoaderMode3::BuildJpegAtlasSurface(const std::vector<uint8_t>& imageData,
+                                               const std::vector<uint8_t>& alphaChannelData)
     {
         if (imageData.empty())
         {
@@ -659,9 +675,12 @@ namespace nuvelocity
         SDL_BlitSurface(loaded, nullptr, output, nullptr);
         SDL_DestroySurface(loaded);
 
-        DecodeUtils::MergeBitPlane(0, 3, static_cast<uint32_t>(output->w),
-                       static_cast<uint32_t>(output->h),
-                       const_cast<uint8_t*>(alphaChannelData.data()), output);
+        DecodeUtils::MergeBitPlane(0,
+                                   3,
+                                   static_cast<uint32_t>(output->w),
+                                   static_cast<uint32_t>(output->h),
+                                   const_cast<uint8_t*>(alphaChannelData.data()),
+                                   output);
         return output;
     }
 
@@ -686,14 +705,15 @@ namespace nuvelocity
             return nullptr;
         }
 
-        SDL_Rect srcRect{info->GetLeft(), info->GetTop(), frameWidth, frameHeight};
-        SDL_Rect dstRect{0, 0, frameWidth, frameHeight};
+        SDL_Rect srcRect{
+            .x = info->GetLeft(), .y = info->GetTop(), .w = frameWidth, .h = frameHeight};
+        SDL_Rect dstRect{.x = 0, .y = 0, .w = frameWidth, .h = frameHeight};
         SDL_BlitSurface(atlas, &srcRect, frame, &dstRect);
         return frame;
     }
 
-    SDL_Surface* SequenceLoaderMode3::BuildOffsetSurface(SDL_Surface* source, int offsetX,
-                                                         int offsetY)
+    SDL_Surface*
+    SequenceLoaderMode3::BuildOffsetSurface(SDL_Surface* source, int offsetX, int offsetY)
     {
         if (source == nullptr)
         {
@@ -709,8 +729,10 @@ namespace nuvelocity
             return nullptr;
         }
 
-        SDL_Rect dstRect{offsetX > 0 ? offsetX : 0, offsetY > 0 ? offsetY : 0, source->w,
-                         source->h};
+        SDL_Rect dstRect{.x = offsetX > 0 ? offsetX : 0,
+                         .y = offsetY > 0 ? offsetY : 0,
+                         .w = source->w,
+                         .h = source->h};
         SDL_BlitSurface(source, nullptr, offsetSurface, &dstRect);
         return offsetSurface;
     }

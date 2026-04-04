@@ -22,9 +22,13 @@ namespace nuvelocity
             AddProperty(aInfo, "Frame Infos", &SequenceFrameInfoList::mValues, "Frame Info");
             AddProperty(aInfo, "WasRLE", &SequenceFrameInfoList::mWasRle);
             AddProperty(aInfo, "Flags", &SequenceFrameInfoList::mFlags);
-            AddEnumProperty(aInfo, "BlitType", &SequenceFrameInfoList::mBlitType,
+            AddEnumProperty(aInfo,
+                            "BlitType",
+                            &SequenceFrameInfoList::mBlitType,
                             GetBlitTypeSerializedValues());
-            AddEnumProperty(aInfo, "Blit Type", &SequenceFrameInfoList::mBlitType,
+            AddEnumProperty(aInfo,
+                            "Blit Type",
+                            &SequenceFrameInfoList::mBlitType,
                             GetBlitTypeSerializedValues());
             AddProperty(aInfo, "FPS", &SequenceFrameInfoList::mFramesPerSecond);
         }

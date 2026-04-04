@@ -5,7 +5,6 @@ namespace nuvelocity
     Font::Font()
             : mFontFamily(kFontDefaultFamily)
             , mBlitType(BLIT_TRANSPARENT_MASK)
-            , mGeneratedColor("")
             , mPointSize(kFontDefaultPointSize)
             , mGenerateAllCaps(false)
     {

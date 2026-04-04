@@ -39,7 +39,9 @@ namespace nuvelocity
         size_t mSize;
 
     public:
-        Property(const std::string& name, size_t offset, size_t size,
+        Property(const std::string& name,
+                 size_t offset,
+                 size_t size,
                  const std::string& description = "")
                 : mName(name)
                 , mOffset(offset)
@@ -70,8 +72,8 @@ namespace nuvelocity
     protected:
         inline void* GetValuePtr(void* obj) const
         {
-            char* base = (char*) obj;
-            return (void*) (base + mOffset);
+            char* base = (char*)obj;
+            return (void*)(base + mOffset);
         }
 
     public:
@@ -82,14 +84,15 @@ namespace nuvelocity
 
         virtual void SetValue(void* obj, const void* valuePtr)
         {
-            char* dest = (char*) obj + mOffset;
+            char* dest = (char*)obj + mOffset;
             memcpy(dest, valuePtr, mSize);
         }
 
         virtual void SetValue(void* obj, const std::string& value)
         {
             SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                        "String assignment not supported for property '%s'", mName.c_str());
+                        "String assignment not supported for property '%s'",
+                        mName.c_str());
         }
 
         virtual PropertyType GetType() const
@@ -140,13 +143,15 @@ namespace nuvelocity
         virtual void AddMapEntry(void* obj, const std::string& key, const std::string& value)
         {
             SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                        "Map entry insertion not supported for property '%s'", mName.c_str());
+                        "Map entry insertion not supported for property '%s'",
+                        mName.c_str());
         }
 
         virtual void AddArrayEntry(void* obj, const std::string& value)
         {
             SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                        "Array entry insertion not supported for property '%s'", mName.c_str());
+                        "Array entry insertion not supported for property '%s'",
+                        mName.c_str());
         }
 
         virtual void AddArrayObjectEntry(void* obj, void* valueObj)
@@ -188,17 +193,17 @@ namespace nuvelocity
 
         int GetIntValue(void* obj) const
         {
-            return *(int*) GetValuePtr(obj);
+            return *(int*)GetValuePtr(obj);
         }
 
         void SetIntValue(void* obj, int value)
         {
-            *(int*) GetValuePtr(obj) = value;
+            *(int*)GetValuePtr(obj) = value;
         }
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            *(int*) GetValuePtr(obj) = *(const int*) valuePtr;
+            *(int*)GetValuePtr(obj) = *(const int*)valuePtr;
         }
 
         void SetValue(void* obj, const std::string& value) override
@@ -211,8 +216,10 @@ namespace nuvelocity
             catch (const std::exception& e)
             {
                 SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                            "Failed to convert '%s' to int for property '%s': %s", value.c_str(),
-                            mName.c_str(), e.what());
+                            "Failed to convert '%s' to int for property '%s': %s",
+                            value.c_str(),
+                            mName.c_str(),
+                            e.what());
             }
         }
 
@@ -238,17 +245,17 @@ namespace nuvelocity
 
         unsigned int GetUIntValue(void* obj) const
         {
-            return *(unsigned int*) GetValuePtr(obj);
+            return *(unsigned int*)GetValuePtr(obj);
         }
 
         void SetUIntValue(void* obj, unsigned int value)
         {
-            *(unsigned int*) GetValuePtr(obj) = value;
+            *(unsigned int*)GetValuePtr(obj) = value;
         }
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            *(unsigned int*) GetValuePtr(obj) = *(const unsigned int*) valuePtr;
+            *(unsigned int*)GetValuePtr(obj) = *(const unsigned int*)valuePtr;
         }
 
         void SetValue(void* obj, const std::string& value) override
@@ -262,7 +269,9 @@ namespace nuvelocity
             {
                 SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                             "Failed to convert '%s' to unsigned int for property '%s': %s",
-                            value.c_str(), mName.c_str(), e.what());
+                            value.c_str(),
+                            mName.c_str(),
+                            e.what());
             }
         }
 
@@ -288,17 +297,17 @@ namespace nuvelocity
 
         float GetFloatValue(void* obj) const
         {
-            return *(float*) GetValuePtr(obj);
+            return *(float*)GetValuePtr(obj);
         }
 
         void SetFloatValue(void* obj, float value)
         {
-            *(float*) GetValuePtr(obj) = value;
+            *(float*)GetValuePtr(obj) = value;
         }
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            *(float*) GetValuePtr(obj) = *(const float*) valuePtr;
+            *(float*)GetValuePtr(obj) = *(const float*)valuePtr;
         }
 
         void SetValue(void* obj, const std::string& value) override
@@ -311,8 +320,10 @@ namespace nuvelocity
             catch (const std::exception& e)
             {
                 SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                            "Failed to convert '%s' to float for property '%s': %s", value.c_str(),
-                            mName.c_str(), e.what());
+                            "Failed to convert '%s' to float for property '%s': %s",
+                            value.c_str(),
+                            mName.c_str(),
+                            e.what());
             }
         }
 
@@ -338,17 +349,17 @@ namespace nuvelocity
 
         double GetDoubleValue(void* obj) const
         {
-            return *(double*) GetValuePtr(obj);
+            return *(double*)GetValuePtr(obj);
         }
 
         void SetDoubleValue(void* obj, double value)
         {
-            *(double*) GetValuePtr(obj) = value;
+            *(double*)GetValuePtr(obj) = value;
         }
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            *(double*) GetValuePtr(obj) = *(const double*) valuePtr;
+            *(double*)GetValuePtr(obj) = *(const double*)valuePtr;
         }
 
         void SetValue(void* obj, const std::string& value) override
@@ -361,8 +372,10 @@ namespace nuvelocity
             catch (const std::exception& e)
             {
                 SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                            "Failed to convert '%s' to double for property '%s': %s", value.c_str(),
-                            mName.c_str(), e.what());
+                            "Failed to convert '%s' to double for property '%s': %s",
+                            value.c_str(),
+                            mName.c_str(),
+                            e.what());
             }
         }
 
@@ -388,17 +401,17 @@ namespace nuvelocity
 
         bool GetBoolValue(void* obj) const
         {
-            return *(bool*) GetValuePtr(obj);
+            return *(bool*)GetValuePtr(obj);
         }
 
         void SetBoolValue(void* obj, bool value)
         {
-            *(bool*) GetValuePtr(obj) = value;
+            *(bool*)GetValuePtr(obj) = value;
         }
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            *(bool*) GetValuePtr(obj) = *(const bool*) valuePtr;
+            *(bool*)GetValuePtr(obj) = *(const bool*)valuePtr;
         }
 
         void SetValue(void* obj, const std::string& value) override
@@ -415,7 +428,8 @@ namespace nuvelocity
             {
                 SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                             "Failed to convert '%s' to bool for property '%s': expected '1'/'0'",
-                            value.c_str(), mName.c_str());
+                            value.c_str(),
+                            mName.c_str());
             }
         }
 
@@ -441,17 +455,17 @@ namespace nuvelocity
 
         std::string GetStringValue(void* obj) const
         {
-            return *(std::string*) GetValuePtr(obj);
+            return *(std::string*)GetValuePtr(obj);
         }
 
         void SetStringValue(void* obj, const std::string& value)
         {
-            *(std::string*) GetValuePtr(obj) = value;
+            *(std::string*)GetValuePtr(obj) = value;
         }
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            *(std::string*) GetValuePtr(obj) = *(const std::string*) valuePtr;
+            *(std::string*)GetValuePtr(obj) = *(const std::string*)valuePtr;
         }
 
         void SetValue(void* obj, const std::string& value) override
@@ -481,17 +495,17 @@ namespace nuvelocity
 
         const char* GetCStringValue(void* obj) const
         {
-            return *(const char**) GetValuePtr(obj);
+            return *(const char**)GetValuePtr(obj);
         }
 
         void SetCStringValue(void* obj, const char* value)
         {
-            *(const char**) GetValuePtr(obj) = value;
+            *(const char**)GetValuePtr(obj) = value;
         }
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            *(const char**) GetValuePtr(obj) = *(const char* const*) valuePtr;
+            *(const char**)GetValuePtr(obj) = *(const char* const*)valuePtr;
         }
 
         void SetValue(void* obj, const std::string& value) override
@@ -519,7 +533,9 @@ namespace nuvelocity
         bool mStorageIsInt32;
 
     public:
-        EnumProperty(const std::string& name, size_t offset, size_t size,
+        EnumProperty(const std::string& name,
+                     size_t offset,
+                     size_t size,
                      bool storageIsInt32 = true)
                 : Property(name, offset, size)
                 , mStorageIsInt32(storageIsInt32)
@@ -537,24 +553,25 @@ namespace nuvelocity
             void* valuePtr = GetValuePtr(obj);
             if (mStorageIsInt32)
             {
-                return *(int*) valuePtr;
+                return *(int*)valuePtr;
             }
 
             if (mSize == 1)
             {
-                return static_cast<int>(*(uint8_t*) valuePtr);
+                return static_cast<int>(*(uint8_t*)valuePtr);
             }
             if (mSize == 2)
             {
-                return static_cast<int>(*(uint16_t*) valuePtr);
+                return static_cast<int>(*(uint16_t*)valuePtr);
             }
             if (mSize == 4)
             {
-                return static_cast<int>(*(uint32_t*) valuePtr);
+                return static_cast<int>(*(uint32_t*)valuePtr);
             }
 
             SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                        "Unsupported enum storage size (%zu) for property '%s'", mSize,
+                        "Unsupported enum storage size (%zu) for property '%s'",
+                        mSize,
                         mName.c_str());
             return 0;
         }
@@ -564,34 +581,35 @@ namespace nuvelocity
             void* valuePtr = GetValuePtr(obj);
             if (mStorageIsInt32)
             {
-                *(int*) valuePtr = value;
+                *(int*)valuePtr = value;
                 return;
             }
 
             if (mSize == 1)
             {
-                *(uint8_t*) valuePtr = static_cast<uint8_t>(value);
+                *(uint8_t*)valuePtr = static_cast<uint8_t>(value);
                 return;
             }
             if (mSize == 2)
             {
-                *(uint16_t*) valuePtr = static_cast<uint16_t>(value);
+                *(uint16_t*)valuePtr = static_cast<uint16_t>(value);
                 return;
             }
             if (mSize == 4)
             {
-                *(uint32_t*) valuePtr = static_cast<uint32_t>(value);
+                *(uint32_t*)valuePtr = static_cast<uint32_t>(value);
                 return;
             }
 
             SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                        "Unsupported enum storage size (%zu) for property '%s'", mSize,
+                        "Unsupported enum storage size (%zu) for property '%s'",
+                        mSize,
                         mName.c_str());
         }
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            SetIntValue(obj, *(const int*) valuePtr);
+            SetIntValue(obj, *(const int*)valuePtr);
         }
 
         void SetValue(void* obj, const std::string& value) override
@@ -612,7 +630,9 @@ namespace nuvelocity
             {
                 SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                             "Failed to convert '%s' to enum for property '%s': %s",
-                            value.c_str(), mName.c_str(), e.what());
+                            value.c_str(),
+                            mName.c_str(),
+                            e.what());
             }
         }
 
@@ -645,7 +665,9 @@ namespace nuvelocity
         ClassInfo* mChildClassInfo;
 
     public:
-        ObjectProperty(const std::string& name, size_t offset, size_t size,
+        ObjectProperty(const std::string& name,
+                       size_t offset,
+                       size_t size,
                        ClassInfo* childClassInfo)
                 : Property(name, offset, size)
                 , mChildClassInfo(childClassInfo)
@@ -674,8 +696,10 @@ namespace nuvelocity
         static constexpr bool is_pointer_v = std::is_pointer_v<U>;
 
     public:
-        VectorProperty(const std::string& name, size_t offset, size_t size,
-                      const std::string& itemKey = "")
+        VectorProperty(const std::string& name,
+                       size_t offset,
+                       size_t size,
+                       const std::string& itemKey = "")
                 : Property(name, offset, size)
                 , mItemKey(itemKey)
         {
@@ -683,7 +707,7 @@ namespace nuvelocity
 
         std::vector<T>& GetVector(void* obj) const
         {
-            return *(std::vector<T>*) GetValuePtr(obj);
+            return *(std::vector<T>*)GetValuePtr(obj);
         }
 
         size_t GetArraySize(void* obj) const override
@@ -718,7 +742,7 @@ namespace nuvelocity
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            *(std::vector<T>*) GetValuePtr(obj) = *(const std::vector<T>*) valuePtr;
+            *(std::vector<T>*)GetValuePtr(obj) = *(const std::vector<T>*)valuePtr;
         }
 
         void SetValue(void* obj, const std::string& value) override
@@ -761,7 +785,8 @@ namespace nuvelocity
                 {
                     SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                                 "Failed to add array entry for property '%s': %s",
-                                mName.c_str(), e.what());
+                                mName.c_str(),
+                                e.what());
                 }
             }
         }
@@ -893,7 +918,8 @@ namespace nuvelocity
             catch (const std::exception& e)
             {
                 SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                            "Failed to add map entry for property '%s': %s", mName.c_str(),
+                            "Failed to add map entry for property '%s': %s",
+                            mName.c_str(),
                             e.what());
             }
         }
@@ -929,7 +955,8 @@ namespace nuvelocity
                 {
                     SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                                 "Failed to add object map entry for property '%s': %s",
-                                mName.c_str(), e.what());
+                                mName.c_str(),
+                                e.what());
                 }
             }
             else
@@ -957,7 +984,7 @@ namespace nuvelocity
 
         std::map<K, V>& GetMapContainer(void* obj) const override
         {
-            return *(std::map<K, V>*) GetValuePtr(obj);
+            return *(std::map<K, V>*)GetValuePtr(obj);
         }
 
         std::map<K, V>& GetMap(void* obj) const
@@ -967,7 +994,7 @@ namespace nuvelocity
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            *(std::map<K, V>*) GetValuePtr(obj) = *(const std::map<K, V>*) valuePtr;
+            *(std::map<K, V>*)GetValuePtr(obj) = *(const std::map<K, V>*)valuePtr;
         }
 
         void DumpValue(void* obj) const override
@@ -998,7 +1025,7 @@ namespace nuvelocity
 
         std::unordered_map<K, V>& GetMapContainer(void* obj) const override
         {
-            return *(std::unordered_map<K, V>*) GetValuePtr(obj);
+            return *(std::unordered_map<K, V>*)GetValuePtr(obj);
         }
 
         std::unordered_map<K, V>& GetMap(void* obj) const
@@ -1008,8 +1035,8 @@ namespace nuvelocity
 
         void SetValue(void* obj, const void* valuePtr) override
         {
-            *(std::unordered_map<K, V>*) GetValuePtr(obj) =
-                *(const std::unordered_map<K, V>*) valuePtr;
+            *(std::unordered_map<K, V>*)GetValuePtr(obj) =
+                *(const std::unordered_map<K, V>*)valuePtr;
         }
 
         void DumpValue(void* obj) const override

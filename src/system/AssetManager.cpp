@@ -7,9 +7,9 @@
 
 #include "AssetManager.h"
 
+#include "Utils.h"
 #include "decoders/FrameLoaderMode3.h"
 #include "decoders/SequenceLoaderMode3.h"
-#include "Utils.h"
 #include "model/PropertySerializer.h"
 
 namespace nuvelocity

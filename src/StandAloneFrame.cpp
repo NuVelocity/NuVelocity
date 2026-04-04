@@ -43,7 +43,8 @@ namespace nuvelocity
         return nullptr;
     }
 
-    bool StandAloneFrame::Render(SDL_Renderer* renderer, const SDL_FRect* destRect,
+    bool StandAloneFrame::Render(SDL_Renderer* renderer,
+                                 const SDL_FRect* destRect,
                                  const SDL_FRect* srcRect)
     {
         SDL_Texture* texture = GetTexture(renderer);
@@ -79,9 +80,10 @@ namespace nuvelocity
             return false;
         }
 
-        SDL_FRect destRect = {(static_cast<float>(winWidth) - texWidth) / 2.0F,
-                              (static_cast<float>(winHeight) - texHeight) / 2.0F, texWidth,
-                              texHeight};
+        SDL_FRect destRect = {.x = (static_cast<float>(winWidth) - texWidth) / 2.0F,
+                              .y = (static_cast<float>(winHeight) - texHeight) / 2.0F,
+                              .w = texWidth,
+                              .h = texHeight};
         return SDL_RenderTexture(renderer, texture, nullptr, &destRect);
     }
 } // namespace nuvelocity

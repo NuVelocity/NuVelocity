@@ -52,8 +52,6 @@ namespace nuvelocity
             , mDoDither(true)
             , mIsLossless(false)
             , mJpegQuality(kDefaultJpegQuality)
-            , mFrameSurfaces()
-            , mFrameTextures()
             , mAnimationStartTick(SDL_GetTicks())
 #endif
     {
@@ -190,8 +188,8 @@ namespace nuvelocity
         return frameIndex % frameCount;
     }
 
-    bool Sequence::Render(SDL_Renderer* renderer,
-                          const SDL_FRect* destRect, const SDL_FRect* srcRect)
+    bool
+    Sequence::Render(SDL_Renderer* renderer, const SDL_FRect* destRect, const SDL_FRect* srcRect)
     {
         const std::size_t index = GetAnimatedFrameIndex();
         SDL_Texture* texture = GetTexture(index, renderer);
@@ -229,9 +227,10 @@ namespace nuvelocity
             return false;
         }
 
-        SDL_FRect destRect = {(static_cast<float>(winWidth) - texWidth) / 2.0F,
-                              (static_cast<float>(winHeight) - texHeight) / 2.0F, texWidth,
-                              texHeight};
+        SDL_FRect destRect = {.x = (static_cast<float>(winWidth) - texWidth) / 2.0F,
+                              .y = (static_cast<float>(winHeight) - texHeight) / 2.0F,
+                              .w = texWidth,
+                              .h = texHeight};
         return SDL_RenderTexture(renderer, texture, nullptr, &destRect);
     }
 
@@ -248,7 +247,9 @@ namespace nuvelocity
         mIsLossless = HasFlag(flags, SequenceFlags::Lossless);
     }
 
-    void Sequence::ApplyFrameInfoList(SequenceFlags flags, int rawBlitType, float framesPerSecond,
+    void Sequence::ApplyFrameInfoList(SequenceFlags flags,
+                                      int rawBlitType,
+                                      float framesPerSecond,
                                       BlitTypeRevision revision)
     {
         ApplySequenceFlags(flags);

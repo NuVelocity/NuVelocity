@@ -7,8 +7,7 @@
 
 namespace nuvelocity
 {
-    inline constexpr const char* kFontDefaultFamily =
-        "Resources/Fonts/TRUE TYPES/!default.ttf";
+    inline constexpr const char* kFontDefaultFamily = "Resources/Fonts/TRUE TYPES/!default.ttf";
     inline constexpr int kFontDefaultPointSize = 12;
 
     // TODO: check default values.
@@ -22,8 +21,8 @@ namespace nuvelocity
         {
             aInfo.mName = "CFont";
             AddProperty(aInfo, "Font Family", &Font::mFontFamily);
-            AddEnumProperty<BlitType>(aInfo, "Blit Type", &Font::mBlitType,
-                            GetBlitTypeSerializedValues());
+            AddEnumProperty<BlitType>(
+                aInfo, "Blit Type", &Font::mBlitType, GetBlitTypeSerializedValues());
 
             // FIXME: colors are not handled by serialization code.
             AddProperty(aInfo, "Generated Color", &Font::mGeneratedColor);

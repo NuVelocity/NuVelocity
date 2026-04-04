@@ -61,8 +61,8 @@ namespace nuvelocity
             std::stack<size_t> arrayCountStack = {};
             std::stack<ParserScope> scopeStack = {};
 
-            uint8_t** hexArrayData = nullptr;       // Pointer to the array pointer held by property
-            size_t hexArraySize = 0;                // Current size of data written
+            uint8_t** hexArrayData = nullptr; // Pointer to the array pointer held by property
+            size_t hexArraySize = 0;          // Current size of data written
             ClassInfo* currentInfo = nullptr;
             void* currentObject = nullptr;
             ParserScope scope = ParserScope::None;
@@ -148,8 +148,9 @@ namespace nuvelocity
                 context.currentInfo->mHexArrayProperty->GetValue(context.currentObject));
             if (context.hexArrayData == nullptr)
             {
-                throw std::runtime_error(std::string("Failed to get hex array pointer for property '") +
-                                         context.currentInfo->mHexArrayProperty->GetName() + "'");
+                throw std::runtime_error(
+                    std::string("Failed to get hex array pointer for property '") +
+                    context.currentInfo->mHexArrayProperty->GetName() + "'");
             }
             context.hexArraySize = 0;
         }
@@ -161,7 +162,8 @@ namespace nuvelocity
                 SDL_LogWarn(
                     NVE_LOG_CATEGORY_PROPSYS,
                     "Deserialized %zu bytes of hex array data for class '%s' into property '%s'",
-                    context.hexArraySize, context.currentInfo->mName.c_str(),
+                    context.hexArraySize,
+                    context.currentInfo->mName.c_str(),
                     context.currentInfo->mHexArrayProperty->GetName().c_str());
             }
             context.hexArrayData = nullptr;
@@ -240,7 +242,8 @@ namespace nuvelocity
             PopScope(context);
         }
 
-        static bool HandleArrayContainerMetadata(Property* prop, const std::string& key,
+        static bool HandleArrayContainerMetadata(Property* prop,
+                                                 const std::string& key,
                                                  const std::string& value,
                                                  DeserializeContext& context)
         {
@@ -277,8 +280,10 @@ namespace nuvelocity
             return false;
         }
 
-        static void HandleContainerElement(Property* prop, const std::string& key,
-                                           const std::string& value, DeserializeContext& context)
+        static void HandleContainerElement(Property* prop,
+                                           const std::string& key,
+                                           const std::string& value,
+                                           DeserializeContext& context)
         {
             PropertyType containerType = prop->GetType();
             bool hasObjectElements =
@@ -322,7 +327,8 @@ namespace nuvelocity
             }
         }
 
-        static void HandlePropertyAssignment(const std::string& key, const std::string& value,
+        static void HandlePropertyAssignment(const std::string& key,
+                                             const std::string& value,
                                              DeserializeContext& context)
         {
             if (key == kKeyDynamicProperties)
@@ -410,7 +416,9 @@ namespace nuvelocity
         }
 
         template <typename T>
-        static void HandleObjectInstantiation(const std::string& line, T*& output, ClassInfo*& info,
+        static void HandleObjectInstantiation(const std::string& line,
+                                              T*& output,
+                                              ClassInfo*& info,
                                               DeserializeContext& context)
         {
             auto [classInfo, obj] = InstantiateObject(line, {});
@@ -533,8 +541,8 @@ namespace nuvelocity
         }
     }
 
-    inline static void SerializeObject(const void* object, ClassInfo* classInfo,
-                                       std::string& output, int indentLevel)
+    inline static void
+    SerializeObject(const void* object, ClassInfo* classInfo, std::string& output, int indentLevel)
     {
         if (classInfo == nullptr || object == nullptr)
         {
@@ -557,7 +565,8 @@ namespace nuvelocity
                 size_t arraySize = prop->GetArraySize(const_cast<void*>(object));
                 AppendLine(output, indentLevel + 1, propName + "=" + std::string(kKeyArray));
                 AppendLine(output, indentLevel + 1, std::string(kTokenOpenBrace));
-                AppendLine(output, indentLevel + 2,
+                AppendLine(output,
+                           indentLevel + 2,
                            std::string(kKeyItemCount) + "=" + std::to_string(arraySize));
 
                 std::string itemKey = prop->GetItemKey();
@@ -601,7 +610,8 @@ namespace nuvelocity
                     else
                     {
                         SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS,
-                                    "No ClassInfo for object property '%s'", propName.c_str());
+                                    "No ClassInfo for object property '%s'",
+                                    propName.c_str());
                     }
                 }
                 break;

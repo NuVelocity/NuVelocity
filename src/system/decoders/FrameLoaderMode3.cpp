@@ -51,8 +51,7 @@ namespace nuvelocity
         return LoadJpegFrame(frame, stream);
     }
 
-    bool FrameLoaderMode3::LoadCompressedDeflateFrame(StandAloneFrame* frame,
-                                                       SDL_IOStream* stream)
+    bool FrameLoaderMode3::LoadCompressedDeflateFrame(StandAloneFrame* frame, SDL_IOStream* stream)
     {
         // Note to callers: this method assumes the stream is positioned after the 9-byte header,
         // and before the deflate header.
@@ -74,8 +73,7 @@ namespace nuvelocity
         }
 
         auto* imageData = static_cast<uint8_t*>(SDL_malloc(inflatedSize));
-        if (DecodeUtils::Inflate(imageData, &inflatedSize, sourceImageData, &deflatedSize) !=
-            Z_OK)
+        if (DecodeUtils::Inflate(imageData, &inflatedSize, sourceImageData, &deflatedSize) != Z_OK)
         {
             SDL_free(sourceImageData);
             SDL_free(imageData);
@@ -104,8 +102,7 @@ namespace nuvelocity
         return true;
     }
 
-    bool FrameLoaderMode3::LoadCompressedPackedFrame(StandAloneFrame* frame,
-                                                      SDL_IOStream* stream)
+    bool FrameLoaderMode3::LoadCompressedPackedFrame(StandAloneFrame* frame, SDL_IOStream* stream)
     {
         // Note to callers: this method assumes the stream is positioned after the 9-byte header.
         uint32_t inflatedSize = 0;
@@ -201,8 +198,8 @@ namespace nuvelocity
             SDL_DestroySurface(frame->mSurface);
             frame->mSurface = output;
 
-            DecodeUtils::MergeBitPlane(0, 3, frame->mSurface->w, frame->mSurface->h, maskData,
-                                       frame->mSurface);
+            DecodeUtils::MergeBitPlane(
+                0, 3, frame->mSurface->w, frame->mSurface->h, maskData, frame->mSurface);
             SDL_free(maskData);
         }
 

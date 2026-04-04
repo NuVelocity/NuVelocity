@@ -28,7 +28,7 @@ namespace nuvelocity
         // Optional vector-based hook for argument-based initialization.
         virtual void InitFromArgs(const std::vector<std::string>& args)
         {
-            (void) args;
+            (void)args;
         }
     };
 
@@ -64,9 +64,8 @@ namespace nuvelocity
             }
 
             info.mFactoryFunction = []() -> void* { return new Derived(); };
-            info.mInitArgsFunction = [](void* obj, std::vector<std::string> args) {
-                static_cast<Derived*>(obj)->InitFromArgs(args);
-            };
+            info.mInitArgsFunction = [](void* obj, std::vector<std::string> args)
+            { static_cast<Derived*>(obj)->InitFromArgs(args); };
 
             // Call derived class's InitClassInfo
             Derived::InitClassInfo(info);
@@ -126,7 +125,8 @@ namespace nuvelocity
         };
 
         template <typename MemberType>
-        static void AddPropertyImpl(ClassInfo& info, const char* name,
+        static void AddPropertyImpl(ClassInfo& info,
+                                    const char* name,
                                     MemberType Derived::* memberPtr,
                                     const std::string& arrayItemKey)
         {
@@ -164,7 +164,8 @@ namespace nuvelocity
             else if constexpr (is_vector<MemberType>::value)
             {
                 using ElementType = typename is_vector<MemberType>::element_type;
-                auto* vectorProp = new VectorProperty<ElementType>(name, offset, size, arrayItemKey);
+                auto* vectorProp =
+                    new VectorProperty<ElementType>(name, offset, size, arrayItemKey);
                 prop = vectorProp;
             }
             else if constexpr (is_map<MemberType>::value)
@@ -202,7 +203,9 @@ namespace nuvelocity
 
         // arrayItemKey is only valid for vector properties
         template <typename MemberType>
-        static void AddProperty(ClassInfo& info, const char* name, MemberType Derived::* memberPtr,
+        static void AddProperty(ClassInfo& info,
+                                const char* name,
+                                MemberType Derived::* memberPtr,
                                 const std::string& arrayItemKey)
         {
             static_assert(is_vector<MemberType>::value,
@@ -212,7 +215,8 @@ namespace nuvelocity
 
         // Helper to register an enum/int property with custom serialized value text.
         template <typename MemberType, typename MappingContainer>
-        static void AddEnumProperty(ClassInfo& info, const char* name,
+        static void AddEnumProperty(ClassInfo& info,
+                                    const char* name,
                                     MemberType Derived::* memberPtr,
                                     const MappingContainer& serializedValues)
         {

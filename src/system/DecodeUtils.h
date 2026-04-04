@@ -41,23 +41,27 @@ namespace nuvelocity
             return aHeader % 0x1F == 0 && (aHeader & 0x0f00) == (8 << 8);
         }
 
-        static inline int Inflate(uint8_t* dest, uint32_t* destLen, const uint8_t* source,
-                                  uint32_t* sourceLen)
+        static inline int
+        Inflate(uint8_t* dest, uint32_t* destLen, const uint8_t* source, uint32_t* sourceLen)
         {
             uLongf destLen64 = *destLen;
             uLongf sourceLen64 = *sourceLen;
             return uncompress2(dest, &destLen64, source, &sourceLen64);
         }
 
-        static inline void MergeBitPlane(int plane, int channel, uint32_t width, uint32_t height,
-                                         uint8_t* planeData, SDL_Surface* surface)
+        static inline void MergeBitPlane(int plane,
+                                         int channel,
+                                         uint32_t width,
+                                         uint32_t height,
+                                         uint8_t* planeData,
+                                         SDL_Surface* surface)
         {
             int rawIndex = plane * width * height;
             for (int y = 0; y < surface->h; y++)
             {
                 for (int x = 0; x < surface->w; x++)
                 {
-                    uint8_t* pixel = (uint8_t*) surface->pixels + y * surface->pitch + x * 4;
+                    uint8_t* pixel = (uint8_t*)surface->pixels + y * surface->pitch + x * 4;
                     uint8_t component = planeData[rawIndex++];
 
                     if (x != 0 || y != 0)
