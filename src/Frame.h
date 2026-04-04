@@ -9,6 +9,8 @@
 
 namespace nuvelocity
 {
+    class DecodeUtils;
+
     class Frame : public Object<Frame>
     {
     public:
@@ -72,6 +74,8 @@ namespace nuvelocity
         SDL_Surface* mSurface;
         SDL_Texture* mTexture;
         SDL_Renderer* mTextureRenderer;
+
+        friend class DecodeUtils;
     };
 } // namespace nuvelocity
 

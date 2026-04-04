@@ -179,7 +179,8 @@ namespace nuvelocity
                                       int hotSpotX,
                                       int hotSpotY,
                                       int maxWidth,
-                                      int maxHeight)
+                                      int maxHeight,
+                                      std::vector<SDL_Rect>& unpaddedBounds)
     {
         for (size_t i = 0; i < frames.size(); ++i)
         {
@@ -204,6 +205,11 @@ namespace nuvelocity
 
             SDL_Rect dstRect{.x = dstX, .y = dstY, .w = frameSurface->w, .h = frameSurface->h};
             SDL_BlitSurface(frameSurface, nullptr, padded, &dstRect);
+            if (i < unpaddedBounds.size())
+            {
+                unpaddedBounds[i] =
+                    SDL_Rect{.x = dstRect.x, .y = dstRect.y, .w = dstRect.w, .h = dstRect.h};
+            }
             SDL_DestroySurface(frameSurface);
             frames[i] = padded;
         }
@@ -303,6 +309,8 @@ namespace nuvelocity
         const std::vector<FrameInfo*>& frameInfos = frameInfoList->GetValues();
         std::vector<SDL_Surface*> frames(frameInfos.size(), nullptr);
         std::vector<std::pair<int, int>> offsets(frameInfos.size(), {0, 0});
+        std::vector<SDL_Rect> unpaddedBounds(frameInfos.size(),
+                                             SDL_Rect{.x = 0, .y = 0, .w = 0, .h = 0});
 
         int maxWidth = 1;
         int maxHeight = 1;
@@ -327,14 +335,33 @@ namespace nuvelocity
             return false;
         }
 
-        if (!PadFramesToCommonSize(
-                frames, offsets, centerHotSpot, hotSpotX, hotSpotY, maxWidth, maxHeight))
+        if (!PadFramesToCommonSize(frames,
+                                   offsets,
+                                   centerHotSpot,
+                                   hotSpotX,
+                                   hotSpotY,
+                                   maxWidth,
+                                   maxHeight,
+                                   unpaddedBounds))
         {
             DestroyFrameList(frames);
             return false;
         }
 
         sequence->SetFrames(std::move(frames));
+
+        for (std::size_t index = 0; index < unpaddedBounds.size(); ++index)
+        {
+            Frame* frame = sequence->GetFrame(index);
+            if (frame == nullptr)
+            {
+                continue;
+            }
+
+            frame->mWidth = unpaddedBounds[index].w;
+            frame->mHeight = unpaddedBounds[index].h;
+        }
+
         return true;
     }
 

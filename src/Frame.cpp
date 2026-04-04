@@ -165,12 +165,12 @@ namespace nuvelocity
 
     int Frame::GetWidth() const
     {
-        return mSurface != nullptr ? mSurface->w : mWidth;
+        return mWidth;
     }
 
     int Frame::GetHeight() const
     {
-        return mSurface != nullptr ? mSurface->h : mHeight;
+        return mHeight;
     }
 
     int Frame::GetBitsPerPixel() const
