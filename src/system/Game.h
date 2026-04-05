@@ -51,12 +51,13 @@ namespace nuvelocity
         NVE_API SpriteBatch* GetSpriteBatch() const;
 
         NVE_API void SetMouseCursor(std::string aSequencePath);
-        NVE_API void SetModuleInfo(ModuleInfo* aModuleInfo);
+        NVE_API void SetModuleInfo(std::string aModuleInfoPath);
 
     protected:
         Scene* mScene;
         static inline bool Fail();
         std::string mCursorSequencePath;
+        std::string mModuleInfoPath;
 
     private:
         bool mInitialized;

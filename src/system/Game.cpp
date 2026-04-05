@@ -56,10 +56,10 @@ namespace nuvelocity
 
         UpdateMouseCursor();
 
-        if (mModuleInfo == nullptr)
-        {
-            mModuleInfo = new ModuleInfo();
-        }
+        mModuleInfo =
+            mModuleInfoPath.empty()
+                ? new ModuleInfo()
+                : static_cast<ModuleInfo*>(AssetManager::LoadPropertyFile(mModuleInfoPath));
 
         SDL_SetAppMetadata(mModuleInfo->GetModuleName().c_str(),
                            mModuleInfo->GetModuleVersion().c_str(),
@@ -234,9 +234,14 @@ namespace nuvelocity
         SDL_SetCursor(mCursor);
     }
 
-    void Game::SetModuleInfo(ModuleInfo* aModuleInfo)
+    void Game::SetModuleInfo(std::string aModuleInfoPath)
     {
-        mModuleInfo = aModuleInfo;
+        mModuleInfoPath = aModuleInfoPath;
+        if (mInitialized)
+        {
+            throw std::runtime_error(
+                "Changing module info path after initialization is not supported.");
+        }
     }
 
     Game::~Game()
