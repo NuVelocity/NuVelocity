@@ -2,6 +2,7 @@
 #define NVE_GAME_H
 
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_render.h>
 
 #include "API.h"
@@ -48,12 +49,17 @@ namespace nuvelocity
         NVE_API Scene* GetScene();
         NVE_API SpriteBatch* GetSpriteBatch() const;
 
+        NVE_API void SetMouseCursor(std::string aSequencePath);
+
     protected:
         Scene* mScene;
         static inline bool Fail();
+        std::string mCursorSequencePath;
 
     private:
         bool mInitialized;
+        SDL_Cursor* mCursor;
+        void UpdateMouseCursor();
     };
 } // namespace nuvelocity
 

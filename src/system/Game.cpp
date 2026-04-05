@@ -24,6 +24,7 @@ namespace nuvelocity
             , mScene(nullptr)
             , mInput(nullptr)
             , mSpriteBatch(nullptr)
+            , mCursor(nullptr)
     {
     }
 
@@ -111,6 +112,8 @@ namespace nuvelocity
             return Fail();
         }
 
+        UpdateMouseCursor();
+
         mAudio = new AudioManager();
         if (!mAudio->Initialize(argv))
         {
@@ -174,10 +177,64 @@ namespace nuvelocity
         return mSpriteBatch;
     }
 
+    void Game::SetMouseCursor(std::string aSequencePath)
+    {
+        mCursorSequencePath = aSequencePath;
+        if (mInitialized)
+        {
+            UpdateMouseCursor();
+        }
+    }
+
+    void Game::UpdateMouseCursor()
+    {
+        Sequence* cursorSequence = AssetManager::LoadSequence(mCursorSequencePath);
+        if (cursorSequence == nullptr || cursorSequence->GetFrameCount() == 0)
+        {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                        "Mouse cursor sequence is unavailable at %s.",
+                        mCursorSequencePath.c_str());
+            return;
+        }
+
+        Frame* cursorFrame = cursorSequence->GetFrame(0);
+        SDL_Surface* cursorSurface = cursorFrame != nullptr ? cursorFrame->GetSurface() : nullptr;
+        if (cursorSurface == nullptr)
+        {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                        "Mouse cursor surface could not be created from sequence frame.");
+            return;
+        }
+
+        // FIXME: The hot spot is currently hardcoded. This should be taken from sequence data.
+        SDL_Cursor* cursor = SDL_CreateColorCursor(cursorSurface, 18, 22);
+        if (cursor == nullptr)
+        {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                        "Failed to create custom mouse cursor: %s",
+                        SDL_GetError());
+            return;
+        }
+
+        if (mCursor != nullptr)
+        {
+            SDL_DestroyCursor(mCursor);
+        }
+
+        mCursor = cursor;
+        SDL_SetCursor(mCursor);
+    }
+
     Game::~Game()
     {
         delete mScene;
         mScene = nullptr;
+
+        if (mCursor != nullptr)
+        {
+            SDL_DestroyCursor(mCursor);
+            mCursor = nullptr;
+        }
 
         delete mSpriteBatch;
         mSpriteBatch = nullptr;
