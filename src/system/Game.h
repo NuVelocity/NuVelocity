@@ -10,6 +10,7 @@
 #include "AudioManager.h"
 #include "FontManager.h"
 #include "InputManager.h"
+#include "ModuleInfo.h"
 #include "Scene.h"
 
 namespace nuvelocity
@@ -50,6 +51,7 @@ namespace nuvelocity
         NVE_API SpriteBatch* GetSpriteBatch() const;
 
         NVE_API void SetMouseCursor(std::string aSequencePath);
+        NVE_API void SetModuleInfo(ModuleInfo* aModuleInfo);
 
     protected:
         Scene* mScene;
@@ -58,6 +60,7 @@ namespace nuvelocity
 
     private:
         bool mInitialized;
+        ModuleInfo* mModuleInfo;
         SDL_Cursor* mCursor;
         void UpdateMouseCursor();
     };

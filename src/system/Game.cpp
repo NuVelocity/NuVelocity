@@ -46,6 +46,15 @@ namespace nuvelocity
             return true;
         }
 
+        if (mModuleInfo == nullptr)
+        {
+            mModuleInfo = new ModuleInfo();
+        }
+
+        SDL_SetAppMetadata(mModuleInfo->GetModuleName().c_str(),
+                           mModuleInfo->GetModuleVersion().c_str(),
+                           mModuleInfo->GetModuleId().c_str());
+
         if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
         {
             return Fail();
@@ -223,6 +232,11 @@ namespace nuvelocity
 
         mCursor = cursor;
         SDL_SetCursor(mCursor);
+    }
+
+    void Game::SetModuleInfo(ModuleInfo* aModuleInfo)
+    {
+        mModuleInfo = aModuleInfo;
     }
 
     Game::~Game()
