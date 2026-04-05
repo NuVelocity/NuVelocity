@@ -46,6 +46,16 @@ namespace nuvelocity
             return true;
         }
 
+        RegisterEngineObjectTypes();
+
+        mAsset = new AssetManager();
+        if (!mAsset->Initialize(argv))
+        {
+            return Fail();
+        }
+
+        UpdateMouseCursor();
+
         if (mModuleInfo == nullptr)
         {
             mModuleInfo = new ModuleInfo();
@@ -57,14 +67,6 @@ namespace nuvelocity
 
         if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
         {
-            return Fail();
-        }
-
-        mFont = new FontManager();
-        if (!mFont->Initialize(argv))
-        {
-            delete mFont;
-            mFont = nullptr;
             return Fail();
         }
 
@@ -113,15 +115,13 @@ namespace nuvelocity
 
         SDL_SetRenderVSync(mRenderer, -1);
 
-        RegisterEngineObjectTypes();
-
-        mAsset = new AssetManager();
-        if (!mAsset->Initialize(argv))
+        mFont = new FontManager();
+        if (!mFont->Initialize(argv))
         {
+            delete mFont;
+            mFont = nullptr;
             return Fail();
         }
-
-        UpdateMouseCursor();
 
         mAudio = new AudioManager();
         if (!mAudio->Initialize(argv))
