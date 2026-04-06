@@ -535,6 +535,7 @@ namespace nuvelocity
         {
             return nullptr;
         }
+        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 
         SDL_ClearSurface(surface, 0.0F, 0.0F, 0.0F, 0.0F);
         return surface;

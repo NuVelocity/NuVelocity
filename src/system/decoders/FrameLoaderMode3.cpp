@@ -86,12 +86,13 @@ namespace nuvelocity
 
         // Create SDL surface from decompressed image data
         SDL_Surface* surface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
-        frame->SetSurface(surface);
         if (surface == nullptr)
         {
             SDL_free(imageData);
             return false;
         }
+        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
+        frame->SetSurface(surface);
 
         // Process 4 planes of RGBA data with row offset addition
         for (int plane = 0; plane < 4; plane++)
@@ -123,12 +124,13 @@ namespace nuvelocity
 
         // Create SDL surface from packed image data
         SDL_Surface* surface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
-        frame->SetSurface(surface);
         if (surface == nullptr)
         {
             SDL_free(imageData);
             return false;
         }
+        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
+        frame->SetSurface(surface);
 
         SDL_memcpy(surface->pixels, imageData, inflatedSize);
         SDL_free(imageData);
@@ -167,6 +169,7 @@ namespace nuvelocity
 
             // The original surface does not have an alpha channel.
             SDL_Surface* output = SDL_CreateSurface(surface->w, surface->h, SDL_PIXELFORMAT_RGBA32);
+            SDL_SetSurfaceBlendMode(output, SDL_BLENDMODE_NONE);
             if (output == nullptr)
             {
                 return false;

@@ -92,11 +92,12 @@ namespace nuvelocity
         }
 
         SDL_Surface* surface = SDL_CreateSurface(width, height, GetPixelFormatForBpp(bpp));
-        SetSurface(surface);
         if (surface == nullptr)
         {
             throw std::runtime_error("Failed to create frame surface");
         }
+        SetSurface(surface);
+        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
     }
 
     void Frame::InitFromArgs(const std::vector<std::string>& args)
@@ -236,6 +237,7 @@ namespace nuvelocity
         mTexture = SDL_CreateTextureFromSurface(renderer, mSurface);
         if (mTexture != nullptr)
         {
+            SDL_SetTextureBlendMode(mTexture, SDL_BLENDMODE_BLEND);
             mTextureRenderer = renderer;
         }
 

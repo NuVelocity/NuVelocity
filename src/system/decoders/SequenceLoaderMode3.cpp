@@ -413,6 +413,7 @@ namespace nuvelocity
         {
             return nullptr;
         }
+        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 
         for (int plane = 0; plane < 4; ++plane)
         {
@@ -449,6 +450,7 @@ namespace nuvelocity
         {
             return nullptr;
         }
+        SDL_SetSurfaceBlendMode(loaded, SDL_BLENDMODE_NONE);
 
         if (alphaChannelData == nullptr || alphaChannelDataSize == 0)
         {
@@ -461,6 +463,7 @@ namespace nuvelocity
             SDL_DestroySurface(loaded);
             return nullptr;
         }
+        SDL_SetSurfaceBlendMode(output, SDL_BLENDMODE_NONE);
 
         SDL_BlitSurface(loaded, nullptr, output, nullptr);
         SDL_DestroySurface(loaded);
