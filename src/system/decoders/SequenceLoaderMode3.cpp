@@ -12,81 +12,7 @@ namespace nuvelocity
 {
     constexpr uint8_t kSequenceSignatureStandard = 0x01;
 
-    static bool ReadBlob(SDL_IOStream* stream, uint32_t size, uint8_t*& data)
-    {
-        data = nullptr;
-        if (size == 0)
-        {
-            return true;
-        }
 
-        data = static_cast<uint8_t*>(SDL_malloc(size));
-        if (data == nullptr)
-        {
-            return false;
-        }
-
-        if (SDL_ReadIO(stream, data, size) != size)
-        {
-            SDL_free(data);
-            data = nullptr;
-            return false;
-        }
-
-        return true;
-    }
-
-    static bool InflateBlob(const uint8_t* compressedData,
-                            uint32_t compressedSize,
-                            uint32_t inflatedSize,
-                            uint8_t*& inflatedData,
-                            size_t& inflatedDataSize)
-    {
-        inflatedData = nullptr;
-        inflatedDataSize = static_cast<size_t>(inflatedSize);
-        if (inflatedSize == 0)
-        {
-            return true;
-        }
-
-        inflatedData = static_cast<uint8_t*>(SDL_malloc(inflatedSize));
-        if (inflatedData == nullptr)
-        {
-            return false;
-        }
-
-        uint32_t compressedSizeCopy = compressedSize;
-        uint32_t inflatedSizeCopy = inflatedSize;
-        const int inflateResult = DecodeUtils::Inflate(
-            inflatedData, &inflatedSizeCopy, compressedData, &compressedSizeCopy);
-        if (inflateResult != Z_OK || inflatedSizeCopy != inflatedSize)
-        {
-            SDL_free(inflatedData);
-            inflatedData = nullptr;
-            inflatedDataSize = 0;
-            return false;
-        }
-
-        return true;
-    }
-
-    static bool DecodeInflatedSection(SDL_IOStream* stream,
-                                      uint32_t compressedSize,
-                                      uint32_t inflatedSize,
-                                      uint8_t*& output,
-                                      size_t& outputSize)
-    {
-        uint8_t* compressed = nullptr;
-        if (!ReadBlob(stream, compressedSize, compressed))
-        {
-            return false;
-        }
-
-        const bool inflated =
-            InflateBlob(compressed, compressedSize, inflatedSize, output, outputSize);
-        SDL_free(compressed);
-        return inflated;
-    }
 
     static bool DecodeStandardCompressedImage(SDL_IOStream* stream,
                                               uint8_t*& imageData,
@@ -106,7 +32,7 @@ namespace nuvelocity
             return false;
         }
 
-        if (!DecodeInflatedSection(
+        if (!DecodeUtils::ReadAndInflateChunk(
                 stream, imageDeflatedSize, imageInflatedSize, imageData, imageDataSize))
         {
             return false;
@@ -128,7 +54,7 @@ namespace nuvelocity
         }
 
         imageDataSize = static_cast<size_t>(imageSize);
-        if (!ReadBlob(stream, imageSize, imageData))
+        if (!DecodeUtils::ReadChunk(stream, imageSize, imageData))
         {
             return false;
         }
@@ -156,17 +82,17 @@ namespace nuvelocity
         }
 
         uint8_t* compressedMask = nullptr;
-        if (!ReadBlob(stream, static_cast<uint32_t>(remaining), compressedMask))
+        if (!DecodeUtils::ReadChunk(stream, static_cast<uint32_t>(remaining), compressedMask))
         {
             return false;
         }
 
         uint32_t compressedMaskSize = static_cast<uint32_t>(remaining);
-        const bool decodedMask = InflateBlob(compressedMask,
-                                             compressedMaskSize,
-                                             maskInflatedSize,
-                                             alphaChannelData,
-                                             alphaChannelDataSize);
+        const bool decodedMask = DecodeUtils::InflateChunk(compressedMask,
+                                                           compressedMaskSize,
+                                                           maskInflatedSize,
+                                                           alphaChannelData,
+                                                           alphaChannelDataSize);
         SDL_free(compressedMask);
         return decodedMask;
     }
@@ -248,7 +174,8 @@ namespace nuvelocity
         Sequence* sequence = nullptr;
         bool hasFrameInfoList = false;
 
-        if (!DecodeUtils::DeserializeSequenceRoots(listText, sequence, frameInfoList))
+        if (!DecodeUtils::ProcessSequenceListText(
+                listText, sequence, frameInfoList, hasFrameInfoList))
         {
             DecodeUtils::FreeDecodedBuffers(listData,
                                             listDataSize,
@@ -264,84 +191,36 @@ namespace nuvelocity
             return nullptr;
         }
 
-        if (sequence == nullptr)
+        SDL_Surface* spriteAtlas = nullptr;
+        if (imageDataSize > 0)
         {
-            sequence = new Sequence();
+            spriteAtlas = BuildSequenceAtlasSurface(isCompressed,
+                                                    atlasWidth,
+                                                    atlasHeight,
+                                                    imageData,
+                                                    imageDataSize,
+                                                    alphaChannelData,
+                                                    alphaChannelDataSize);
         }
 
-        if (frameInfoList != nullptr)
-        {
-            hasFrameInfoList = true;
-            frameInfoList->CopyTo(*sequence, BlitTypeRevision::Type1);
-        }
-
-        if (imageDataSize == 0)
-        {
-            if (isEmpty)
-            {
-                std::vector<SDL_Surface*> emptyFrames;
-                emptyFrames.push_back(DecodeUtils::BuildTransparentSurface(1, 1));
-                sequence->SetFrames(std::move(emptyFrames));
-            }
-
-            DecodeUtils::FreeDecodedBuffers(listData,
-                                            listDataSize,
-                                            imageData,
-                                            imageDataSize,
-                                            alphaChannelData,
-                                            alphaChannelDataSize);
-            delete frameInfoList;
-            return sequence;
-        }
-
-        SDL_Surface* spriteAtlas = BuildSequenceAtlasSurface(isCompressed,
-                                                             atlasWidth,
-                                                             atlasHeight,
-                                                             imageData,
-                                                             imageDataSize,
-                                                             alphaChannelData,
-                                                             alphaChannelDataSize);
         DecodeUtils::FreeDecodedBuffers(listData,
                                         listDataSize,
                                         imageData,
                                         imageDataSize,
                                         alphaChannelData,
                                         alphaChannelDataSize);
-        if (spriteAtlas == nullptr)
+
+        Sequence* finalSequence = DecodeUtils::FinalizeSequence(
+            sequence, frameInfoList, hasFrameInfoList, imageDataSize, isEmpty, spriteAtlas);
+        if (finalSequence == nullptr)
         {
-            delete frameInfoList;
-            delete sequence;
             if (outFontHeaderData != nullptr)
             {
                 delete *outFontHeaderData;
                 *outFontHeaderData = nullptr;
             }
-            return nullptr;
         }
-
-        if (!hasFrameInfoList)
-        {
-            std::vector<SDL_Surface*> frames;
-            frames.push_back(spriteAtlas);
-            sequence->SetFrames(std::move(frames));
-            delete frameInfoList;
-            return sequence;
-        }
-
-        if (!DecodeUtils::BuildFramesFromAtlas(sequence, frameInfoList, spriteAtlas))
-        {
-            delete frameInfoList;
-            delete sequence;
-            if (outFontHeaderData != nullptr)
-            {
-                delete *outFontHeaderData;
-                *outFontHeaderData = nullptr;
-            }
-            return nullptr;
-        }
-
-        delete frameInfoList;
-        return sequence;
+        return finalSequence;
     }
 
     FontBitmap* SequenceLoaderMode3::LoadFontBitmap(SDL_IOStream* stream)
@@ -447,7 +326,7 @@ namespace nuvelocity
             return false;
         }
 
-        if (!DecodeInflatedSection(
+        if (!DecodeUtils::ReadAndInflateChunk(
                 stream, frameInfoDeflatedSize, frameInfoInflatedSize, listData, listDataSize))
         {
             return fail();

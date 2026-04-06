@@ -12,29 +12,7 @@
 
 namespace nuvelocity
 {
-    static bool ReadBlob(SDL_IOStream* stream, size_t size, uint8_t*& data)
-    {
-        data = nullptr;
-        if (size == 0)
-        {
-            return true;
-        }
 
-        data = static_cast<uint8_t*>(SDL_malloc(size));
-        if (data == nullptr)
-        {
-            return false;
-        }
-
-        if (SDL_ReadIO(stream, data, size) != size)
-        {
-            SDL_free(data);
-            data = nullptr;
-            return false;
-        }
-
-        return true;
-    }
 
     Sequence* SequenceLoaderMode4::Load(SDL_IOStream* stream)
     {
@@ -77,7 +55,8 @@ namespace nuvelocity
         Sequence* sequence = nullptr;
         bool hasFrameInfoList = false;
 
-        if (!DecodeUtils::DeserializeSequenceRoots(listText, sequence, frameInfoList))
+        if (!DecodeUtils::ProcessSequenceListText(
+                listText, sequence, frameInfoList, hasFrameInfoList))
         {
             DecodeUtils::FreeDecodedBuffers(listData,
                                             listDataSize,
@@ -88,69 +67,22 @@ namespace nuvelocity
             return nullptr;
         }
 
-        if (sequence == nullptr)
+        SDL_Surface* spriteAtlas = nullptr;
+        if (imageDataSize > 0)
         {
-            sequence = new Sequence();
+            spriteAtlas =
+                BuildSequenceAtlasSurface(atlasWidth, atlasHeight, imageData, imageDataSize);
         }
 
-        if (frameInfoList != nullptr)
-        {
-            hasFrameInfoList = true;
-            frameInfoList->CopyTo(*sequence, BlitTypeRevision::Type1);
-        }
-
-        if (imageDataSize == 0)
-        {
-            if (isEmpty)
-            {
-                std::vector<SDL_Surface*> emptyFrames;
-                emptyFrames.push_back(DecodeUtils::BuildTransparentSurface(1, 1));
-                sequence->SetFrames(std::move(emptyFrames));
-            }
-
-            DecodeUtils::FreeDecodedBuffers(listData,
-                                            listDataSize,
-                                            imageData,
-                                            imageDataSize,
-                                            alphaChannelData,
-                                            alphaChannelDataSize);
-            delete frameInfoList;
-            return sequence;
-        }
-
-        SDL_Surface* spriteAtlas =
-            BuildSequenceAtlasSurface(atlasWidth, atlasHeight, imageData, imageDataSize);
         DecodeUtils::FreeDecodedBuffers(listData,
                                         listDataSize,
                                         imageData,
                                         imageDataSize,
                                         alphaChannelData,
                                         alphaChannelDataSize);
-        if (spriteAtlas == nullptr)
-        {
-            delete frameInfoList;
-            delete sequence;
-            return nullptr;
-        }
 
-        if (!hasFrameInfoList)
-        {
-            std::vector<SDL_Surface*> frames;
-            frames.push_back(spriteAtlas);
-            sequence->SetFrames(std::move(frames));
-            delete frameInfoList;
-            return sequence;
-        }
-
-        if (!DecodeUtils::BuildFramesFromAtlas(sequence, frameInfoList, spriteAtlas))
-        {
-            delete frameInfoList;
-            delete sequence;
-            return nullptr;
-        }
-
-        delete frameInfoList;
-        return sequence;
+        return DecodeUtils::FinalizeSequence(
+            sequence, frameInfoList, hasFrameInfoList, imageDataSize, isEmpty, spriteAtlas);
     }
 
     bool SequenceLoaderMode4::DecodeSequenceHDHeader(SDL_IOStream* stream,
@@ -188,7 +120,7 @@ namespace nuvelocity
         }
 
         listDataSize = static_cast<size_t>(embeddedListsSize);
-        if (!ReadBlob(stream, listDataSize, listData))
+        if (!DecodeUtils::ReadChunk(stream, listDataSize, listData))
         {
             return false;
         }
@@ -219,7 +151,7 @@ namespace nuvelocity
                 ddsSignature[3] == ' ')
             {
                 imageDataSize = static_cast<size_t>(imageEnd - imageStart);
-                if (!ReadBlob(stream, imageDataSize, imageData))
+                if (!DecodeUtils::ReadChunk(stream, imageDataSize, imageData))
                 {
                     return fail();
                 }
@@ -238,7 +170,7 @@ namespace nuvelocity
         }
 
         imageDataSize = static_cast<size_t>(imageSize);
-        if (!ReadBlob(stream, imageDataSize, imageData))
+        if (!DecodeUtils::ReadChunk(stream, imageDataSize, imageData))
         {
             return fail();
         }

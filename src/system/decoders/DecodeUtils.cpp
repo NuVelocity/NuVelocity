@@ -235,6 +235,153 @@ namespace nuvelocity
         alphaChannelDataSize = 0;
     }
 
+    bool DecodeUtils::ReadChunk(SDL_IOStream* stream, size_t size, uint8_t*& chunkData)
+    {
+        chunkData = nullptr;
+        if (size == 0)
+        {
+            return true;
+        }
+
+        chunkData = static_cast<uint8_t*>(SDL_malloc(size));
+        if (chunkData == nullptr)
+        {
+            return false;
+        }
+
+        if (SDL_ReadIO(stream, chunkData, size) != size)
+        {
+            SDL_free(chunkData);
+            chunkData = nullptr;
+            return false;
+        }
+
+        return true;
+    }
+
+    bool DecodeUtils::InflateChunk(const uint8_t* compressedChunk,
+                                   uint32_t compressedSize,
+                                   uint32_t inflatedSize,
+                                   uint8_t*& inflatedChunk,
+                                   size_t& inflatedChunkSize)
+    {
+        inflatedChunk = nullptr;
+        inflatedChunkSize = static_cast<size_t>(inflatedSize);
+        if (inflatedSize == 0)
+        {
+            return true;
+        }
+
+        inflatedChunk = static_cast<uint8_t*>(SDL_malloc(inflatedSize));
+        if (inflatedChunk == nullptr)
+        {
+            return false;
+        }
+
+        uint32_t compressedSizeCopy = compressedSize;
+        uint32_t inflatedSizeCopy = inflatedSize;
+        const int inflateResult = DecodeUtils::Inflate(
+            inflatedChunk, &inflatedSizeCopy, compressedChunk, &compressedSizeCopy);
+        if (inflateResult != Z_OK || inflatedSizeCopy != inflatedSize)
+        {
+            SDL_free(inflatedChunk);
+            inflatedChunk = nullptr;
+            inflatedChunkSize = 0;
+            return false;
+        }
+
+        return true;
+    }
+
+    bool DecodeUtils::ReadAndInflateChunk(SDL_IOStream* stream,
+                                          uint32_t compressedSize,
+                                          uint32_t inflatedSize,
+                                          uint8_t*& output,
+                                          size_t& outputSize)
+    {
+        uint8_t* compressed = nullptr;
+        if (!DecodeUtils::ReadChunk(stream, compressedSize, compressed))
+        {
+            return false;
+        }
+
+        const bool inflated =
+            InflateChunk(compressed, compressedSize, inflatedSize, output, outputSize);
+        SDL_free(compressed);
+        return inflated;
+    }
+
+    bool DecodeUtils::ProcessSequenceListText(const std::string& listText,
+                                              Sequence*& sequence,
+                                              SequenceFrameInfoList*& frameInfoList,
+                                              bool& hasFrameInfoList)
+    {
+        hasFrameInfoList = false;
+        if (!DecodeUtils::DeserializeSequenceRoots(listText, sequence, frameInfoList))
+        {
+            return false;
+        }
+
+        if (sequence == nullptr)
+        {
+            sequence = new Sequence();
+        }
+
+        if (frameInfoList != nullptr)
+        {
+            hasFrameInfoList = true;
+            frameInfoList->CopyTo(*sequence, BlitTypeRevision::Type1);
+        }
+
+        return true;
+    }
+
+    Sequence* DecodeUtils::FinalizeSequence(Sequence* sequence,
+                                            SequenceFrameInfoList* frameInfoList,
+                                            bool hasFrameInfoList,
+                                            size_t imageDataSize,
+                                            bool isEmpty,
+                                            SDL_Surface* spriteAtlas)
+    {
+        if (imageDataSize == 0)
+        {
+            if (isEmpty)
+            {
+                std::vector<SDL_Surface*> emptyFrames;
+                emptyFrames.push_back(DecodeUtils::BuildTransparentSurface(1, 1));
+                sequence->SetFrames(std::move(emptyFrames));
+            }
+            delete frameInfoList;
+            return sequence;
+        }
+
+        if (spriteAtlas == nullptr)
+        {
+            delete frameInfoList;
+            delete sequence;
+            return nullptr;
+        }
+
+        if (!hasFrameInfoList)
+        {
+            std::vector<SDL_Surface*> frames;
+            frames.push_back(spriteAtlas);
+            sequence->SetFrames(std::move(frames));
+            delete frameInfoList;
+            return sequence;
+        }
+
+        if (!DecodeUtils::BuildFramesFromAtlas(sequence, frameInfoList, spriteAtlas))
+        {
+            delete frameInfoList;
+            delete sequence;
+            return nullptr;
+        }
+
+        delete frameInfoList;
+        return sequence;
+    }
+
     bool DecodeUtils::DeserializeSequenceRoots(const std::string& listText,
                                                Sequence*& sequence,
                                                SequenceFrameInfoList*& frameInfoList)

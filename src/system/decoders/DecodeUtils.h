@@ -81,6 +81,17 @@ namespace nuvelocity
             }
         }
 
+        static bool ReadChunk(SDL_IOStream* stream, size_t size, uint8_t*& chunkData);
+        static bool InflateChunk(const uint8_t* compressedChunk,
+                                 uint32_t compressedSize,
+                                 uint32_t inflatedSize,
+                                 uint8_t*& inflatedChunk,
+                                 size_t& inflatedChunkSize);
+        static bool ReadAndInflateChunk(SDL_IOStream* stream,
+                                        uint32_t compressedSize,
+                                        uint32_t inflatedSize,
+                                        uint8_t*& output,
+                                        size_t& outputSize);
         static void FreeDecodedBuffers(uint8_t*& listData,
                                        size_t& listDataSize,
                                        uint8_t*& imageData,
@@ -90,6 +101,16 @@ namespace nuvelocity
         static bool DeserializeSequenceRoots(const std::string& listText,
                                              Sequence*& sequence,
                                              SequenceFrameInfoList*& frameInfoList);
+        static bool ProcessSequenceListText(const std::string& listText,
+                                            Sequence*& sequence,
+                                            SequenceFrameInfoList*& frameInfoList,
+                                            bool& hasFrameInfoList);
+        static Sequence* FinalizeSequence(Sequence* sequence,
+                                          SequenceFrameInfoList* frameInfoList,
+                                          bool hasFrameInfoList,
+                                          size_t imageDataSize,
+                                          bool isEmpty,
+                                          SDL_Surface* spriteAtlas);
         static bool BuildFramesFromAtlas(Sequence* sequence,
                                          SequenceFrameInfoList* frameInfoList,
                                          SDL_Surface* spriteAtlas);
