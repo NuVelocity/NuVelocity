@@ -171,9 +171,34 @@ namespace nuvelocity
         return decodedMask;
     }
 
-    Sequence* SequenceLoaderMode3::Load(SDL_IOStream* stream)
+    Sequence* SequenceLoaderMode3::Load(SDL_IOStream* stream, FontHeaderData** outFontHeaderData)
     {
+        if (outFontHeaderData != nullptr)
+        {
+            *outFontHeaderData = nullptr;
+        }
+
         if (stream == nullptr)
+        {
+            return nullptr;
+        }
+
+        if (SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET) < 0)
+        {
+            return nullptr;
+        }
+
+        const bool hasStandardHeader = DecodeUtils::FrameHasDeflateHeader(stream);
+
+        if (SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET) < 0)
+        {
+            return nullptr;
+        }
+
+        const bool isFontSequence =
+            !hasStandardHeader && DecodeUtils::FontFrameHasDeflateHeader(stream);
+
+        if (SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET) < 0)
         {
             return nullptr;
         }
@@ -190,6 +215,8 @@ namespace nuvelocity
         int atlasHeight = 0;
 
         if (!DecodeSequenceStandardHeader(stream,
+                                          isFontSequence,
+                                          outFontHeaderData,
                                           listData,
                                           listDataSize,
                                           imageData,
@@ -207,6 +234,11 @@ namespace nuvelocity
                                             imageDataSize,
                                             alphaChannelData,
                                             alphaChannelDataSize);
+            if (outFontHeaderData != nullptr)
+            {
+                delete *outFontHeaderData;
+                *outFontHeaderData = nullptr;
+            }
             return nullptr;
         }
 
@@ -224,6 +256,11 @@ namespace nuvelocity
                                             imageDataSize,
                                             alphaChannelData,
                                             alphaChannelDataSize);
+            if (outFontHeaderData != nullptr)
+            {
+                delete *outFontHeaderData;
+                *outFontHeaderData = nullptr;
+            }
             return nullptr;
         }
 
@@ -274,6 +311,11 @@ namespace nuvelocity
         {
             delete frameInfoList;
             delete sequence;
+            if (outFontHeaderData != nullptr)
+            {
+                delete *outFontHeaderData;
+                *outFontHeaderData = nullptr;
+            }
             return nullptr;
         }
 
@@ -290,6 +332,11 @@ namespace nuvelocity
         {
             delete frameInfoList;
             delete sequence;
+            if (outFontHeaderData != nullptr)
+            {
+                delete *outFontHeaderData;
+                *outFontHeaderData = nullptr;
+            }
             return nullptr;
         }
 
@@ -297,7 +344,29 @@ namespace nuvelocity
         return sequence;
     }
 
+    FontBitmap* SequenceLoaderMode3::LoadFontBitmap(SDL_IOStream* stream)
+    {
+        FontHeaderData* headerData = nullptr;
+        Sequence* sequence = Load(stream, &headerData);
+        if (sequence == nullptr || headerData == nullptr)
+        {
+            delete headerData;
+            delete sequence;
+            return nullptr;
+        }
+
+        auto* fontBitmap = new FontBitmap();
+        fontBitmap->SetFirstAscii(headerData->firstAscii);
+        fontBitmap->SetLastAscii(headerData->lastAscii);
+        fontBitmap->SetXHeight(headerData->xHeight);
+        fontBitmap->SetSequence(std::unique_ptr<Sequence>(sequence));
+        delete headerData;
+        return fontBitmap;
+    }
+
     bool SequenceLoaderMode3::DecodeSequenceStandardHeader(SDL_IOStream* stream,
+                                                           bool isFontSequence,
+                                                           FontHeaderData** outFontHeaderData,
                                                            uint8_t*& listData,
                                                            size_t& listDataSize,
                                                            uint8_t*& imageData,
@@ -319,6 +388,10 @@ namespace nuvelocity
         isEmpty = false;
         atlasWidth = 0;
         atlasHeight = 0;
+        if (outFontHeaderData != nullptr)
+        {
+            *outFontHeaderData = nullptr;
+        }
 
         const auto fail = [&]()
         {
@@ -330,6 +403,35 @@ namespace nuvelocity
                                             alphaChannelDataSize);
             return false;
         };
+
+        if (isFontSequence)
+        {
+            // Font sequences prepend three int32 values before the standard signature.
+            if (outFontHeaderData != nullptr)
+            {
+                *outFontHeaderData =
+                    new FontHeaderData{.firstAscii = 0, .lastAscii = 0, .xHeight = 0};
+                if (!SDL_ReadS32LE(stream, &(*outFontHeaderData)->firstAscii) ||
+                    !SDL_ReadS32LE(stream, &(*outFontHeaderData)->lastAscii) ||
+                    !SDL_ReadS32LE(stream, &(*outFontHeaderData)->xHeight))
+                {
+                    delete *outFontHeaderData;
+                    *outFontHeaderData = nullptr;
+                    return false;
+                }
+            }
+            else
+            {
+                int32_t firstAscii = 0;
+                int32_t lastAscii = 0;
+                int32_t xHeight = 0;
+                if (!SDL_ReadS32LE(stream, &firstAscii) || !SDL_ReadS32LE(stream, &lastAscii) ||
+                    !SDL_ReadS32LE(stream, &xHeight))
+                {
+                    return false;
+                }
+            }
+        }
 
         uint8_t signature = 0;
         if (!SDL_ReadU8(stream, &signature) || signature != kSequenceSignatureStandard)

@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "FontBitmap.h"
 #include "Sequence.h"
 
 namespace nuvelocity
@@ -12,10 +13,20 @@ namespace nuvelocity
     class SequenceLoaderMode3
     {
     public:
-        static Sequence* Load(SDL_IOStream* stream);
+        struct FontHeaderData
+        {
+            int firstAscii;
+            int lastAscii;
+            int xHeight;
+        };
+
+        static Sequence* Load(SDL_IOStream* stream, FontHeaderData** outFontHeaderData = nullptr);
+        static FontBitmap* LoadFontBitmap(SDL_IOStream* stream);
 
     private:
         static bool DecodeSequenceStandardHeader(SDL_IOStream* stream,
+                                                 bool isFontSequence,
+                                                 FontHeaderData** outFontHeaderData,
                                                  uint8_t*& listData,
                                                  size_t& listDataSize,
                                                  uint8_t*& imageData,

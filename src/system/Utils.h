@@ -1,6 +1,8 @@
 #ifndef NVE_UTILS_H
 #define NVE_UTILS_H
 
+#include <SDL3/SDL.h>
+
 #include <cctype>
 #include <string>
 
@@ -63,6 +65,23 @@ inline bool endsWithCaseInsensitive(const std::string& value, const std::string&
         }
     }
 
+    return true;
+}
+
+inline bool intersects(const SDL_Rect& a, const SDL_Rect& b, SDL_Rect& out)
+{
+    const int left = SDL_max(a.x, b.x);
+    const int top = SDL_max(a.y, b.y);
+    const int right = SDL_min(a.x + a.w, b.x + b.w);
+    const int bottom = SDL_min(a.y + a.h, b.y + b.h);
+
+    if (right <= left || bottom <= top)
+    {
+        out = SDL_Rect{.x = 0, .y = 0, .w = 0, .h = 0};
+        return false;
+    }
+
+    out = SDL_Rect{.x = left, .y = top, .w = right - left, .h = bottom - top};
     return true;
 }
 

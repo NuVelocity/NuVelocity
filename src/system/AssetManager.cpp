@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "AssetExporter.h"
+#include "Font.h"
+#include "FontBitmap.h"
 #include "SequenceFrameInfoList.h"
 #include "Utils.h"
 #include "decoders/DecodeUtils.h"
@@ -298,6 +300,73 @@ namespace nuvelocity
 #endif
 
         return sequence;
+    }
+
+    Font* AssetManager::LoadFont(const std::string& path)
+    {
+        void* fontRaw = LoadPropertyFile(path);
+        if (fontRaw == nullptr)
+        {
+            SDL_LogError(NVE_LOG_CATEGORY_ASSETS, "Failed to load font '%s'.", path.c_str());
+            return nullptr;
+        }
+
+        return static_cast<Font*>(fontRaw);
+    }
+
+    FontBitmap* AssetManager::LoadFontBitmap(const std::string& path)
+    {
+        Sequence* sourceSequence = LoadSourceSequenceFrames(path);
+        if (sourceSequence != nullptr)
+        {
+            auto* fontBitmap = new FontBitmap();
+            fontBitmap->SetSequence(std::unique_ptr<Sequence>(sourceSequence));
+
+            // Source TGA folders do not carry the binary font pre-header.
+            // Use common ASCII range defaults based on available glyph frames.
+            constexpr int kDefaultFirstAscii = 32;
+            const int frameCount = static_cast<int>(sourceSequence->GetFrameCount());
+            fontBitmap->SetFirstAscii(kDefaultFirstAscii);
+            fontBitmap->SetLastAscii(kDefaultFirstAscii + SDL_max(0, frameCount - 1));
+
+            Frame* firstFrame = sourceSequence->GetFrame(0);
+            fontBitmap->SetXHeight(firstFrame != nullptr ? firstFrame->GetHeight() : 0);
+            return fontBitmap;
+        }
+
+        bool loadedFromCache = false;
+        SDL_IOStream* stream = LoadFromCache(path, CacheKind::Sequence, loadedFromCache);
+        if (stream == nullptr)
+        {
+            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
+                         "Failed to load font bitmap '%s': %s",
+                         path.c_str(),
+                         PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+            return nullptr;
+        }
+
+        FontBitmap* fontBitmap = SequenceLoaderMode3::LoadFontBitmap(stream);
+        SDL_CloseIO(stream);
+
+        if (fontBitmap == nullptr)
+        {
+            return nullptr;
+        }
+
+#ifdef NVE_RESTORE_TGA
+        if (loadedFromCache)
+        {
+            const Sequence* sequence = fontBitmap->GetSequence();
+            if (sequence != nullptr && !AssetExporter::ExportSequenceToTga(path, *sequence))
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "Failed to export font bitmap '%s' to source TGA frames",
+                            path.c_str());
+            }
+        }
+#endif
+
+        return fontBitmap;
     }
 
     std::string AssetManager::LoadTextFile(const std::string& path)

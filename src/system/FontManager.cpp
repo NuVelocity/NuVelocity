@@ -1,22 +1,14 @@
 #include "FontManager.h"
+#include "Utils.h"
 
 #include <SDL3_ttf/SDL_ttf.h>
 
-#include "AssetManager.h"
-#include "Font.h"
+#include <memory>
 
 namespace nuvelocity
 {
     FontManager::~FontManager()
     {
-        for (auto& [pointSize, font] : mFonts)
-        {
-            (void)pointSize;
-            if (font != nullptr)
-            {
-                TTF_CloseFont(font);
-            }
-        }
         mFonts.clear();
 
         if (mInitialized)
@@ -44,33 +36,60 @@ namespace nuvelocity
         return true;
     }
 
-    TTF_Font* FontManager::GetFont(int pointSize) const
+    bool FontManager::RegisterFont(const std::string& name, std::unique_ptr<Font>&& font)
     {
-        if (!mInitialized)
+        if (name.empty() || font == nullptr)
         {
-            return nullptr;
+            return false;
         }
 
-        auto fontIt = mFonts.find(pointSize);
-        if (fontIt != mFonts.end())
-        {
-            return fontIt->second;
-        }
+        mFonts[name] = std::move(font);
+        return true;
+    }
 
-        SDL_IOStream* stream = AssetManager::Load(kFontDefaultFamily);
-        if (stream == nullptr)
-        {
-            return nullptr;
-        }
-
-        TTF_Font* font = TTF_OpenFontIO(stream, true, static_cast<float>(pointSize));
+    bool FontManager::SetDefaultFont(const std::string& name)
+    {
+        Font* font = FindFont(name);
         if (font == nullptr)
         {
+            return false;
+        }
+
+        mDefaultFont = font;
+        return true;
+    }
+
+    bool FontManager::SetFallbackFont(const std::string& name)
+    {
+        Font* font = FindFont(name);
+        if (font == nullptr)
+        {
+            return false;
+        }
+
+        mFallbackFont = font;
+        return true;
+    }
+
+    Font* FontManager::FindFont(const std::string& name) const
+    {
+        auto fontIt = mFonts.find(name);
+        if (fontIt == mFonts.end())
+        {
             return nullptr;
         }
 
-        mFonts.emplace(pointSize, font);
-        return font;
+        return fontIt->second.get();
+    }
+
+    const Font* FontManager::GetActiveFont() const
+    {
+        if (mDefaultFont != nullptr)
+        {
+            return mDefaultFont;
+        }
+
+        return mFallbackFont;
     }
 
     bool FontManager::MeasureString(const std::string& text,
@@ -81,13 +100,23 @@ namespace nuvelocity
         width = 0;
         height = 0;
 
-        TTF_Font* font = GetFont(pointSize);
+        const Font* font = GetActiveFont();
         if (font == nullptr)
         {
             return false;
         }
 
-        return TTF_GetStringSize(font, text.c_str(), 0, &width, &height);
+        if (font->MeasureString(text, pointSize, width, height))
+        {
+            return true;
+        }
+
+        if (font != mFallbackFont && mFallbackFont != nullptr)
+        {
+            return mFallbackFont->MeasureString(text, pointSize, width, height);
+        }
+
+        return false;
     }
 
     void FontManager::DrawString(SDL_Renderer* renderer,
@@ -104,77 +133,155 @@ namespace nuvelocity
             return;
         }
 
-        TTF_Font* font = GetFont(pointSize);
+        const Font* font = GetActiveFont();
         if (font == nullptr)
         {
             return;
         }
 
-        SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), 0, color);
-        if (surface == nullptr)
+        int width = 0;
+        int height = 0;
+        if (!font->MeasureString(text, pointSize, width, height) && font != mFallbackFont &&
+            mFallbackFont != nullptr)
+        {
+            font = mFallbackFont;
+        }
+        font->DrawString(
+            renderer, text, bounds, color, pointSize, alignment, verticalCenter, underlineIndex);
+    }
+
+    void FontManager::DrawStringWithFont(const std::string& fontName,
+                                         SDL_Renderer* renderer,
+                                         const std::string& text,
+                                         const SDL_FRect& bounds,
+                                         const SDL_Color& color,
+                                         int pointSize,
+                                         TextAlignment alignment,
+                                         bool verticalCenter,
+                                         int underlineIndex) const
+    {
+        if (renderer == nullptr || text.empty())
         {
             return;
         }
 
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-        SDL_DestroySurface(surface);
-        if (texture == nullptr)
+        const Font* font = FindFont(fontName);
+        if (font == nullptr)
+        {
+            font = GetActiveFont();
+        }
+        if (font == nullptr)
         {
             return;
         }
 
-        float textureWidth = 0.0F;
-        float textureHeight = 0.0F;
-        if (!SDL_GetTextureSize(texture, &textureWidth, &textureHeight))
+        int width = 0;
+        int height = 0;
+        if (!font->MeasureString(text, pointSize, width, height) && font != mFallbackFont &&
+            mFallbackFont != nullptr)
         {
-            SDL_DestroyTexture(texture);
+            font = mFallbackFont;
+        }
+        font->DrawString(
+            renderer, text, bounds, color, pointSize, alignment, verticalCenter, underlineIndex);
+    }
+
+    void FontManager::DrawStringAt(SDL_Renderer* renderer,
+                                   const std::string& text,
+                                   float x,
+                                   float y,
+                                   const SDL_Color& color,
+                                   int pointSize,
+                                   TextAlignment alignment,
+                                   const SDL_Rect* clipRect,
+                                   int underlineIndex) const
+    {
+        if (renderer == nullptr || text.empty())
+        {
             return;
         }
 
-        float x = bounds.x;
-        switch (alignment)
+        const Font* font = GetActiveFont();
+        if (font == nullptr)
         {
-        case TextAlignment::Center:
-            x = bounds.x + (bounds.w - textureWidth) * 0.5F;
-            break;
-        case TextAlignment::Right:
-            x = bounds.x + bounds.w - textureWidth;
-            break;
-        case TextAlignment::Left:
-        default:
-            break;
+            return;
         }
 
-        float y = bounds.y;
-        if (verticalCenter)
+        int width = 0;
+        int height = 0;
+        if (!font->MeasureString(text, pointSize, width, height) && font != mFallbackFont &&
+            mFallbackFont != nullptr)
         {
-            y = bounds.y + (bounds.h - textureHeight) * 0.5F;
+            font = mFallbackFont;
         }
 
-        SDL_FRect target{.x = x, .y = y, .w = textureWidth, .h = textureHeight};
-        SDL_RenderTexture(renderer, texture, nullptr, &target);
-
-        if (underlineIndex >= 0 && underlineIndex < static_cast<int>(text.size()))
+        if (clipRect == nullptr)
         {
-            const std::string prefix = text.substr(0, static_cast<std::size_t>(underlineIndex));
-            const std::string underlinedCharacter =
-                text.substr(static_cast<std::size_t>(underlineIndex), 1);
-
-            int prefixWidth = 0;
-            int prefixHeight = 0;
-            int characterWidth = 0;
-            int characterHeight = 0;
-            MeasureString(prefix, pointSize, prefixWidth, prefixHeight);
-            MeasureString(underlinedCharacter, pointSize, characterWidth, characterHeight);
-
-            const float lineY = target.y + SDL_max(0.0F, target.h - 2.0F);
-            const float lineStartX = target.x + static_cast<float>(prefixWidth);
-            const float lineEndX = lineStartX + static_cast<float>(SDL_max(1, characterWidth));
-            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-            SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-            SDL_RenderLine(renderer, lineStartX, lineY, lineEndX, lineY);
+            font->DrawStringAt(
+                renderer, text, x, y, color, pointSize, alignment, false, underlineIndex);
+            return;
         }
 
-        SDL_DestroyTexture(texture);
+        SDL_Rect previousClip{};
+        const bool hadClip = SDL_GetRenderClipRect(renderer, &previousClip);
+
+        SDL_Rect activeClip = *clipRect;
+        if (hadClip && !intersects(previousClip, *clipRect, activeClip))
+        {
+            return;
+        }
+
+        SDL_SetRenderClipRect(renderer, &activeClip);
+        font->DrawStringAt(
+            renderer, text, x, y, color, pointSize, alignment, false, underlineIndex);
+        SDL_SetRenderClipRect(renderer, hadClip ? &previousClip : nullptr);
+    }
+
+    void FontManager::DrawStringWithFontAt(const std::string& fontName,
+                                           SDL_Renderer* renderer,
+                                           const std::string& text,
+                                           float x,
+                                           float y,
+                                           const SDL_Color& color,
+                                           int pointSize,
+                                           TextAlignment alignment,
+                                           const SDL_Rect* clipRect,
+                                           int underlineIndex) const
+    {
+        if (renderer == nullptr || text.empty())
+        {
+            return;
+        }
+
+        const Font* font = FindFont(fontName);
+        if (font == nullptr)
+        {
+            font = GetActiveFont();
+        }
+        if (font == nullptr)
+        {
+            return;
+        }
+
+        if (clipRect == nullptr)
+        {
+            font->DrawStringAt(
+                renderer, text, x, y, color, pointSize, alignment, false, underlineIndex);
+            return;
+        }
+
+        SDL_Rect previousClip{};
+        const bool hadClip = SDL_GetRenderClipRect(renderer, &previousClip);
+
+        SDL_Rect activeClip = *clipRect;
+        if (hadClip && !intersects(previousClip, *clipRect, activeClip))
+        {
+            return;
+        }
+
+        SDL_SetRenderClipRect(renderer, &activeClip);
+        font->DrawStringAt(
+            renderer, text, x, y, color, pointSize, alignment, false, underlineIndex);
+        SDL_SetRenderClipRect(renderer, hadClip ? &previousClip : nullptr);
     }
 } // namespace nuvelocity

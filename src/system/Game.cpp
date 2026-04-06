@@ -1,6 +1,9 @@
 #include <SDL3/SDL_log.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <memory>
 
+#include "Font.h"
+#include "FontBitmap.h"
 #include "GPUSpriteBatch.h"
 #include "Game.h"
 #include "ObjectRegistration.h"
@@ -11,6 +14,44 @@ constexpr std::uint16_t NVE_DEFAULT_WINDOW_HEIGHT = 480;
 
 namespace nuvelocity
 {
+    static bool RegisterEngineDefaultFonts(FontManager& fontManager)
+    {
+        constexpr const char* kDefaultFontName = "Default";
+        constexpr const char* kDefaultFontPath = "Resources/Fonts/!None.font.txt";
+        constexpr const char* kBitmapFallbackName = "!None";
+        constexpr const char* kBitmapFallbackPath = "Fonts/!None";
+
+        bool hasAnyFont = false;
+
+        Font* defaultFontRaw = AssetManager::LoadFont(kDefaultFontPath);
+        if (defaultFontRaw != nullptr)
+        {
+            auto defaultFont = std::unique_ptr<Font>(defaultFontRaw);
+            if (fontManager.RegisterFont(kDefaultFontName, std::move(defaultFont)))
+            {
+                fontManager.SetDefaultFont(kDefaultFontName);
+                hasAnyFont = true;
+            }
+        }
+
+        FontBitmap* fallbackBitmap = AssetManager::LoadFontBitmap(kBitmapFallbackPath);
+        if (fallbackBitmap != nullptr)
+        {
+            auto fallbackFont = std::unique_ptr<Font>(static_cast<Font*>(fallbackBitmap));
+            if (fontManager.RegisterFont(kBitmapFallbackName, std::move(fallbackFont)))
+            {
+                fontManager.SetFallbackFont(kBitmapFallbackName);
+                hasAnyFont = true;
+                if (defaultFontRaw == nullptr)
+                {
+                    fontManager.SetDefaultFont(kBitmapFallbackName);
+                }
+            }
+        }
+
+        return hasAnyFont;
+    }
+
     Game::Game(const char* aWindowTitle, int aWidth, int aHeight)
             : mWindowTitle(aWindowTitle)
             , mWindowWidth(aWidth)
@@ -122,6 +163,8 @@ namespace nuvelocity
             mFont = nullptr;
             return Fail();
         }
+
+        (void)RegisterEngineDefaultFonts(*mFont);
 
         mAudio = new AudioManager();
         if (!mAudio->Initialize(argv))

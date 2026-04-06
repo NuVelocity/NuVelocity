@@ -15,6 +15,8 @@
 
 namespace nuvelocity
 {
+    class Font;
+    class FontBitmap;
     class SequenceFrameInfoList;
 
     class AssetManager : public Manager
@@ -56,6 +58,8 @@ namespace nuvelocity
 
         NVE_API static StandAloneFrame* LoadStandAloneFrame(const std::string& path);
         NVE_API static Sequence* LoadSequence(const std::string& path);
+        NVE_API static Font* LoadFont(const std::string& path);
+        NVE_API static FontBitmap* LoadFontBitmap(const std::string& path);
 
         NVE_API static std::string LoadTextFile(const std::string& path);
 

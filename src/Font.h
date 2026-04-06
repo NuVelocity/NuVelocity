@@ -3,10 +3,20 @@
 
 #include "BlitType.h"
 #include "model/Model.h"
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <string>
+#include <unordered_map>
 
 namespace nuvelocity
 {
+    enum class TextAlignment
+    {
+        Left,
+        Center,
+        Right
+    };
+
     inline constexpr const char* kFontDefaultFamily = "Resources/Fonts/TRUE TYPES/!default.ttf";
     inline constexpr int kFontDefaultPointSize = 12;
 
@@ -15,7 +25,27 @@ namespace nuvelocity
     {
     public:
         Font();
-        ~Font();
+        virtual ~Font();
+
+        virtual bool
+        MeasureString(const std::string& text, int pointSize, int& width, int& height) const;
+        virtual void DrawString(SDL_Renderer* renderer,
+                                const std::string& text,
+                                const SDL_FRect& bounds,
+                                const SDL_Color& color,
+                                int pointSize,
+                                TextAlignment alignment = TextAlignment::Left,
+                                bool verticalCenter = true,
+                                int underlineIndex = -1) const;
+        virtual void DrawStringAt(SDL_Renderer* renderer,
+                                  const std::string& text,
+                                  float x,
+                                  float y,
+                                  const SDL_Color& color,
+                                  int pointSize,
+                                  TextAlignment alignment = TextAlignment::Left,
+                                  bool verticalCenter = false,
+                                  int underlineIndex = -1) const;
 
         static void InitClassInfo(ClassInfo& aInfo)
         {
@@ -38,6 +68,11 @@ namespace nuvelocity
         std::string mGeneratedColor;
         int mPointSize;
         bool mGenerateAllCaps;
+
+    private:
+        TTF_Font* GetTtfFont(int pointSize) const;
+
+        mutable std::unordered_map<int, TTF_Font*> mTtfFonts;
     };
 } // namespace nuvelocity
 
