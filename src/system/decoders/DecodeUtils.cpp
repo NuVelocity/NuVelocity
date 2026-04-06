@@ -341,7 +341,8 @@ namespace nuvelocity
                                             bool hasFrameInfoList,
                                             size_t imageDataSize,
                                             bool isEmpty,
-                                            SDL_Surface* spriteAtlas)
+                                            SDL_Surface* spriteAtlas,
+                                            const std::string& rawListText)
     {
         if (imageDataSize == 0)
         {
@@ -377,6 +378,10 @@ namespace nuvelocity
             delete sequence;
             return nullptr;
         }
+
+#ifdef NVE_RESTORE_TGA
+        sequence->SetRawListText(rawListText);
+#endif
 
         delete frameInfoList;
         return sequence;
@@ -475,7 +480,15 @@ namespace nuvelocity
                                                       hotSpotX,
                                                       hotSpotY,
                                                       centerHotSpot);
+
+#ifdef NVE_RESTORE_TGA
+        SDL_Surface* atlasCopy = SDL_DuplicateSurface(spriteAtlas);
+#endif
         SDL_DestroySurface(spriteAtlas);
+
+#ifdef NVE_RESTORE_TGA
+        sequence->SetSpriteAtlas(atlasCopy);
+#endif
         if (!builtSurfaces)
         {
             DestroyFrameList(frames);

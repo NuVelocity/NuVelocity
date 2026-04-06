@@ -82,7 +82,7 @@ namespace nuvelocity
                                         alphaChannelDataSize);
 
         return DecodeUtils::FinalizeSequence(
-            sequence, frameInfoList, hasFrameInfoList, imageDataSize, isEmpty, spriteAtlas);
+            sequence, frameInfoList, hasFrameInfoList, imageDataSize, isEmpty, spriteAtlas, listText);
     }
 
     bool SequenceLoaderMode4::DecodeSequenceHDHeader(SDL_IOStream* stream,

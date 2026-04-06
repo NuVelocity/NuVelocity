@@ -67,7 +67,16 @@ namespace nuvelocity
     {
     }
 
-    Sequence::~Sequence() = default;
+    Sequence::~Sequence()
+    {
+#ifdef NVE_RESTORE_TGA
+        if (mSpriteAtlas != nullptr)
+        {
+            SDL_DestroySurface(mSpriteAtlas);
+            mSpriteAtlas = nullptr;
+        }
+#endif
+    }
 
     int Sequence::GetXOffset() const
     {
@@ -158,6 +167,32 @@ namespace nuvelocity
     {
         return mSource == AssetSource::SourceAsset;
     }
+
+#ifdef NVE_RESTORE_TGA
+    void Sequence::SetRawListText(std::string text)
+    {
+        mRawListText = std::move(text);
+    }
+
+    const std::string& Sequence::GetRawListText() const
+    {
+        return mRawListText;
+    }
+
+    void Sequence::SetSpriteAtlas(SDL_Surface* atlas)
+    {
+        if (mSpriteAtlas != nullptr)
+        {
+            SDL_DestroySurface(mSpriteAtlas);
+        }
+        mSpriteAtlas = atlas;
+    }
+
+    SDL_Surface* Sequence::GetSpriteAtlas() const
+    {
+        return mSpriteAtlas;
+    }
+#endif
 
     void Sequence::ApplySequenceFlags(SequenceFlags flags)
     {

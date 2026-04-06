@@ -8,6 +8,7 @@
 #include "model/Model.h"
 #include <cstddef>
 #include <cstdint>
+#include <SDL3/SDL.h>
 #include <limits>
 #include <memory>
 #include <string>
@@ -48,6 +49,13 @@ namespace nuvelocity
         AssetSource GetSource() const;
         bool IsSourceCache() const;
         bool IsSourceAsset() const;
+
+#ifdef NVE_RESTORE_TGA
+        void SetRawListText(std::string text);
+        const std::string& GetRawListText() const;
+        void SetSpriteAtlas(SDL_Surface* atlas);
+        SDL_Surface* GetSpriteAtlas() const;
+#endif
 
         static void InitClassInfo(ClassInfo& aInfo)
         {
@@ -144,6 +152,11 @@ namespace nuvelocity
 
         std::vector<std::unique_ptr<Frame>> mFrames;
         AssetSource mSource;
+
+#ifdef NVE_RESTORE_TGA
+        std::string mRawListText;
+        SDL_Surface* mSpriteAtlas = nullptr;
+#endif
 
 #if 0
         bool mIsDds;

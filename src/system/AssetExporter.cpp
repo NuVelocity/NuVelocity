@@ -16,6 +16,10 @@ namespace nuvelocity
 {
     constexpr const char* kPropertiesFileName = "Properties.txt";
     constexpr const char* kTgaExtension = ".tga";
+#ifdef NVE_RESTORE_TGA
+    constexpr const char* kRawFrameInfoListFileName = "RawFrameInfoList.txt";
+    constexpr const char* kAtlasFileName = "Atlas.tga";
+#endif
 
     bool AssetExporter::WriteAll(PHYSFS_File* file, const void* data, size_t dataSize)
     {
@@ -227,6 +231,31 @@ namespace nuvelocity
                 return false;
             }
         }
+
+#ifdef NVE_RESTORE_TGA
+        const std::string& rawListText = sequence.GetRawListText();
+        if (!rawListText.empty())
+        {
+            if (!WriteBinaryFile(
+                    (sequenceDirectoryPath / kRawFrameInfoListFileName).generic_string(),
+                    rawListText.data(),
+                    rawListText.size()))
+            {
+                return false;
+            }
+        }
+
+        SDL_Surface* spriteAtlas = sequence.GetSpriteAtlas();
+        if (spriteAtlas != nullptr)
+        {
+            if (!SaveSurfaceAsUncompressedTga(
+                    spriteAtlas,
+                    (sequenceDirectoryPath / kAtlasFileName).generic_string()))
+            {
+                return false;
+            }
+        }
+#endif
 
         return true;
     }

@@ -110,7 +110,8 @@ namespace nuvelocity
                                           bool hasFrameInfoList,
                                           size_t imageDataSize,
                                           bool isEmpty,
-                                          SDL_Surface* spriteAtlas);
+                                          SDL_Surface* spriteAtlas,
+                                          const std::string& rawListText = "");
         static bool BuildFramesFromAtlas(Sequence* sequence,
                                          SequenceFrameInfoList* frameInfoList,
                                          SDL_Surface* spriteAtlas);

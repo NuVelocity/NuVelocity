@@ -211,7 +211,7 @@ namespace nuvelocity
                                         alphaChannelDataSize);
 
         Sequence* finalSequence = DecodeUtils::FinalizeSequence(
-            sequence, frameInfoList, hasFrameInfoList, imageDataSize, isEmpty, spriteAtlas);
+            sequence, frameInfoList, hasFrameInfoList, imageDataSize, isEmpty, spriteAtlas, listText);
         if (finalSequence == nullptr)
         {
             if (outFontHeaderData != nullptr)
