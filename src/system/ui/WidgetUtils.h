@@ -18,9 +18,9 @@ namespace nuvelocity
         SDL_Color dark = SDL_Color{.r = 96, .g = 96, .b = 96, .a = 255};
     };
 
-    void FillRect(SDL_Renderer* renderer, const SDL_FRect& rect, const SDL_Color& color);
-    void DrawRect(SDL_Renderer* renderer, const SDL_FRect& rect, const SDL_Color& color);
-    void DrawBevel(SDL_Renderer* renderer,
+    void FillRect(SpriteBatch* batch, const SDL_FRect& rect, const SDL_Color& color);
+    void DrawRect(SpriteBatch* batch, const SDL_FRect& rect, const SDL_Color& color);
+    void DrawBevel(SpriteBatch* batch,
                    const SDL_FRect& rect,
                    const BevelColors& colors,
                    bool sunken,

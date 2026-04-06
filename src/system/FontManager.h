@@ -15,6 +15,7 @@
 namespace nuvelocity
 {
     class Font;
+    class SpriteBatch;
 
     class FontManager : public Manager
     {
@@ -35,7 +36,7 @@ namespace nuvelocity
                                    int& width,
                                    int& height) const;
 
-        void DrawString(SDL_Renderer* renderer,
+        void DrawString(SpriteBatch* batch,
                         const std::string& text,
                         const SDL_FRect& bounds,
                         const SDL_Color& color,
@@ -45,7 +46,7 @@ namespace nuvelocity
                         int underlineIndex = -1) const;
 
         void DrawStringWithFont(const std::string& fontName,
-                                SDL_Renderer* renderer,
+                                SpriteBatch* batch,
                                 const std::string& text,
                                 const SDL_FRect& bounds,
                                 const SDL_Color& color,
@@ -54,7 +55,7 @@ namespace nuvelocity
                                 bool verticalCenter = true,
                                 int underlineIndex = -1) const;
 
-        void DrawStringAt(SDL_Renderer* renderer,
+        void DrawStringAt(SpriteBatch* batch,
                           const std::string& text,
                           float x,
                           float y,
@@ -65,7 +66,7 @@ namespace nuvelocity
                           int underlineIndex = -1) const;
 
         void DrawStringWithFontAt(const std::string& fontName,
-                                  SDL_Renderer* renderer,
+                                  SpriteBatch* batch,
                                   const std::string& text,
                                   float x,
                                   float y,

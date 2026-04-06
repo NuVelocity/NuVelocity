@@ -71,7 +71,7 @@ namespace nuvelocity
 
     void TextBox::Draw(Game* game, const SDL_FPoint& parentOffset)
     {
-        if (!mVisible || game == nullptr || game->mRenderer == nullptr || game->mFont == nullptr)
+        if (!mVisible || game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr)
         {
             return;
         }
@@ -80,8 +80,8 @@ namespace nuvelocity
         const SDL_Color fillColor =
             mFocused ? mTextBoxStyle.focusedColor : mTextBoxStyle.unfocusedColor;
 
-        FillRect(game->mRenderer, rect, fillColor);
-        DrawBevel(game->mRenderer,
+        FillRect(game->mSpriteBatch, rect, fillColor);
+        DrawBevel(game->mSpriteBatch,
                   rect,
                   BevelColors{.light = mStyle.borderLightColor, .dark = mStyle.borderDarkColor},
                   true,
@@ -91,7 +91,7 @@ namespace nuvelocity
                            .y = rect.y + 3.0F,
                            .w = SDL_max(0.0F, rect.w - 12.0F),
                            .h = SDL_max(0.0F, rect.h - 6.0F)};
-        game->mFont->DrawString(game->mRenderer,
+        game->mFont->DrawString(game->mSpriteBatch,
                                 mText,
                                 textRect,
                                 mTextBoxStyle.textColor,
@@ -112,7 +112,7 @@ namespace nuvelocity
                                     .y = rect.y + 4.0F,
                                     .w = 1.0F,
                                     .h = SDL_max(0.0F, rect.h - 8.0F)};
-                FillRect(game->mRenderer, caretRect, mTextBoxStyle.caretColor);
+                FillRect(game->mSpriteBatch, caretRect, mTextBoxStyle.caretColor);
             }
         }
     }

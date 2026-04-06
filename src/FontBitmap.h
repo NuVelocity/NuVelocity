@@ -33,23 +33,23 @@ namespace nuvelocity
                            int pointSize,
                            int& width,
                            int& height) const override;
-        void DrawString(SDL_Renderer* renderer,
+        void DrawString(SpriteBatch* batch,
                         const std::string& text,
                         const SDL_FRect& bounds,
                         const SDL_Color& color,
                         int pointSize,
-                        TextAlignment alignment,
-                        bool verticalCenter,
-                        int underlineIndex) const override;
-        void DrawStringAt(SDL_Renderer* renderer,
+                        TextAlignment alignment = TextAlignment::Left,
+                        bool verticalCenter = true,
+                        int underlineIndex = -1) const override;
+        void DrawStringAt(SpriteBatch* batch,
                           const std::string& text,
                           float x,
                           float y,
                           const SDL_Color& color,
                           int pointSize,
-                          TextAlignment alignment,
-                          bool verticalCenter,
-                          int underlineIndex) const override;
+                          TextAlignment alignment = TextAlignment::Left,
+                          bool verticalCenter = false,
+                          int underlineIndex = -1) const override;
 
         static void InitClassInfo(ClassInfo& aInfo)
         {

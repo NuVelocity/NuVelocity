@@ -50,7 +50,7 @@ namespace nuvelocity
         return TTF_GetStringSize(font, text.c_str(), 0, &width, &height);
     }
 
-    void Font::DrawString(SDL_Renderer* renderer,
+    void Font::DrawString(SpriteBatch* batch,
                           const std::string& text,
                           const SDL_FRect& bounds,
                           const SDL_Color& color,
@@ -60,7 +60,7 @@ namespace nuvelocity
                           int underlineIndex) const
     {
         TTF_Font* font = GetTtfFont(pointSize);
-        if (renderer == nullptr || text.empty() || font == nullptr)
+        if (batch == nullptr || text.empty() || font == nullptr)
         {
             return;
         }
@@ -71,20 +71,8 @@ namespace nuvelocity
             return;
         }
 
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-        SDL_DestroySurface(surface);
-        if (texture == nullptr)
-        {
-            return;
-        }
-
-        float textureWidth = 0.0F;
-        float textureHeight = 0.0F;
-        if (!SDL_GetTextureSize(texture, &textureWidth, &textureHeight))
-        {
-            SDL_DestroyTexture(texture);
-            return;
-        }
+        float textureWidth = static_cast<float>(surface->w);
+        float textureHeight = static_cast<float>(surface->h);
 
         float x = bounds.x;
         switch (alignment)
@@ -107,7 +95,9 @@ namespace nuvelocity
         }
 
         SDL_FRect target{.x = x, .y = y, .w = textureWidth, .h = textureHeight};
-        SDL_RenderTexture(renderer, texture, nullptr, &target);
+        
+        // Use SpriteBatch to draw the surface. It will handle texture creation internally.
+        batch->Draw(surface, &target, nullptr, SDL_Color{255, 255, 255, 255}); // Surface already has color applied by TTF_RenderText_Blended
 
         if (underlineIndex >= 0 && underlineIndex < static_cast<int>(text.size()))
         {
@@ -125,15 +115,15 @@ namespace nuvelocity
             const float lineY = target.y + SDL_max(0.0F, target.h - 2.0F);
             const float lineStartX = target.x + static_cast<float>(prefixWidth);
             const float lineEndX = lineStartX + static_cast<float>(SDL_max(1, characterWidth));
-            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-            SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-            SDL_RenderLine(renderer, lineStartX, lineY, lineEndX, lineY);
+            
+            // Use SpriteBatch for line drawing
+            batch->DrawLine(lineStartX, lineY, lineEndX, lineY, color);
         }
 
-        SDL_DestroyTexture(texture);
+        SDL_DestroySurface(surface);
     }
 
-    void Font::DrawStringAt(SDL_Renderer* renderer,
+    void Font::DrawStringAt(SpriteBatch* batch,
                             const std::string& text,
                             float x,
                             float y,
@@ -144,11 +134,11 @@ namespace nuvelocity
                             int underlineIndex) const
     {
         TTF_Font* font = GetTtfFont(pointSize);
-        if (renderer == nullptr || text.empty() || font == nullptr)
+        if (batch == nullptr || text.empty() || font == nullptr)
         {
             return;
         }
-        DrawString(renderer,
+        DrawString(batch,
                    text,
                    SDL_FRect{.x = x, .y = y, .w = 0.0F, .h = 0.0F},
                    color,

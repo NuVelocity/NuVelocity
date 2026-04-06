@@ -5,37 +5,36 @@
 
 namespace nuvelocity
 {
-    void FillRect(SDL_Renderer* renderer, const SDL_FRect& rect, const SDL_Color& color)
+    void FillRect(SpriteBatch* batch, const SDL_FRect& rect, const SDL_Color& color)
     {
-        if (renderer == nullptr)
+        if (batch == nullptr)
         {
             return;
         }
 
-        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-        SDL_RenderFillRect(renderer, &rect);
+        batch->FillRect(&rect, color);
     }
 
-    void DrawRect(SDL_Renderer* renderer, const SDL_FRect& rect, const SDL_Color& color)
+    void DrawRect(SpriteBatch* batch, const SDL_FRect& rect, const SDL_Color& color)
     {
-        if (renderer == nullptr)
+        if (batch == nullptr)
         {
             return;
         }
 
-        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-        SDL_RenderRect(renderer, &rect);
+        batch->DrawLine(rect.x, rect.y, rect.x + rect.w, rect.y, color);
+        batch->DrawLine(rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h, color);
+        batch->DrawLine(rect.x + rect.w, rect.y + rect.h, rect.x, rect.y + rect.h, color);
+        batch->DrawLine(rect.x, rect.y + rect.h, rect.x, rect.y, color);
     }
 
-    void DrawBevel(SDL_Renderer* renderer,
+    void DrawBevel(SpriteBatch* batch,
                    const SDL_FRect& rect,
                    const BevelColors& colors,
                    bool sunken,
                    float thickness)
     {
-        if (renderer == nullptr || thickness <= 0.0F)
+        if (batch == nullptr || thickness <= 0.0F)
         {
             return;
         }
@@ -50,10 +49,10 @@ namespace nuvelocity
         SDL_FRect bottomEdge{
             .x = rect.x, .y = rect.y + rect.h - thickness, .w = rect.w, .h = thickness};
 
-        FillRect(renderer, topEdge, topLeft);
-        FillRect(renderer, leftEdge, topLeft);
-        FillRect(renderer, rightEdge, bottomRight);
-        FillRect(renderer, bottomEdge, bottomRight);
+        FillRect(batch, topEdge, topLeft);
+        FillRect(batch, leftEdge, topLeft);
+        FillRect(batch, rightEdge, bottomRight);
+        FillRect(batch, bottomEdge, bottomRight);
     }
 
     void DrawTiledImage(SpriteBatch* spriteBatch, Image& image, const SDL_FRect& area)
@@ -84,7 +83,7 @@ namespace nuvelocity
                                   .w = SDL_min(tileWidth, remainingW),
                                   .h = SDL_min(tileHeight, remainingH)};
                 SDL_FRect destRect{.x = x, .y = y, .w = srcRect.w, .h = srcRect.h};
-                spriteBatch->DrawImage(image, &destRect, &srcRect);
+                spriteBatch->Draw(image.GetSurface(), &destRect, &srcRect);
             }
         }
     }

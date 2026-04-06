@@ -23,6 +23,7 @@ namespace nuvelocity
         SDL_AppResult mAppResult = SDL_APP_CONTINUE;
         SDL_Window* mWindow;
         SDL_Renderer* mRenderer;
+        SDL_GPUDevice* mGPUDevice;
 
         const char* mWindowTitle;
         bool mWindowResizable = false;

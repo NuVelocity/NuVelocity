@@ -2,6 +2,7 @@
 #define NVE_FONT_H
 
 #include "BlitType.h"
+#include "SpriteBatch.h"
 #include "model/Model.h"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -29,7 +30,7 @@ namespace nuvelocity
 
         virtual bool
         MeasureString(const std::string& text, int pointSize, int& width, int& height) const;
-        virtual void DrawString(SDL_Renderer* renderer,
+        virtual void DrawString(SpriteBatch* batch,
                                 const std::string& text,
                                 const SDL_FRect& bounds,
                                 const SDL_Color& color,
@@ -37,7 +38,7 @@ namespace nuvelocity
                                 TextAlignment alignment = TextAlignment::Left,
                                 bool verticalCenter = true,
                                 int underlineIndex = -1) const;
-        virtual void DrawStringAt(SDL_Renderer* renderer,
+        virtual void DrawStringAt(SpriteBatch* batch,
                                   const std::string& text,
                                   float x,
                                   float y,

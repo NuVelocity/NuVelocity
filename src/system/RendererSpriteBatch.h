@@ -8,7 +8,6 @@
 
 namespace nuvelocity
 {
-    class Image;
 
     // SDL Renderer-based sprite batch implementation
     class RendererSpriteBatch : public SpriteBatch
@@ -20,23 +19,56 @@ namespace nuvelocity
         RendererSpriteBatch(const RendererSpriteBatch&) = delete;
         RendererSpriteBatch& operator=(const RendererSpriteBatch&) = delete;
 
-        void DrawImage(Image& image,
-                       const SDL_FRect* destRect = nullptr,
-                       const SDL_FRect* srcRect = nullptr) override;
+        void Draw(SDL_Surface* surface,
+                  const SDL_FRect* destRect = nullptr,
+                  const SDL_FRect* srcRect = nullptr,
+                  SDL_Color color = {255, 255, 255, 255}) override;
 
-        void DrawImageCentered(Image& image) override;
+        void DrawCentered(SDL_Surface* surface) override;
+
+        void DrawLine(float x1,
+                      float y1,
+                      float x2,
+                      float y2,
+                      SDL_Color color,
+                      float thickness = 1.0f) override;
+
+        void FillRect(const SDL_FRect* rect, SDL_Color color) override;
+
+        void SetClipRect(const SDL_Rect* rect) override;
+
+        void Clear(SDL_Color color) override;
 
         void Flush() override;
 
+        void Present() override;
+
     private:
+        enum class CommandType
+        {
+            DrawSurface,
+            DrawTexture,
+            DrawLine,
+            FillRect,
+            SetClipRect,
+            Clear
+        };
+
         struct DrawCommand
         {
-            Image* image;
+            CommandType type;
+            SDL_Surface* surface;
+            SDL_Texture* texture;
             bool centered;
             bool hasDestRect;
             SDL_FRect destRect;
             bool hasSrcRect;
             SDL_FRect srcRect;
+            bool hasClipRect;
+            SDL_Rect clipRect;
+            SDL_Color color;
+            float x1, y1, x2, y2;
+            float thickness;
         };
 
         SDL_Renderer* mRenderer;

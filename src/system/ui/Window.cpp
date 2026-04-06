@@ -87,7 +87,7 @@ namespace nuvelocity
 
     void Window::Draw(Game* game, const SDL_FPoint& parentOffset)
     {
-        if (!mVisible || game == nullptr || game->mRenderer == nullptr || game->mFont == nullptr)
+        if (!mVisible || game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr)
         {
             return;
         }
@@ -96,8 +96,8 @@ namespace nuvelocity
         const SDL_FRect titleRect = GetTitleBarRect(parentOffset);
         const SDL_FRect clientRect = GetClientRect(parentOffset);
 
-        FillRect(game->mRenderer, windowRect, mStyle.backgroundColor);
-        DrawBevel(game->mRenderer,
+        FillRect(game->mSpriteBatch, windowRect, mStyle.backgroundColor);
+        DrawBevel(game->mSpriteBatch,
                   windowRect,
                   BevelColors{.light = mStyle.borderLightColor, .dark = mStyle.borderDarkColor},
                   false,
@@ -105,13 +105,15 @@ namespace nuvelocity
 
         const SDL_Color titleColor =
             mActive ? mWindowStyle.titleBarColor : mWindowStyle.titleBarInactiveColor;
-        FillRect(game->mRenderer, titleRect, titleColor);
+        FillRect(game->mSpriteBatch, titleRect, titleColor);
 
         SDL_FRect titleTextRect{.x = titleRect.x + 6.0F,
                                 .y = titleRect.y,
                                 .w = SDL_max(0.0F, titleRect.w - 24.0F),
                                 .h = titleRect.h};
-        game->mFont->DrawString(game->mRenderer,
+        titleTextRect.h = titleRect.h;
+
+        game->mFont->DrawString(game->mSpriteBatch,
                                 mTitle,
                                 titleTextRect,
                                 mWindowStyle.titleTextColor,
@@ -119,26 +121,25 @@ namespace nuvelocity
                                 TextAlignment::Left,
                                 true);
 
-        if (mWindowStyle.tileBackground && mBackgroundTile.IsValid() &&
-            game->mSpriteBatch != nullptr)
+        if (mWindowStyle.tileBackground && mBackgroundTile.IsValid())
         {
             DrawTiledImage(game->mSpriteBatch, mBackgroundTile, clientRect);
         }
         else
         {
-            FillRect(game->mRenderer, clientRect, mWindowStyle.clientColor);
+            FillRect(game->mSpriteBatch, clientRect, mWindowStyle.clientColor);
         }
 
         if (mClosable)
         {
             SDL_FRect closeRect = GetCloseButtonRect(parentOffset);
-            FillRect(game->mRenderer, closeRect, mWindowStyle.closeButtonColor);
-            DrawBevel(game->mRenderer,
+            FillRect(game->mSpriteBatch, closeRect, mWindowStyle.closeButtonColor);
+            DrawBevel(game->mSpriteBatch,
                       closeRect,
                       BevelColors{.light = mStyle.borderLightColor, .dark = mStyle.borderDarkColor},
                       false,
                       1.0F);
-            game->mFont->DrawString(game->mRenderer,
+            game->mFont->DrawString(game->mSpriteBatch,
                                     "X",
                                     closeRect,
                                     mWindowStyle.titleTextColor,

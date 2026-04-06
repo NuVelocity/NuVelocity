@@ -179,7 +179,7 @@ namespace nuvelocity
         return true;
     }
 
-    void FontBitmap::DrawString(SDL_Renderer* renderer,
+    void FontBitmap::DrawString(SpriteBatch* batch,
                                 const std::string& text,
                                 const SDL_FRect& bounds,
                                 const SDL_Color& color,
@@ -188,7 +188,7 @@ namespace nuvelocity
                                 bool verticalCenter,
                                 int underlineIndex) const
     {
-        if (renderer == nullptr || text.empty() || mSequence == nullptr)
+        if (batch == nullptr || text.empty() || mSequence == nullptr)
         {
             return;
         }
@@ -240,8 +240,8 @@ namespace nuvelocity
                 continue;
             }
 
-            SDL_Texture* glyphTexture = glyph->GetTexture(renderer);
-            if (glyphTexture == nullptr)
+            SDL_Surface* glyphSurface = glyph->GetSurface();
+            if (glyphSurface == nullptr)
             {
                 cursorX += static_cast<float>(spaceAdvance);
                 continue;
@@ -251,10 +251,8 @@ namespace nuvelocity
             const float glyphHeight = SDL_max(1.0F, static_cast<float>(glyph->GetHeight()) * scale);
             SDL_FRect dstRect{.x = cursorX, .y = y, .w = glyphWidth, .h = glyphHeight};
 
-            SDL_SetTextureColorMod(glyphTexture, color.r, color.g, color.b);
-            SDL_SetTextureAlphaMod(glyphTexture, color.a);
-            SDL_SetTextureBlendMode(glyphTexture, SDL_BLENDMODE_BLEND);
-            SDL_RenderTexture(renderer, glyphTexture, nullptr, &dstRect);
+            // Use SpriteBatch to draw the glyph surface with color modulation
+            batch->Draw(glyphSurface, &dstRect, nullptr, color);
 
             cursorX += glyphWidth;
         }
@@ -275,13 +273,13 @@ namespace nuvelocity
             const float lineY = y + SDL_max(0.0F, static_cast<float>(measuredHeight) - 2.0F);
             const float lineStartX = x + static_cast<float>(prefixWidth);
             const float lineEndX = lineStartX + static_cast<float>(SDL_max(1, characterWidth));
-            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-            SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-            SDL_RenderLine(renderer, lineStartX, lineY, lineEndX, lineY);
+            
+            // Use SpriteBatch for line drawing
+            batch->DrawLine(lineStartX, lineY, lineEndX, lineY, color);
         }
     }
 
-    void FontBitmap::DrawStringAt(SDL_Renderer* renderer,
+    void FontBitmap::DrawStringAt(SpriteBatch* batch,
                                   const std::string& text,
                                   float x,
                                   float y,
@@ -291,11 +289,11 @@ namespace nuvelocity
                                   bool verticalCenter,
                                   int underlineIndex) const
     {
-        if (renderer == nullptr || text.empty() || mSequence == nullptr)
+        if (batch == nullptr || text.empty() || mSequence == nullptr)
         {
             return;
         }
-        DrawString(renderer,
+        DrawString(batch,
                    text,
                    SDL_FRect{.x = x, .y = y, .w = 0.0F, .h = 0.0F},
                    color,

@@ -95,7 +95,7 @@ namespace nuvelocity
 
     void Button::Draw(Game* game, const SDL_FPoint& parentOffset)
     {
-        if (!mVisible || game == nullptr || game->mRenderer == nullptr || game->mFont == nullptr)
+        if (!mVisible || game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr)
         {
             return;
         }
@@ -116,8 +116,8 @@ namespace nuvelocity
             color = mButtonStyle.hoverColor;
         }
 
-        FillRect(game->mRenderer, rect, color);
-        DrawBevel(game->mRenderer,
+        FillRect(game->mSpriteBatch, rect, color);
+        DrawBevel(game->mSpriteBatch,
                   rect,
                   BevelColors{.light = mStyle.borderLightColor, .dark = mStyle.borderDarkColor},
                   mPressed,
@@ -127,7 +127,7 @@ namespace nuvelocity
                            .y = rect.y + 2.0F,
                            .w = SDL_max(0.0F, rect.w - 8.0F),
                            .h = SDL_max(0.0F, rect.h - 4.0F)};
-        game->mFont->DrawString(game->mRenderer,
+        game->mFont->DrawString(game->mSpriteBatch,
                                 mDisplayCaption,
                                 textRect,
                                 mButtonStyle.textColor,
@@ -142,9 +142,7 @@ namespace nuvelocity
                                       .y = rect.y + 2.0F,
                                       .w = SDL_max(0.0F, rect.w - 4.0F),
                                       .h = SDL_max(0.0F, rect.h - 4.0F)};
-            SDL_SetRenderDrawBlendMode(game->mRenderer, SDL_BLENDMODE_BLEND);
-            SDL_SetRenderDrawColor(game->mRenderer, 255, 255, 255, 64);
-            SDL_RenderRect(game->mRenderer, &focusRect);
+            DrawRect(game->mSpriteBatch, focusRect, SDL_Color{255, 255, 255, 64});
         }
     }
 

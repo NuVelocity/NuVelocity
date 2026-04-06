@@ -65,6 +65,7 @@ namespace nuvelocity
             , mScene(nullptr)
             , mInput(nullptr)
             , mSpriteBatch(nullptr)
+            , mGPUDevice(nullptr)
             , mCursor(nullptr)
     {
     }
@@ -122,20 +123,39 @@ namespace nuvelocity
             return Fail();
         }
 
-        mRenderer = SDL_CreateRenderer(mWindow, nullptr);
-        if (mRenderer == nullptr)
-        {
-            return Fail();
-        }
+        SDL_GPUShaderFormat shaderFormats =
+            SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL;
+        mGPUDevice = SDL_CreateGPUDevice(shaderFormats, false, nullptr);
 
-        SDL_GPUDevice* rendererDevice = SDL_GetGPURendererDevice(mRenderer);
-        if (rendererDevice != nullptr)
+        if (mGPUDevice == nullptr)
         {
-            mSpriteBatch = new GPUSpriteBatch(rendererDevice, mWindow);
+            mRenderer = SDL_CreateRenderer(mWindow, nullptr);
+            if (mRenderer == nullptr)
+            {
+                return Fail();
+            }
+
+            // Fallback to standard RendererSpriteBatch if GPU init failed
+            if (mSpriteBatch == nullptr)
+            {
+                mSpriteBatch = new RendererSpriteBatch(mRenderer, mWindow);
+            }
         }
         else
         {
-            mSpriteBatch = new RendererSpriteBatch(mRenderer, mWindow);
+            if (SDL_ClaimWindowForGPUDevice(mGPUDevice, mWindow))
+            {
+                SDL_Log("Using %s GPU implementation.", SDL_GetGPUDeviceDriver(mGPUDevice));
+                mSpriteBatch = new GPUSpriteBatch(mGPUDevice, mWindow);
+            }
+            else
+            {
+                SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                            "SDL_ClaimWindowForGPUDevice failed: %s",
+                            SDL_GetError());
+                SDL_DestroyGPUDevice(mGPUDevice);
+                mGPUDevice = nullptr;
+            }
         }
 
         SDL_ShowWindow(mWindow);
@@ -154,7 +174,10 @@ namespace nuvelocity
             }
         }
 
-        SDL_SetRenderVSync(mRenderer, -1);
+        if (mRenderer)
+        {
+            SDL_SetRenderVSync(mRenderer, -1);
+        }
 
         mFont = new FontManager();
         if (!mFont->Initialize(argv))
@@ -304,11 +327,28 @@ namespace nuvelocity
         delete mInput;
         mInput = nullptr;
 
-        SDL_DestroyRenderer(mRenderer);
-        SDL_DestroyWindow(mWindow);
+        // mFont and mAsset are freed before GPU device/window teardown so any
+        // GPU-adjacent cleanup they trigger (e.g. surface frees) happens while
+        // the device is still alive.
         delete mFont;
         mFont = nullptr;
         delete mAudio;
         delete mAsset;
+
+        if (mRenderer != nullptr)
+        {
+            SDL_DestroyRenderer(mRenderer);
+            SDL_DestroyWindow(mWindow);
+        }
+        if (mGPUDevice != nullptr)
+        {
+            if (mWindow != nullptr)
+            {
+                SDL_ReleaseWindowFromGPUDevice(mGPUDevice, mWindow);
+                SDL_DestroyWindow(mWindow);
+            }
+            SDL_DestroyGPUDevice(mGPUDevice);
+            mGPUDevice = nullptr;
+        }
     }
 } // namespace nuvelocity

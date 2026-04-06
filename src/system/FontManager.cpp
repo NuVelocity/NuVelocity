@@ -151,7 +151,7 @@ namespace nuvelocity
         return false;
     }
 
-    void FontManager::DrawString(SDL_Renderer* renderer,
+    void FontManager::DrawString(SpriteBatch* batch,
                                  const std::string& text,
                                  const SDL_FRect& bounds,
                                  const SDL_Color& color,
@@ -160,7 +160,7 @@ namespace nuvelocity
                                  bool verticalCenter,
                                  int underlineIndex) const
     {
-        if (renderer == nullptr || text.empty())
+        if (batch == nullptr || text.empty())
         {
             return;
         }
@@ -179,11 +179,11 @@ namespace nuvelocity
             font = mFallbackFont;
         }
         font->DrawString(
-            renderer, text, bounds, color, pointSize, alignment, verticalCenter, underlineIndex);
+            batch, text, bounds, color, pointSize, alignment, verticalCenter, underlineIndex);
     }
 
     void FontManager::DrawStringWithFont(const std::string& fontName,
-                                         SDL_Renderer* renderer,
+                                         SpriteBatch* batch,
                                          const std::string& text,
                                          const SDL_FRect& bounds,
                                          const SDL_Color& color,
@@ -192,7 +192,7 @@ namespace nuvelocity
                                          bool verticalCenter,
                                          int underlineIndex) const
     {
-        if (renderer == nullptr || text.empty())
+        if (batch == nullptr || text.empty())
         {
             return;
         }
@@ -215,10 +215,10 @@ namespace nuvelocity
             font = mFallbackFont;
         }
         font->DrawString(
-            renderer, text, bounds, color, pointSize, alignment, verticalCenter, underlineIndex);
+            batch, text, bounds, color, pointSize, alignment, verticalCenter, underlineIndex);
     }
 
-    void FontManager::DrawStringAt(SDL_Renderer* renderer,
+    void FontManager::DrawStringAt(SpriteBatch* batch,
                                    const std::string& text,
                                    float x,
                                    float y,
@@ -228,7 +228,7 @@ namespace nuvelocity
                                    const SDL_Rect* clipRect,
                                    int underlineIndex) const
     {
-        if (renderer == nullptr || text.empty())
+        if (batch == nullptr || text.empty())
         {
             return;
         }
@@ -250,27 +250,19 @@ namespace nuvelocity
         if (clipRect == nullptr)
         {
             font->DrawStringAt(
-                renderer, text, x, y, color, pointSize, alignment, false, underlineIndex);
+                batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
             return;
         }
 
-        SDL_Rect previousClip{};
-        const bool hadClip = SDL_GetRenderClipRect(renderer, &previousClip);
-
-        SDL_Rect activeClip = *clipRect;
-        if (hadClip && !intersects(previousClip, *clipRect, activeClip))
-        {
-            return;
-        }
-
-        SDL_SetRenderClipRect(renderer, &activeClip);
+        // Clip management is now handled through the batch
+        batch->SetClipRect(clipRect);
         font->DrawStringAt(
-            renderer, text, x, y, color, pointSize, alignment, false, underlineIndex);
-        SDL_SetRenderClipRect(renderer, hadClip ? &previousClip : nullptr);
+            batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
+        batch->SetClipRect(nullptr); // Reset clip after drawing
     }
 
     void FontManager::DrawStringWithFontAt(const std::string& fontName,
-                                           SDL_Renderer* renderer,
+                                           SpriteBatch* batch,
                                            const std::string& text,
                                            float x,
                                            float y,
@@ -280,7 +272,7 @@ namespace nuvelocity
                                            const SDL_Rect* clipRect,
                                            int underlineIndex) const
     {
-        if (renderer == nullptr || text.empty())
+        if (batch == nullptr || text.empty())
         {
             return;
         }
@@ -298,22 +290,13 @@ namespace nuvelocity
         if (clipRect == nullptr)
         {
             font->DrawStringAt(
-                renderer, text, x, y, color, pointSize, alignment, false, underlineIndex);
+                batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
             return;
         }
 
-        SDL_Rect previousClip{};
-        const bool hadClip = SDL_GetRenderClipRect(renderer, &previousClip);
-
-        SDL_Rect activeClip = *clipRect;
-        if (hadClip && !intersects(previousClip, *clipRect, activeClip))
-        {
-            return;
-        }
-
-        SDL_SetRenderClipRect(renderer, &activeClip);
+        batch->SetClipRect(clipRect);
         font->DrawStringAt(
-            renderer, text, x, y, color, pointSize, alignment, false, underlineIndex);
-        SDL_SetRenderClipRect(renderer, hadClip ? &previousClip : nullptr);
+            batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
+        batch->SetClipRect(nullptr);
     }
 } // namespace nuvelocity

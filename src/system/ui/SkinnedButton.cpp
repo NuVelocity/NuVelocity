@@ -9,7 +9,7 @@ namespace nuvelocity
 
     void SkinnedButton::Draw(Game* game, const SDL_FPoint& parentOffset)
     {
-        if (!mVisible || game == nullptr || game->mFont == nullptr)
+        if (!mVisible || game == nullptr || game->mFont == nullptr || game->mSpriteBatch == nullptr)
         {
             return;
         }
@@ -35,17 +35,17 @@ namespace nuvelocity
         if (sequence != nullptr)
         {
             const SDL_FRect rect = GetScreenRect(parentOffset);
-            SDL_Texture* texture = sequence->GetTexture(0, game->mRenderer);
-            if (texture != nullptr)
+            SDL_Surface* surface = sequence->GetSurface(0);
+            if (surface != nullptr)
             {
-                SDL_RenderTexture(game->mRenderer, texture, nullptr, &rect);
+                game->mSpriteBatch->Draw(surface, &rect);
             }
 
             SDL_FRect textRect{.x = rect.x + 4.0F,
                                .y = rect.y + 2.0F,
                                .w = SDL_max(0.0F, rect.w - 8.0F),
                                .h = SDL_max(0.0F, rect.h - 4.0F)};
-            game->mFont->DrawString(game->mRenderer,
+            game->mFont->DrawString(game->mSpriteBatch,
                                     mDisplayCaption,
                                     textRect,
                                     mButtonStyle.textColor,
