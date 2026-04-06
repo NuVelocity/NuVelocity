@@ -12,8 +12,6 @@ namespace nuvelocity
 {
     constexpr uint8_t kSequenceSignatureStandard = 0x01;
 
-
-
     static bool DecodeStandardCompressedImage(SDL_IOStream* stream,
                                               uint8_t*& imageData,
                                               size_t& imageDataSize,
@@ -203,6 +201,8 @@ namespace nuvelocity
                                                     alphaChannelDataSize);
         }
 
+        bool hasImageData = imageDataSize > 0;
+
         DecodeUtils::FreeDecodedBuffers(listData,
                                         listDataSize,
                                         imageData,
@@ -210,8 +210,13 @@ namespace nuvelocity
                                         alphaChannelData,
                                         alphaChannelDataSize);
 
-        Sequence* finalSequence = DecodeUtils::FinalizeSequence(
-            sequence, frameInfoList, hasFrameInfoList, imageDataSize, isEmpty, spriteAtlas, listText);
+        Sequence* finalSequence = DecodeUtils::FinalizeSequence(sequence,
+                                                                frameInfoList,
+                                                                hasFrameInfoList,
+                                                                hasImageData,
+                                                                isEmpty,
+                                                                spriteAtlas,
+                                                                listText);
         if (finalSequence == nullptr)
         {
             if (outFontHeaderData != nullptr)

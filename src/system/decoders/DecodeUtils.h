@@ -108,7 +108,7 @@ namespace nuvelocity
         static Sequence* FinalizeSequence(Sequence* sequence,
                                           SequenceFrameInfoList* frameInfoList,
                                           bool hasFrameInfoList,
-                                          size_t imageDataSize,
+                                          bool hasImageData,
                                           bool isEmpty,
                                           SDL_Surface* spriteAtlas,
                                           const std::string& rawListText = "");

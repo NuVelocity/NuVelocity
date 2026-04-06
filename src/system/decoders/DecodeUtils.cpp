@@ -339,12 +339,12 @@ namespace nuvelocity
     Sequence* DecodeUtils::FinalizeSequence(Sequence* sequence,
                                             SequenceFrameInfoList* frameInfoList,
                                             bool hasFrameInfoList,
-                                            size_t imageDataSize,
+                                            bool hasImageData,
                                             bool isEmpty,
                                             SDL_Surface* spriteAtlas,
                                             const std::string& rawListText)
     {
-        if (imageDataSize == 0)
+        if (!hasImageData)
         {
             if (isEmpty)
             {

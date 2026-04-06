@@ -13,7 +13,6 @@
 namespace nuvelocity
 {
 
-
     Sequence* SequenceLoaderMode4::Load(SDL_IOStream* stream)
     {
         if (stream == nullptr)
@@ -74,6 +73,8 @@ namespace nuvelocity
                 BuildSequenceAtlasSurface(atlasWidth, atlasHeight, imageData, imageDataSize);
         }
 
+        bool hasImageData = imageDataSize > 0;
+
         DecodeUtils::FreeDecodedBuffers(listData,
                                         listDataSize,
                                         imageData,
@@ -81,8 +82,13 @@ namespace nuvelocity
                                         alphaChannelData,
                                         alphaChannelDataSize);
 
-        return DecodeUtils::FinalizeSequence(
-            sequence, frameInfoList, hasFrameInfoList, imageDataSize, isEmpty, spriteAtlas, listText);
+        return DecodeUtils::FinalizeSequence(sequence,
+                                             frameInfoList,
+                                             hasFrameInfoList,
+                                             hasImageData,
+                                             isEmpty,
+                                             spriteAtlas,
+                                             listText);
     }
 
     bool SequenceLoaderMode4::DecodeSequenceHDHeader(SDL_IOStream* stream,
