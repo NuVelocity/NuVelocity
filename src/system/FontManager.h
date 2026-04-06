@@ -29,6 +29,11 @@ namespace nuvelocity
         bool SetFallbackFont(const std::string& name);
 
         bool MeasureString(const std::string& text, int pointSize, int& width, int& height) const;
+        bool MeasureStringWithFont(const std::string& fontName,
+                                   const std::string& text,
+                                   int pointSize,
+                                   int& width,
+                                   int& height) const;
 
         void DrawString(SDL_Renderer* renderer,
                         const std::string& text,

@@ -119,6 +119,38 @@ namespace nuvelocity
         return false;
     }
 
+    bool FontManager::MeasureStringWithFont(const std::string& fontName,
+                                            const std::string& text,
+                                            int pointSize,
+                                            int& width,
+                                            int& height) const
+    {
+        width = 0;
+        height = 0;
+
+        const Font* font = FindFont(fontName);
+        if (font == nullptr)
+        {
+            font = GetActiveFont();
+        }
+        if (font == nullptr)
+        {
+            return false;
+        }
+
+        if (font->MeasureString(text, pointSize, width, height))
+        {
+            return true;
+        }
+
+        if (font != mFallbackFont && mFallbackFont != nullptr)
+        {
+            return mFallbackFont->MeasureString(text, pointSize, width, height);
+        }
+
+        return false;
+    }
+
     void FontManager::DrawString(SDL_Renderer* renderer,
                                  const std::string& text,
                                  const SDL_FRect& bounds,
