@@ -12,6 +12,8 @@ project(NuVelocity VERSION ${NVE_VERSION} LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(NVE_RESTORE_TGA "Enable re-exporting TGA files from cache" OFF)
+
 # ------------------------------------------------------------------------------
 # Third-Party Libraries
 # ------------------------------------------------------------------------------
@@ -107,6 +109,10 @@ target_compile_definitions(
     DEBUG
     NVE_LIB
 )
+
+if(NVE_RESTORE_TGA)
+    target_compile_definitions(NuVelocity PRIVATE NVE_RESTORE_TGA)
+endif()
 
 target_link_libraries(
     NuVelocity PUBLIC
