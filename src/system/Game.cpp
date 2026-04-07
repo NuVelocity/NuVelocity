@@ -282,7 +282,7 @@ namespace nuvelocity
         }
 
         // FIXME: The hot spot is currently hardcoded. This should be taken from sequence data.
-        SDL_Cursor* cursor = SDL_CreateColorCursor(cursorSurface, 18, 22);
+        SDL_Cursor* cursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
         if (cursor == nullptr)
         {
             SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
