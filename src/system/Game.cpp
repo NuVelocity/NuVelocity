@@ -16,6 +16,59 @@ constexpr std::uint16_t NVE_DEFAULT_WINDOW_HEIGHT = 480;
 
 namespace nuvelocity
 {
+    Game::Game(const char* aWindowTitle, int aWidth, int aHeight)
+            : mWindowTitle(aWindowTitle)
+            , mWindowWidth(aWidth)
+            , mWindowHeight(aHeight)
+            , mWindow(nullptr)
+            , mRenderer(nullptr)
+            , mAsset(nullptr)
+            , mAudio(nullptr)
+            , mFont(nullptr)
+            , mInitialized(false)
+            , mScene(nullptr)
+            , mInput(nullptr)
+            , mSpriteBatch(nullptr)
+            , mGPUDevice(nullptr)
+            , mCursor(nullptr)
+            , mArgs(aWindowTitle)
+    {
+        mArgs.add_argument("-w", "--width")
+            .help("Initial window width")
+            .default_value((int)NVE_DEFAULT_WINDOW_WIDTH)
+            .scan<'i', int>();
+
+        mArgs.add_argument("-h", "--height")
+            .help("Initial window height")
+            .default_value((int)NVE_DEFAULT_WINDOW_HEIGHT)
+            .scan<'i', int>();
+
+        mArgs.add_argument("-r", "--renderer")
+            .help("Renderer selection (gpu or renderer)")
+            .default_value(std::string("gpu"))
+            .action(
+                [](const std::string& value)
+                {
+                    static const std::vector<std::string> choices = {"gpu", "renderer"};
+                    if (std::find(choices.begin(), choices.end(), value) != choices.end())
+                    {
+                        return value;
+                    }
+                    return std::string("gpu");
+                });
+    }
+
+    Game::Game(const char* aWindowTitle)
+            : Game(aWindowTitle, NVE_DEFAULT_WINDOW_WIDTH, NVE_DEFAULT_WINDOW_HEIGHT)
+    {
+    }
+
+    bool Game::Fail()
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "Error %s", SDL_GetError());
+        return false;
+    }
+
     inline static bool RegisterEngineDefaultFonts(AssetManager* assetManager,
                                                   FontManager* fontManager)
     {
@@ -58,57 +111,6 @@ namespace nuvelocity
         }
 
         return hasAnyFont;
-    }
-
-    Game::Game(const char* aWindowTitle, int aWidth, int aHeight)
-            : mWindowTitle(aWindowTitle)
-            , mWindowWidth(aWidth)
-            , mWindowHeight(aHeight)
-            , mWindow(nullptr)
-            , mRenderer(nullptr)
-            , mAsset(nullptr)
-            , mAudio(nullptr)
-            , mFont(nullptr)
-            , mInitialized(false)
-            , mScene(nullptr)
-            , mInput(nullptr)
-            , mSpriteBatch(nullptr)
-            , mGPUDevice(nullptr)
-            , mCursor(nullptr)
-            , mArgs(aWindowTitle)
-    {
-        mArgs.add_argument("-w", "--width")
-            .help("Initial window width")
-            .default_value((int)NVE_DEFAULT_WINDOW_WIDTH)
-            .scan<'i', int>();
-
-        mArgs.add_argument("-h", "--height")
-            .help("Initial window height")
-            .default_value((int)NVE_DEFAULT_WINDOW_HEIGHT)
-            .scan<'i', int>();
-
-        mArgs.add_argument("-r", "--renderer")
-            .help("Renderer selection (gpu or renderer)")
-            .default_value(std::string("gpu"))
-            .action([](const std::string& value) {
-                static const std::vector<std::string> choices = {"gpu", "renderer"};
-                if (std::find(choices.begin(), choices.end(), value) != choices.end())
-                {
-                    return value;
-                }
-                return std::string("gpu");
-            });
-    }
-
-    Game::Game(const char* aWindowTitle)
-            : Game(aWindowTitle, NVE_DEFAULT_WINDOW_WIDTH, NVE_DEFAULT_WINDOW_HEIGHT)
-    {
-    }
-
-    bool Game::Fail()
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "Error %s", SDL_GetError());
-        return false;
     }
 
     bool Game::Initialize(int argc, char** argv)
@@ -169,7 +171,7 @@ namespace nuvelocity
 #ifdef NVE_GPU_SUPPORT
         SDL_GPUShaderFormat shaderFormats =
             SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL;
-        
+
         bool useGPU = mArgs.get<std::string>("--renderer") == "gpu";
 
         if (useGPU)

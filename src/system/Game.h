@@ -5,7 +5,6 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_render.h>
 
-#include <argparse/argparse.hpp>
 #include "API.h"
 #include "AssetManager.h"
 #include "AudioManager.h"
@@ -13,6 +12,7 @@
 #include "InputManager.h"
 #include "ModuleInfo.h"
 #include "Scene.h"
+#include <argparse/argparse.hpp>
 
 namespace nuvelocity
 {
