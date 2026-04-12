@@ -1,12 +1,19 @@
-#include "WindowManager.h"
+#include "MdiManager.h"
 #include "Game.h"
-#include "Window.h"
+#include "MdiWindow.h"
 #include <algorithm>
 #include <system/InputManager.h>
 
 namespace nuvelocity
 {
-    void WindowManager::AddWindow(const std::shared_ptr<Window>& window)
+    bool MdiManager::Initialize(char** argv)
+    {
+        (void)argv;
+        mInitialized = true;
+        return true;
+    }
+
+    void MdiManager::AddWindow(const std::shared_ptr<MdiWindow>& window)
     {
         if (window != nullptr)
         {
@@ -14,17 +21,17 @@ namespace nuvelocity
         }
     }
 
-    void WindowManager::RemoveWindow(const std::shared_ptr<Window>& window)
+    void MdiManager::RemoveWindow(const std::shared_ptr<MdiWindow>& window)
     {
         mWindows.erase(std::remove(mWindows.begin(), mWindows.end(), window), mWindows.end());
     }
 
-    void WindowManager::Clear()
+    void MdiManager::Clear()
     {
         mWindows.clear();
     }
 
-    void WindowManager::Update(Game* aGame)
+    void MdiManager::Update(Game* aGame)
     {
         if (aGame == nullptr || aGame->mInput == nullptr)
         {
@@ -38,10 +45,10 @@ namespace nuvelocity
         {
             for (std::size_t index = mWindows.size(); index > 0; --index)
             {
-                std::shared_ptr<Window>& window = mWindows[index - 1];
+                std::shared_ptr<MdiWindow>& window = mWindows[index - 1];
                 if (window != nullptr && window->IsVisible() && window->Intersects(mousePosition))
                 {
-                    std::shared_ptr<Window> focusedWindow = window;
+                    std::shared_ptr<MdiWindow> focusedWindow = window;
                     mWindows.erase(mWindows.begin() + static_cast<long>(index - 1));
                     mWindows.push_back(focusedWindow);
                     break;
@@ -51,7 +58,7 @@ namespace nuvelocity
 
         for (std::size_t index = 0; index < mWindows.size(); ++index)
         {
-            std::shared_ptr<Window>& window = mWindows[index];
+            std::shared_ptr<MdiWindow>& window = mWindows[index];
             if (window == nullptr)
             {
                 continue;
@@ -63,14 +70,14 @@ namespace nuvelocity
 
         mWindows.erase(std::remove_if(mWindows.begin(),
                                       mWindows.end(),
-                                      [](const std::shared_ptr<Window>& window)
+                                      [](const std::shared_ptr<MdiWindow>& window)
                                       { return window == nullptr || window->ShouldClose(); }),
                        mWindows.end());
     }
 
-    void WindowManager::Draw(Game* game)
+    void MdiManager::Draw(Game* game)
     {
-        for (const std::shared_ptr<Window>& window : mWindows)
+        for (const std::shared_ptr<MdiWindow>& window : mWindows)
         {
             if (window != nullptr)
             {
@@ -79,7 +86,7 @@ namespace nuvelocity
         }
     }
 
-    const std::vector<std::shared_ptr<Window>>& WindowManager::GetWindows() const
+    const std::vector<std::shared_ptr<MdiWindow>>& MdiManager::GetWindows() const
     {
         return mWindows;
     }

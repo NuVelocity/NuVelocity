@@ -12,8 +12,8 @@ target_sources(
     SkinnedButton.h
     TextBox.cpp
     TextBox.h
-    Window.cpp
-    Window.h
-    WindowManager.cpp
-    WindowManager.h
+    MdiWindow.cpp
+    MdiWindow.h
+    MdiManager.cpp
+    MdiManager.h
 )

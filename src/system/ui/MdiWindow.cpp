@@ -1,4 +1,4 @@
-#include "Window.h"
+#include "MdiWindow.h"
 
 #include "WidgetUtils.h"
 
@@ -9,12 +9,12 @@
 
 namespace nuvelocity
 {
-    Window::Window()
-            : Window("")
+    MdiWindow::MdiWindow()
+            : MdiWindow("")
     {
     }
 
-    Window::Window(std::string title)
+    MdiWindow::MdiWindow(std::string title)
             : mTitle(std::move(title))
             , mMovable(true)
             , mClosable(true)
@@ -26,7 +26,7 @@ namespace nuvelocity
         Widget::SetStyle(mWindowStyle.baseStyle);
     }
 
-    void Window::Update(Game* aGame)
+    void MdiWindow::Update(Game* aGame)
     {
         if (aGame == nullptr || aGame->mInput == nullptr)
         {
@@ -92,7 +92,7 @@ namespace nuvelocity
         }
     }
 
-    void Window::Draw(Game* game)
+    void MdiWindow::Draw(Game* game)
     {
         if (!mVisible || game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr)
         {
@@ -164,68 +164,68 @@ namespace nuvelocity
         }
     }
 
-    void Window::SetTitle(const std::string& title)
+    void MdiWindow::SetTitle(const std::string& title)
     {
         mTitle = title;
     }
 
-    const std::string& Window::GetTitle() const
+    const std::string& MdiWindow::GetTitle() const
     {
         return mTitle;
     }
 
-    void Window::SetMovable(bool movable)
+    void MdiWindow::SetMovable(bool movable)
     {
         mMovable = movable;
     }
 
-    bool Window::IsMovable() const
+    bool MdiWindow::IsMovable() const
     {
         return mMovable;
     }
 
-    void Window::SetClosable(bool closable)
+    void MdiWindow::SetClosable(bool closable)
     {
         mClosable = closable;
     }
 
-    bool Window::IsClosable() const
+    bool MdiWindow::IsClosable() const
     {
         return mClosable;
     }
 
-    void Window::SetActive(bool active)
+    void MdiWindow::SetActive(bool active)
     {
         mActive = active;
     }
 
-    bool Window::IsActive() const
+    bool MdiWindow::IsActive() const
     {
         return mActive;
     }
 
-    void Window::SetBackgroundTile(const Image& image)
+    void MdiWindow::SetBackgroundTile(const Image& image)
     {
         mBackgroundTile = image;
     }
 
-    const Image& Window::GetBackgroundTile() const
+    const Image& MdiWindow::GetBackgroundTile() const
     {
         return mBackgroundTile;
     }
 
-    void Window::SetStyle(const Style& style)
+    void MdiWindow::SetStyle(const Style& style)
     {
         mWindowStyle = style;
         Widget::SetStyle(style.baseStyle);
     }
 
-    const Window::Style& Window::GetWindowStyle() const
+    const MdiWindow::Style& MdiWindow::GetWindowStyle() const
     {
         return mWindowStyle;
     }
 
-    void Window::AddChild(const std::shared_ptr<Widget>& widget)
+    void MdiWindow::AddChild(const std::shared_ptr<Widget>& widget)
     {
         if (widget != nullptr)
         {
@@ -239,7 +239,7 @@ namespace nuvelocity
         }
     }
 
-    void Window::SetRect(const SDL_FRect& rect)
+    void MdiWindow::SetRect(const SDL_FRect& rect)
     {
         const float deltaX = rect.x - mRect.x;
         const float deltaY = rect.y - mRect.y;
@@ -258,12 +258,12 @@ namespace nuvelocity
         }
     }
 
-    const std::vector<std::shared_ptr<Widget>>& Window::GetChildren() const
+    const std::vector<std::shared_ptr<Widget>>& MdiWindow::GetChildren() const
     {
         return mChildren;
     }
 
-    void Window::Close()
+    void MdiWindow::Close()
     {
         mShouldClose = true;
         if (mOnClose)
@@ -272,23 +272,23 @@ namespace nuvelocity
         }
     }
 
-    bool Window::ShouldClose() const
+    bool MdiWindow::ShouldClose() const
     {
         return mShouldClose;
     }
 
-    bool Window::Intersects(const SDL_FPoint& point) const
+    bool MdiWindow::Intersects(const SDL_FPoint& point) const
     {
         return point.x >= mRect.x && point.y >= mRect.y && point.x <= mRect.x + mRect.w &&
                point.y <= mRect.y + mRect.h;
     }
 
-    void Window::SetOnClose(const std::function<void(Window&)>& callback)
+    void MdiWindow::SetOnClose(const std::function<void(MdiWindow&)>& callback)
     {
         mOnClose = callback;
     }
 
-    SDL_FRect Window::GetTitleBarRect() const
+    SDL_FRect MdiWindow::GetTitleBarRect() const
     {
         const SDL_FRect rect = GetScreenRect();
         return SDL_FRect{.x = rect.x,
@@ -297,7 +297,7 @@ namespace nuvelocity
                          .h = SDL_min(rect.h, mWindowStyle.titleBarHeight)};
     }
 
-    SDL_FRect Window::GetCloseButtonRect() const
+    SDL_FRect MdiWindow::GetCloseButtonRect() const
     {
         const SDL_FRect titleBar = GetTitleBarRect();
         const float margin = (titleBar.h - mWindowStyle.closeButtonSize) * 0.5F;
@@ -308,7 +308,7 @@ namespace nuvelocity
                          .h = mWindowStyle.closeButtonSize};
     }
 
-    SDL_FRect Window::GetClientRect() const
+    SDL_FRect MdiWindow::GetClientRect() const
     {
         const SDL_FRect rect = GetScreenRect();
 

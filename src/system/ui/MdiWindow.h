@@ -1,5 +1,5 @@
-#ifndef NVE_UI_WINDOW_H
-#define NVE_UI_WINDOW_H
+#ifndef NVE_UI_MDI_WINDOW_H
+#define NVE_UI_MDI_WINDOW_H
 
 #include "Widget.h"
 
@@ -12,7 +12,7 @@
 
 namespace nuvelocity
 {
-    class Window : public Widget
+    class MdiWindow : public Widget
     {
     public:
         struct Style
@@ -30,8 +30,8 @@ namespace nuvelocity
             bool tileBackground = false;
         };
 
-        Window();
-        explicit Window(std::string title);
+        MdiWindow();
+        explicit MdiWindow(std::string title);
 
         void Update(Game* aGame) override;
         void Draw(Game* game) override;
@@ -64,7 +64,7 @@ namespace nuvelocity
 
         bool Intersects(const SDL_FPoint& point) const;
 
-        void SetOnClose(const std::function<void(Window&)>& callback);
+        void SetOnClose(const std::function<void(MdiWindow&)>& callback);
 
     private:
         SDL_FRect GetTitleBarRect() const;
@@ -83,8 +83,8 @@ namespace nuvelocity
         Style mWindowStyle;
 
         std::vector<std::shared_ptr<Widget>> mChildren;
-        std::function<void(Window&)> mOnClose;
+        std::function<void(MdiWindow&)> mOnClose;
     };
 } // namespace nuvelocity
 
-#endif // NVE_UI_WINDOW_H
+#endif // NVE_UI_MDI_WINDOW_H
