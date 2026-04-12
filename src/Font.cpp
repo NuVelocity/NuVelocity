@@ -133,11 +133,6 @@ namespace nuvelocity
                             bool verticalCenter,
                             int underlineIndex) const
     {
-        TTF_Font* font = GetTtfFont(pointSize);
-        if (batch == nullptr || text.empty() || font == nullptr)
-        {
-            return;
-        }
         DrawString(batch,
                    text,
                    SDL_FRect{.x = x, .y = y, .w = 0.0F, .h = 0.0F},
