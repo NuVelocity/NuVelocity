@@ -7,6 +7,7 @@ namespace nuvelocity
 {
     class InputManager;
     class Button;
+    class Game;
 
     class FocusContainer
     {
@@ -14,6 +15,8 @@ namespace nuvelocity
         FocusContainer(Button* items[], std::size_t itemCount);
 
         void UpdateFocusNavigation(InputManager* input);
+        bool Update(Game* aGame);
+        void Draw(Game* aGame);
         bool HasFocus() const;
         void ClearFocus();
         std::size_t GetFocusedIndex() const;

@@ -1,5 +1,8 @@
 #include "FocusContainer.h"
 
+#include <SDL3/SDL.h>
+#include <system/Game.h>
+#include <system/GameComponent.h>
 #include <system/InputManager.h>
 #include <system/ui/Button.h>
 
@@ -42,6 +45,61 @@ namespace nuvelocity
                     mFocusedIndex = (mFocusedIndex + 1) % mItemCount;
                 }
             }
+        }
+    }
+
+    bool FocusContainer::Update(Game* aGame)
+    {
+        if (aGame == nullptr || aGame->mInput == nullptr)
+        {
+            return false;
+        }
+
+        UpdateFocusNavigation(aGame->mInput);
+
+        const SDL_FPoint mousePosition = aGame->mInput->GetMousePosition();
+        bool clickedOnItem = false;
+        bool anyItemHovered = false;
+
+        for (std::size_t i = 0; i < mItemCount; ++i)
+        {
+            const SDL_FRect rect = mItems[i]->GetScreenRect();
+            if (SDL_PointInRectFloat(&mousePosition, &rect))
+            {
+                anyItemHovered = true;
+                if (aGame->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
+                {
+                    SetFocused(i, true);
+                    clickedOnItem = true;
+                }
+                break;
+            }
+        }
+
+        if (aGame->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
+        {
+            SetFocusFromMouseClickCheck(clickedOnItem);
+        }
+
+        for (std::size_t i = 0; i < mItemCount; ++i)
+        {
+            mItems[i]->SetFocused(mHasFocus && i == mFocusedIndex);
+            mItems[i]->Update(aGame);
+        }
+
+        return anyItemHovered;
+    }
+
+    void FocusContainer::Draw(Game* aGame)
+    {
+        if (aGame == nullptr)
+        {
+            return;
+        }
+
+        for (std::size_t i = 0; i < mItemCount; ++i)
+        {
+            mItems[i]->Draw(aGame);
         }
     }
 
