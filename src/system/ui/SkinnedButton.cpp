@@ -7,7 +7,7 @@ namespace nuvelocity
 {
     SkinnedButton::SkinnedButton() = default;
 
-    void SkinnedButton::Draw(Game* game, const SDL_FPoint& parentOffset)
+    void SkinnedButton::Draw(Game* game)
     {
         if (!mVisible || game == nullptr || game->mFont == nullptr || game->mSpriteBatch == nullptr)
         {
@@ -34,7 +34,7 @@ namespace nuvelocity
 
         if (sequence != nullptr)
         {
-            const SDL_FRect rect = GetScreenRect(parentOffset);
+            const SDL_FRect rect = GetScreenRect();
             SDL_Surface* surface = sequence->GetSurface(0);
             if (surface != nullptr)
             {
@@ -56,7 +56,7 @@ namespace nuvelocity
             return;
         }
 
-        Button::Draw(game, parentOffset);
+        Button::Draw(game);
     }
 
     void SkinnedButton::SetSkin(const Skin& skin)

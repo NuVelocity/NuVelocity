@@ -1,9 +1,7 @@
 #include "WindowManager.h"
-
+#include "Game.h"
 #include "Window.h"
-
 #include <algorithm>
-
 #include <system/InputManager.h>
 
 namespace nuvelocity
@@ -26,8 +24,14 @@ namespace nuvelocity
         mWindows.clear();
     }
 
-    void WindowManager::Update(InputManager& input)
+    void WindowManager::Update(Game* aGame)
     {
+        if (aGame == nullptr || aGame->mInput == nullptr)
+        {
+            return;
+        }
+
+        InputManager& input = *aGame->mInput;
         const SDL_FPoint mousePosition = input.GetMousePosition();
 
         if (input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
@@ -54,7 +58,7 @@ namespace nuvelocity
             }
 
             window->SetActive(index == mWindows.size() - 1);
-            window->Update(input, SDL_FPoint{.x = 0.0F, .y = 0.0F});
+            window->Update(aGame);
         }
 
         mWindows.erase(std::remove_if(mWindows.begin(),
@@ -70,7 +74,7 @@ namespace nuvelocity
         {
             if (window != nullptr)
             {
-                window->Draw(game, SDL_FPoint{.x = 0.0F, .y = 0.0F});
+                window->Draw(game);
             }
         }
     }

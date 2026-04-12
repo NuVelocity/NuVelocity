@@ -2,6 +2,7 @@
 #define NVE_UI_WIDGET_H
 
 #include <SDL3/SDL.h>
+#include <system/GameComponent.h>
 
 #include <cstdint>
 
@@ -20,18 +21,18 @@ namespace nuvelocity
         float borderThickness = 1.0F;
     };
 
-    class Widget
+    class Widget : public GameComponent
     {
     public:
         Widget();
         virtual ~Widget() = default;
 
-        virtual void Update(InputManager& input, const SDL_FPoint& parentOffset);
-        virtual void Draw(Game* game, const SDL_FPoint& parentOffset) = 0;
+        void Update(Game* aGame) override = 0;
+        void Draw(Game* aGame) override = 0;
 
         void SetRect(const SDL_FRect& rect);
         SDL_FRect GetRect() const;
-        SDL_FRect GetScreenRect(const SDL_FPoint& parentOffset) const;
+        SDL_FRect GetScreenRect() const;
 
         void SetVisible(bool visible);
         bool IsVisible() const;
@@ -43,7 +44,7 @@ namespace nuvelocity
         const WidgetStyle& GetStyle() const;
 
     protected:
-        bool ContainsPoint(const SDL_FPoint& point, const SDL_FPoint& parentOffset) const;
+        bool ContainsPoint(const SDL_FPoint& point) const;
 
         SDL_FRect mRect;
         WidgetStyle mStyle;

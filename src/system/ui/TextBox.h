@@ -23,8 +23,8 @@ namespace nuvelocity
 
         TextBox();
 
-        void Update(InputManager& input, const SDL_FPoint& parentOffset) override;
-        void Draw(Game* game, const SDL_FPoint& parentOffset) override;
+        void Update(Game* aGame) override;
+        void Draw(Game* game) override;
 
         void SetText(const std::string& text);
         const std::string& GetText() const;

@@ -26,16 +26,22 @@ namespace nuvelocity
         Widget::SetStyle(mWindowStyle.baseStyle);
     }
 
-    void Window::Update(InputManager& input, const SDL_FPoint& parentOffset)
+    void Window::Update(Game* aGame)
     {
+        if (aGame == nullptr || aGame->mInput == nullptr)
+        {
+            return;
+        }
+
         if (!mVisible || !mEnabled)
         {
             return;
         }
 
+        InputManager& input = *aGame->mInput;
         const SDL_FPoint mouse = input.GetMousePosition();
-        const SDL_FRect titleBar = GetTitleBarRect(parentOffset);
-        const SDL_FRect closeButton = GetCloseButtonRect(parentOffset);
+        const SDL_FRect titleBar = GetTitleBarRect();
+        const SDL_FRect closeButton = GetCloseButtonRect();
 
         const bool overTitle = mouse.x >= titleBar.x && mouse.y >= titleBar.y &&
                                mouse.x <= titleBar.x + titleBar.w &&
@@ -57,7 +63,7 @@ namespace nuvelocity
         if (mMovable && overTitle && input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
         {
             mDragging = true;
-            const SDL_FRect screenRect = GetScreenRect(parentOffset);
+            const SDL_FRect screenRect = GetScreenRect();
             mDragGrabOffset = SDL_FPoint{.x = mouse.x - screenRect.x, .y = mouse.y - screenRect.y};
         }
 
@@ -65,8 +71,11 @@ namespace nuvelocity
         {
             if (input.IsMouseButtonDown(SDL_BUTTON_LEFT))
             {
-                mRect.x = mouse.x - mDragGrabOffset.x - parentOffset.x;
-                mRect.y = mouse.y - mDragGrabOffset.y - parentOffset.y;
+                const SDL_FRect newRect{.x = mouse.x - mDragGrabOffset.x,
+                                        .y = mouse.y - mDragGrabOffset.y,
+                                        .w = mRect.w,
+                                        .h = mRect.h};
+                SetRect(newRect);
             }
             else
             {
@@ -74,27 +83,25 @@ namespace nuvelocity
             }
         }
 
-        const SDL_FRect clientRect = GetClientRect(parentOffset);
-        const SDL_FPoint clientOffset{.x = clientRect.x, .y = clientRect.y};
         for (const std::shared_ptr<Widget>& child : mChildren)
         {
             if (child != nullptr)
             {
-                child->Update(input, clientOffset);
+                child->Update(aGame);
             }
         }
     }
 
-    void Window::Draw(Game* game, const SDL_FPoint& parentOffset)
+    void Window::Draw(Game* game)
     {
         if (!mVisible || game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr)
         {
             return;
         }
 
-        const SDL_FRect windowRect = GetScreenRect(parentOffset);
-        const SDL_FRect titleRect = GetTitleBarRect(parentOffset);
-        const SDL_FRect clientRect = GetClientRect(parentOffset);
+        const SDL_FRect windowRect = GetScreenRect();
+        const SDL_FRect titleRect = GetTitleBarRect();
+        const SDL_FRect clientRect = GetClientRect();
 
         FillRect(game->mSpriteBatch, windowRect, mStyle.backgroundColor);
         DrawBevel(game->mSpriteBatch,
@@ -132,7 +139,7 @@ namespace nuvelocity
 
         if (mClosable)
         {
-            SDL_FRect closeRect = GetCloseButtonRect(parentOffset);
+            SDL_FRect closeRect = GetCloseButtonRect();
             FillRect(game->mSpriteBatch, closeRect, mWindowStyle.closeButtonColor);
             DrawBevel(game->mSpriteBatch,
                       closeRect,
@@ -148,12 +155,11 @@ namespace nuvelocity
                                     true);
         }
 
-        const SDL_FPoint clientOffset{.x = clientRect.x, .y = clientRect.y};
         for (const std::shared_ptr<Widget>& child : mChildren)
         {
             if (child != nullptr)
             {
-                child->Draw(game, clientOffset);
+                child->Draw(game);
             }
         }
     }
@@ -223,7 +229,32 @@ namespace nuvelocity
     {
         if (widget != nullptr)
         {
+            const SDL_FRect clientRect = GetClientRect();
+            SDL_FRect childRect = widget->GetRect();
+            childRect.x += clientRect.x;
+            childRect.y += clientRect.y;
+            widget->SetRect(childRect);
+
             mChildren.push_back(widget);
+        }
+    }
+
+    void Window::SetRect(const SDL_FRect& rect)
+    {
+        const float deltaX = rect.x - mRect.x;
+        const float deltaY = rect.y - mRect.y;
+
+        mRect = rect;
+
+        for (const auto& child : mChildren)
+        {
+            if (child != nullptr)
+            {
+                SDL_FRect r = child->GetRect();
+                r.x += deltaX;
+                r.y += deltaY;
+                child->SetRect(r);
+            }
         }
     }
 
@@ -257,18 +288,18 @@ namespace nuvelocity
         mOnClose = callback;
     }
 
-    SDL_FRect Window::GetTitleBarRect(const SDL_FPoint& parentOffset) const
+    SDL_FRect Window::GetTitleBarRect() const
     {
-        const SDL_FRect rect = GetScreenRect(parentOffset);
+        const SDL_FRect rect = GetScreenRect();
         return SDL_FRect{.x = rect.x,
                          .y = rect.y,
                          .w = rect.w,
                          .h = SDL_min(rect.h, mWindowStyle.titleBarHeight)};
     }
 
-    SDL_FRect Window::GetCloseButtonRect(const SDL_FPoint& parentOffset) const
+    SDL_FRect Window::GetCloseButtonRect() const
     {
-        const SDL_FRect titleBar = GetTitleBarRect(parentOffset);
+        const SDL_FRect titleBar = GetTitleBarRect();
         const float margin = (titleBar.h - mWindowStyle.closeButtonSize) * 0.5F;
 
         return SDL_FRect{.x = titleBar.x + titleBar.w - mWindowStyle.closeButtonSize - margin,
@@ -277,9 +308,9 @@ namespace nuvelocity
                          .h = mWindowStyle.closeButtonSize};
     }
 
-    SDL_FRect Window::GetClientRect(const SDL_FPoint& parentOffset) const
+    SDL_FRect Window::GetClientRect() const
     {
-        const SDL_FRect rect = GetScreenRect(parentOffset);
+        const SDL_FRect rect = GetScreenRect();
 
         const float inset = mWindowStyle.borderSize;
         const float topInset = mWindowStyle.titleBarHeight;

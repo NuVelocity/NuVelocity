@@ -24,8 +24,8 @@ namespace nuvelocity
         Button();
         explicit Button(std::string caption);
 
-        void Update(InputManager& input, const SDL_FPoint& parentOffset) override;
-        void Draw(Game* game, const SDL_FPoint& parentOffset) override;
+        void Update(Game* aGame) override;
+        void Draw(Game* game) override;
 
         void SetCaption(const std::string& caption);
         const std::string& GetCaption() const;

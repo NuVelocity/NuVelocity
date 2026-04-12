@@ -23,7 +23,7 @@ namespace nuvelocity
         void RemoveWindow(const std::shared_ptr<Window>& window);
         void Clear();
 
-        void Update(InputManager& input);
+        void Update(Game* aGame);
         void Draw(Game* game);
 
         const std::vector<std::shared_ptr<Window>>& GetWindows() const;

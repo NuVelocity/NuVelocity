@@ -33,8 +33,10 @@ namespace nuvelocity
         Window();
         explicit Window(std::string title);
 
-        void Update(InputManager& input, const SDL_FPoint& parentOffset) override;
-        void Draw(Game* game, const SDL_FPoint& parentOffset) override;
+        void Update(Game* aGame) override;
+        void Draw(Game* game) override;
+
+        void SetRect(const SDL_FRect& rect);
 
         void SetTitle(const std::string& title);
         const std::string& GetTitle() const;
@@ -65,9 +67,9 @@ namespace nuvelocity
         void SetOnClose(const std::function<void(Window&)>& callback);
 
     private:
-        SDL_FRect GetTitleBarRect(const SDL_FPoint& parentOffset) const;
-        SDL_FRect GetCloseButtonRect(const SDL_FPoint& parentOffset) const;
-        SDL_FRect GetClientRect(const SDL_FPoint& parentOffset) const;
+        SDL_FRect GetTitleBarRect() const;
+        SDL_FRect GetCloseButtonRect() const;
+        SDL_FRect GetClientRect() const;
 
         std::string mTitle;
         bool mMovable;

@@ -16,17 +16,24 @@ namespace nuvelocity
         Widget::SetStyle(mTextBoxStyle.baseStyle);
     }
 
-    void TextBox::Update(InputManager& input, const SDL_FPoint& parentOffset)
+    void TextBox::Update(Game* aGame)
     {
+        if (aGame == nullptr || aGame->mInput == nullptr)
+        {
+            return;
+        }
+
         if (!mVisible || !mEnabled)
         {
             return;
         }
 
+        InputManager& input = *aGame->mInput;
+
         const SDL_FPoint mouse = input.GetMousePosition();
         if (input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
         {
-            mFocused = ContainsPoint(mouse, parentOffset);
+            mFocused = ContainsPoint(mouse);
         }
 
         if (!mFocused || mReadOnly)
@@ -69,14 +76,14 @@ namespace nuvelocity
         }
     }
 
-    void TextBox::Draw(Game* game, const SDL_FPoint& parentOffset)
+    void TextBox::Draw(Game* game)
     {
         if (!mVisible || game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr)
         {
             return;
         }
 
-        const SDL_FRect rect = GetScreenRect(parentOffset);
+        const SDL_FRect rect = GetScreenRect();
         const SDL_Color fillColor =
             mFocused ? mTextBoxStyle.focusedColor : mTextBoxStyle.unfocusedColor;
 

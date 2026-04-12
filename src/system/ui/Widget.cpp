@@ -1,5 +1,6 @@
 #include "Widget.h"
 
+#include <system/Game.h>
 #include <system/InputManager.h>
 
 namespace nuvelocity
@@ -9,12 +10,6 @@ namespace nuvelocity
             , mVisible(true)
             , mEnabled(true)
     {
-    }
-
-    void Widget::Update(InputManager& input, const SDL_FPoint& parentOffset)
-    {
-        (void)input;
-        (void)parentOffset;
     }
 
     void Widget::SetRect(const SDL_FRect& rect)
@@ -27,12 +22,9 @@ namespace nuvelocity
         return mRect;
     }
 
-    SDL_FRect Widget::GetScreenRect(const SDL_FPoint& parentOffset) const
+    SDL_FRect Widget::GetScreenRect() const
     {
-        return SDL_FRect{.x = parentOffset.x + mRect.x,
-                         .y = parentOffset.y + mRect.y,
-                         .w = mRect.w,
-                         .h = mRect.h};
+        return mRect;
     }
 
     void Widget::SetVisible(bool visible)
@@ -65,9 +57,9 @@ namespace nuvelocity
         return mStyle;
     }
 
-    bool Widget::ContainsPoint(const SDL_FPoint& point, const SDL_FPoint& parentOffset) const
+    bool Widget::ContainsPoint(const SDL_FPoint& point) const
     {
-        const SDL_FRect rect = GetScreenRect(parentOffset);
+        const SDL_FRect rect = GetScreenRect();
         return point.x >= rect.x && point.y >= rect.y && point.x <= rect.x + rect.w &&
                point.y <= rect.y + rect.h;
     }

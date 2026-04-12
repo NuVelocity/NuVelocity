@@ -44,8 +44,13 @@ namespace nuvelocity
         SetCaption(caption);
     }
 
-    void Button::Update(InputManager& input, const SDL_FPoint& parentOffset)
+    void Button::Update(Game* aGame)
     {
+        if (aGame == nullptr || aGame->mInput == nullptr)
+        {
+            return;
+        }
+
         if (!mVisible || !mEnabled)
         {
             mHovered = false;
@@ -53,8 +58,10 @@ namespace nuvelocity
             return;
         }
 
+        InputManager& input = *aGame->mInput;
+
         const SDL_FPoint mouse = input.GetMousePosition();
-        mHovered = ContainsPoint(mouse, parentOffset);
+        mHovered = ContainsPoint(mouse);
 
         if (mHovered && input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
         {
@@ -93,14 +100,14 @@ namespace nuvelocity
         }
     }
 
-    void Button::Draw(Game* game, const SDL_FPoint& parentOffset)
+    void Button::Draw(Game* game)
     {
         if (!mVisible || game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr)
         {
             return;
         }
 
-        const SDL_FRect rect = GetScreenRect(parentOffset);
+        const SDL_FRect rect = GetScreenRect();
 
         SDL_Color color = mStyle.backgroundColor;
         if (!mEnabled)

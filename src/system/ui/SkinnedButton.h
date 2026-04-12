@@ -20,7 +20,7 @@ namespace nuvelocity
 
         SkinnedButton();
 
-        void Draw(Game* game, const SDL_FPoint& parentOffset) override;
+        void Draw(Game* game) override;
 
         void SetSkin(const Skin& skin);
         const Skin& GetSkin() const;
