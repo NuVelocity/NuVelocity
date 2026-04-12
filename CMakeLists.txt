@@ -64,6 +64,11 @@ else()
     find_package(ZLIB REQUIRED)
 endif()
 
+find_program(GLSLANG_VALIDATOR glslangValidator)
+if(GLSLANG_VALIDATOR)
+    set(NVE_GPU_SUPPORT ON)
+endif()
+
 # PhysicsFS is vendored because we patch it to add support for our
 # custom archive format.
 set(PHYSFS_BUILD_TEST OFF CACHE BOOL "" FORCE)
@@ -112,6 +117,10 @@ target_compile_definitions(
 
 if(NVE_RESTORE_TGA)
     target_compile_definitions(NuVelocity PRIVATE NVE_RESTORE_TGA)
+endif()
+
+if(NVE_GPU_SUPPORT)
+    target_compile_definitions(NuVelocity PRIVATE NVE_GPU_SUPPORT)
 endif()
 
 target_link_libraries(

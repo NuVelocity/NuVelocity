@@ -1,6 +1,3 @@
-# Shaders for NuVelocity GPU Sprite Batch
-find_program(GLSLANG_VALIDATOR glslangValidator REQUIRED)
-
 # List of shaders to process
 set(SHADER_SOURCES
     sprite.vert.glsl

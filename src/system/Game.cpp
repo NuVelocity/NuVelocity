@@ -4,7 +4,9 @@
 
 #include "Font.h"
 #include "FontBitmap.h"
+#ifdef NVE_GPU_SUPPORT
 #include "GPUSpriteBatch.h"
+#endif
 #include "Game.h"
 #include "ObjectRegistration.h"
 #include "RendererSpriteBatch.h"
@@ -123,6 +125,7 @@ namespace nuvelocity
             return Fail();
         }
 
+#ifdef NVE_GPU_SUPPORT
         SDL_GPUShaderFormat shaderFormats =
             SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL;
         mGPUDevice = SDL_CreateGPUDevice(shaderFormats, false, nullptr);
@@ -157,6 +160,15 @@ namespace nuvelocity
                 mGPUDevice = nullptr;
             }
         }
+#else
+        mRenderer = SDL_CreateRenderer(mWindow, nullptr);
+        if (mRenderer == nullptr)
+        {
+            return Fail();
+        }
+
+        mSpriteBatch = new RendererSpriteBatch(mRenderer, mWindow);
+#endif
 
         SDL_ShowWindow(mWindow);
         {

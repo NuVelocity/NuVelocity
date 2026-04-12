@@ -1,10 +1,16 @@
-find_program(GLSLANG_VALIDATOR glslangValidator REQUIRED)
+if(NVE_GPU_SUPPORT)
+    # Subdirectories for components
+    add_subdirectory(shaders)
 
-# Subdirectories for components
-add_subdirectory(shaders)
+    # Ensure shaders are generated before compiling the main library
+    add_dependencies(NuVelocity NuVelocityShaders)
 
-# Ensure shaders are generated before compiling the main library
-add_dependencies(NuVelocity NuVelocityShaders)
+    target_sources(
+        NuVelocity PRIVATE
+        GPUSpriteBatch.cpp
+        GPUSpriteBatch.h
+    )
+endif()
 
 target_sources(
     NuVelocity PRIVATE
@@ -20,8 +26,6 @@ target_sources(
     FontManager.h
     Game.cpp
     Game.h
-    GPUSpriteBatch.cpp
-    GPUSpriteBatch.h
     LogCategory.h
     Manager.h
     Scene.h
