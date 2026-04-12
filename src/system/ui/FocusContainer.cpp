@@ -9,7 +9,8 @@
 namespace nuvelocity
 {
     FocusContainer::FocusContainer(Button* items[], std::size_t itemCount)
-            : mItems(items)
+            : Widget()
+            , mItems(items)
             , mItemCount(itemCount)
             , mFocusedIndex(0)
             , mHasFocus(false)
@@ -48,25 +49,23 @@ namespace nuvelocity
         }
     }
 
-    bool FocusContainer::Update(Game* aGame)
+    void FocusContainer::Update(Game* aGame)
     {
         if (aGame == nullptr || aGame->mInput == nullptr)
         {
-            return false;
+            return;
         }
 
         UpdateFocusNavigation(aGame->mInput);
 
         const SDL_FPoint mousePosition = aGame->mInput->GetMousePosition();
         bool clickedOnItem = false;
-        bool anyItemHovered = false;
 
         for (std::size_t i = 0; i < mItemCount; ++i)
         {
             const SDL_FRect rect = mItems[i]->GetScreenRect();
             if (SDL_PointInRectFloat(&mousePosition, &rect))
             {
-                anyItemHovered = true;
                 if (aGame->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
                 {
                     SetFocused(i, true);
@@ -86,8 +85,6 @@ namespace nuvelocity
             mItems[i]->SetFocused(mHasFocus && i == mFocusedIndex);
             mItems[i]->Update(aGame);
         }
-
-        return anyItemHovered;
     }
 
     void FocusContainer::Draw(Game* aGame)

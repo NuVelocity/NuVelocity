@@ -2,6 +2,7 @@
 #define NVE_UI_FOCUS_CONTAINER_H
 
 #include <cstddef>
+#include "Widget.h"
 
 namespace nuvelocity
 {
@@ -9,14 +10,14 @@ namespace nuvelocity
     class Button;
     class Game;
 
-    class FocusContainer
+    class FocusContainer : public Widget
     {
     public:
         FocusContainer(Button* items[], std::size_t itemCount);
 
         void UpdateFocusNavigation(InputManager* input);
-        bool Update(Game* aGame);
-        void Draw(Game* aGame);
+        void Update(Game* aGame) override;
+        void Draw(Game* aGame) override;
         bool HasFocus() const;
         void ClearFocus();
         std::size_t GetFocusedIndex() const;
