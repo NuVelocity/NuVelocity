@@ -9,16 +9,15 @@
 #include <string>
 #include <vector>
 
+#include "Font.h"
+#include "FontBitmap.h"
 #include "Manager.h"
 #include "Sequence.h"
+#include "SequenceFrameInfoList.h"
 #include "StandAloneFrame.h"
 
 namespace nuvelocity
 {
-    class Font;
-    class FontBitmap;
-    class SequenceFrameInfoList;
-
     class AssetManager : public Manager
     {
     private:

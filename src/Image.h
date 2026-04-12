@@ -1,15 +1,14 @@
 #ifndef NVE_IMAGE_H
 #define NVE_IMAGE_H
 
+#include "Frame.h"
+#include "Sequence.h"
 #include <SDL3/SDL.h>
 #include <cstddef>
 #include <cstdint>
 
 namespace nuvelocity
 {
-    class Frame;
-    class Sequence;
-
     class Image
     {
     public:

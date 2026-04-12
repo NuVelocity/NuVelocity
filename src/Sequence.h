@@ -6,9 +6,9 @@
 #include "Frame.h"
 #include "SequenceFlags.h"
 #include "model/Model.h"
+#include <SDL3/SDL.h>
 #include <cstddef>
 #include <cstdint>
-#include <SDL3/SDL.h>
 #include <limits>
 #include <memory>
 #include <string>

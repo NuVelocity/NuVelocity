@@ -1,6 +1,9 @@
 #ifndef NVE_ASSET_EXPORTER_H
 #define NVE_ASSET_EXPORTER_H
 
+#include "Sequence.h"
+#include "StandAloneFrame.h"
+
 #include <SDL3/SDL.h>
 #include <cstddef>
 #include <filesystem>
@@ -9,9 +12,6 @@
 
 namespace nuvelocity
 {
-    class Sequence;
-    class StandAloneFrame;
-
     class AssetExporter
     {
     public:

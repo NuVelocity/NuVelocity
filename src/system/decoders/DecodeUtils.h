@@ -1,6 +1,9 @@
 #ifndef NVE_DECODEUTILS_H
 #define NVE_DECODEUTILS_H
 
+#include "Sequence.h"
+#include "SequenceFrameInfoList.h"
+
 #include <SDL3/SDL.h>
 #include <cstddef>
 #include <cstdint>
@@ -9,9 +12,6 @@
 
 namespace nuvelocity
 {
-    class Sequence;
-    class SequenceFrameInfoList;
-
     class DecodeUtils
     {
     public:

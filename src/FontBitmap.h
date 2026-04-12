@@ -2,12 +2,11 @@
 #define NVE_FONT_BITMAP_H
 
 #include "Font.h"
+#include "Sequence.h"
 #include <memory>
 
 namespace nuvelocity
 {
-    class Sequence;
-
     // TODO: check default values.
     class FontBitmap : public Object<FontBitmap, Font>
     {
