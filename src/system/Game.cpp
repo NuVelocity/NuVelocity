@@ -75,7 +75,29 @@ namespace nuvelocity
             , mSpriteBatch(nullptr)
             , mGPUDevice(nullptr)
             , mCursor(nullptr)
+            , mArgs(aWindowTitle)
     {
+        mArgs.add_argument("-w", "--width")
+            .help("Initial window width")
+            .default_value((int)NVE_DEFAULT_WINDOW_WIDTH)
+            .scan<'i', int>();
+
+        mArgs.add_argument("-h", "--height")
+            .help("Initial window height")
+            .default_value((int)NVE_DEFAULT_WINDOW_HEIGHT)
+            .scan<'i', int>();
+
+        mArgs.add_argument("-r", "--renderer")
+            .help("Renderer selection (gpu or renderer)")
+            .default_value(std::string("gpu"))
+            .action([](const std::string& value) {
+                static const std::vector<std::string> choices = {"gpu", "renderer"};
+                if (std::find(choices.begin(), choices.end(), value) != choices.end())
+                {
+                    return value;
+                }
+                return std::string("gpu");
+            });
     }
 
     Game::Game(const char* aWindowTitle)
@@ -89,12 +111,26 @@ namespace nuvelocity
         return false;
     }
 
-    bool Game::Initialize(char** argv)
+    bool Game::Initialize(int argc, char** argv)
     {
         if (mInitialized)
         {
             return true;
         }
+
+        try
+        {
+            mArgs.parse_args(argc, argv);
+        }
+        catch (const std::exception& err)
+        {
+            std::cerr << err.what() << std::endl;
+            std::cerr << mArgs;
+            return false;
+        }
+
+        mWindowWidth = mArgs.get<int>("--width");
+        mWindowHeight = mArgs.get<int>("--height");
 
         RegisterEngineObjectTypes();
 
@@ -133,7 +169,13 @@ namespace nuvelocity
 #ifdef NVE_GPU_SUPPORT
         SDL_GPUShaderFormat shaderFormats =
             SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL;
-        mGPUDevice = SDL_CreateGPUDevice(shaderFormats, false, nullptr);
+        
+        bool useGPU = mArgs.get<std::string>("--renderer") == "gpu";
+
+        if (useGPU)
+        {
+            mGPUDevice = SDL_CreateGPUDevice(shaderFormats, false, nullptr);
+        }
 
         if (mGPUDevice == nullptr)
         {

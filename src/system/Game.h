@@ -5,6 +5,7 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_render.h>
 
+#include <argparse/argparse.hpp>
 #include "API.h"
 #include "AssetManager.h"
 #include "AudioManager.h"
@@ -36,11 +37,18 @@ namespace nuvelocity
         InputManager* mInput;
         SpriteBatch* mSpriteBatch;
 
+        argparse::ArgumentParser mArgs;
+
         NVE_API Game(const char* aWindowTitle, int aWidth, int aHeight);
         NVE_API Game(const char* aWindowTitle);
         NVE_API ~Game();
 
-        NVE_API bool Initialize(char** argv);
+        NVE_API bool Initialize(int argc, char** argv);
+
+        NVE_API argparse::ArgumentParser& GetArgs()
+        {
+            return mArgs;
+        }
 
         NVE_API void Update();
         NVE_API void Draw();

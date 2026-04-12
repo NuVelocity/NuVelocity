@@ -92,6 +92,19 @@ set(PHYSFS_BUILD_STATIC OFF CACHE BOOL "" FORCE)
 add_subdirectory(third_party/physfs EXCLUDE_FROM_ALL)
 
 # ------------------------------------------------------------------------------
+# Third-Party Libraries (via FetchContent)
+# ------------------------------------------------------------------------------
+include(FetchContent)
+
+# * argparse
+FetchContent_Declare(
+    argparse
+    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
+    GIT_TAG v3.2
+)
+FetchContent_MakeAvailable(argparse)
+
+# ------------------------------------------------------------------------------
 # Code Quality Tools
 # ------------------------------------------------------------------------------
 include(cmake/CodeQuality.cmake)
@@ -131,6 +144,7 @@ target_link_libraries(
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
     PhysFS::PhysFS
+    argparse
 )
 
 target_sources(
