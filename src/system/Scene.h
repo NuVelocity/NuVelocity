@@ -2,22 +2,23 @@
 #define NVE_SCENE_H
 
 #include "API.h"
+#include "GameComponent.h"
 #include <string>
 
 namespace nuvelocity
 {
     class Game;
 
-    class Scene
+    class Scene : public GameComponent
     {
     public:
         virtual ~Scene() = default;
 
-        NVE_API virtual void Update(Game* aContext) = 0;
-        NVE_API virtual void Draw(Game* aContext) = 0;
+        NVE_API virtual void Update(Game* aGame) override = 0;
+        NVE_API virtual void Draw(Game* aGame) override = 0;
 
-        NVE_API virtual void Load(Game* aContext) = 0;
-        NVE_API virtual void Unload(Game* aContext) = 0;
+        NVE_API virtual void Load(Game* aGame) = 0;
+        NVE_API virtual void Unload(Game* aGame) = 0;
 
         NVE_API virtual std::string GetName() const = 0;
 
