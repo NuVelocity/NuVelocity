@@ -62,11 +62,30 @@ namespace nuvelocity
         NVE_API void SetMouseCursor(std::string aSequencePath);
         NVE_API void SetModuleInfo(std::string aModuleInfoPath);
 
+        NVE_API float GetDeltaTime() const
+        {
+            return mDeltaTime;
+        }
+
+        NVE_API float GetTotalTime() const
+        {
+            return static_cast<float>(mTotalTime);
+        }
+
+        NVE_API uint64_t GetLastUpdateTick() const
+        {
+            return mLastUpdateTick;
+        }
+
     protected:
         Scene* mScene;
         static inline bool Fail();
         std::string mCursorSequencePath;
         std::string mModuleInfoPath;
+
+        float mDeltaTime = 0.0f;
+        double mTotalTime = 0.0;
+        uint64_t mLastUpdateTick = 0;
 
     private:
         bool mInitialized;

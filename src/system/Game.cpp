@@ -274,6 +274,12 @@ namespace nuvelocity
 
     void Game::Update()
     {
+        const uint64_t now = SDL_GetTicks();
+        mDeltaTime =
+            (mLastUpdateTick == 0) ? 0.0f : static_cast<float>(now - mLastUpdateTick) / 1000.0f;
+        mTotalTime += static_cast<double>(mDeltaTime);
+        mLastUpdateTick = now;
+
         mScene->Update(this);
     }
 
