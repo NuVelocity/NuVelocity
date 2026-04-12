@@ -12,6 +12,7 @@
 #include "InputManager.h"
 #include "ModuleInfo.h"
 #include "Scene.h"
+#include "ui/MdiManager.h"
 #include <argparse/argparse.hpp>
 
 namespace nuvelocity
@@ -35,6 +36,7 @@ namespace nuvelocity
         AudioManager* mAudio;
         FontManager* mFont;
         InputManager* mInput;
+        MdiManager* mMdi;
         SpriteBatch* mSpriteBatch;
 
         argparse::ArgumentParser mArgs;

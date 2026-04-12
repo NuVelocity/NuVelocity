@@ -28,6 +28,7 @@ namespace nuvelocity
             , mInitialized(false)
             , mScene(nullptr)
             , mInput(nullptr)
+            , mMdi(nullptr)
             , mSpriteBatch(nullptr)
             , mGPUDevice(nullptr)
             , mCursor(nullptr)
@@ -270,6 +271,12 @@ namespace nuvelocity
             return Fail();
         }
 
+        mMdi = new MdiManager();
+        if (!mMdi->Initialize(argv))
+        {
+            return Fail();
+        }
+
         mInitialized = true;
         return true;
     }
@@ -283,11 +290,21 @@ namespace nuvelocity
         mLastUpdateTick = now;
 
         mScene->Update(this);
+
+        if (mMdi != nullptr)
+        {
+            mMdi->Update(this);
+        }
     }
 
     void Game::Draw()
     {
         mScene->Draw(this);
+
+        if (mMdi != nullptr)
+        {
+            mMdi->Draw(this);
+        }
     }
 
     void Game::HandleEvent(const SDL_Event& event) const
@@ -401,6 +418,9 @@ namespace nuvelocity
 
         delete mInput;
         mInput = nullptr;
+
+        delete mMdi;
+        mMdi = nullptr;
 
         // mFont and mAsset are freed before GPU device/window teardown so any
         // GPU-adjacent cleanup they trigger (e.g. surface frees) happens while
