@@ -1,7 +1,5 @@
 #include "Font.h"
 
-#include "system/AssetManager.h"
-
 namespace nuvelocity
 {
     Font::Font()
@@ -9,6 +7,7 @@ namespace nuvelocity
             , mBlitType(BLIT_TRANSPARENT_MASK)
             , mPointSize(kFontDefaultPointSize)
             , mGenerateAllCaps(false)
+            , mFontStream(nullptr)
     {
     }
 
@@ -20,13 +19,15 @@ namespace nuvelocity
             return fontIt->second;
         }
 
-        SDL_IOStream* stream = AssetManager::Load(mFontFamily);
-        if (stream == nullptr)
+        if (mFontStream == nullptr)
         {
+            SDL_LogWarn(NVE_LOG_CATEGORY_ENGINE,
+                        "Font stream is not attached. Cannot load TTF font for point size %d.",
+                        pointSize);
             return nullptr;
         }
 
-        TTF_Font* font = TTF_OpenFontIO(stream, true, static_cast<float>(pointSize));
+        TTF_Font* font = TTF_OpenFontIO(mFontStream, false, static_cast<float>(pointSize));
         if (font == nullptr)
         {
             return nullptr;
@@ -95,9 +96,10 @@ namespace nuvelocity
         }
 
         SDL_FRect target{.x = x, .y = y, .w = textureWidth, .h = textureHeight};
-        
+
         // Use SpriteBatch to draw the surface. It will handle texture creation internally.
-        batch->Draw(surface, &target, nullptr, SDL_Color{255, 255, 255, 255}); // Surface already has color applied by TTF_RenderText_Blended
+        // Surface already has color applied by TTF_RenderText_Blended.
+        batch->Draw(surface, &target, nullptr, SDL_Color{255, 255, 255, 255});
 
         if (underlineIndex >= 0 && underlineIndex < static_cast<int>(text.size()))
         {
@@ -115,7 +117,7 @@ namespace nuvelocity
             const float lineY = target.y + SDL_max(0.0F, target.h - 2.0F);
             const float lineStartX = target.x + static_cast<float>(prefixWidth);
             const float lineEndX = lineStartX + static_cast<float>(SDL_max(1, characterWidth));
-            
+
             // Use SpriteBatch for line drawing
             batch->DrawLine(lineStartX, lineY, lineEndX, lineY, color);
         }

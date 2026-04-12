@@ -4,6 +4,7 @@
 #include "BlitType.h"
 #include "SpriteBatch.h"
 #include "model/Model.h"
+
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <string>
@@ -48,6 +49,16 @@ namespace nuvelocity
                                   bool verticalCenter = false,
                                   int underlineIndex = -1) const;
 
+        inline void AttachFontStream(SDL_IOStream* fontStream)
+        {
+            mFontStream = fontStream;
+        }
+
+        std::string GetFontFamily() const
+        {
+            return mFontFamily;
+        }
+
         static void InitClassInfo(ClassInfo& aInfo)
         {
             aInfo.mName = "CFont";
@@ -71,6 +82,7 @@ namespace nuvelocity
         bool mGenerateAllCaps;
 
     private:
+        SDL_IOStream* mFontStream;
         TTF_Font* GetTtfFont(int pointSize) const;
 
         mutable std::unordered_map<int, TTF_Font*> mTtfFonts;

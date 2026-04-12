@@ -304,14 +304,19 @@ namespace nuvelocity
 
     Font* AssetManager::LoadFont(const std::string& path)
     {
-        void* fontRaw = LoadPropertyFile(path);
-        if (fontRaw == nullptr)
+        Font* font = static_cast<Font*>(LoadPropertyFile(path));
+        if (font == nullptr)
         {
             SDL_LogError(NVE_LOG_CATEGORY_ASSETS, "Failed to load font '%s'.", path.c_str());
             return nullptr;
         }
-
-        return static_cast<Font*>(fontRaw);
+        SDL_IOStream* stream = Load(font->GetFontFamily());
+        if (stream == nullptr)
+        {
+            return nullptr;
+        }
+        font->AttachFontStream(stream);
+        return font;
     }
 
     FontBitmap* AssetManager::LoadFontBitmap(const std::string& path)

@@ -16,8 +16,14 @@ constexpr std::uint16_t NVE_DEFAULT_WINDOW_HEIGHT = 480;
 
 namespace nuvelocity
 {
-    static bool RegisterEngineDefaultFonts(FontManager& fontManager)
+    inline static bool RegisterEngineDefaultFonts(AssetManager* assetManager,
+                                                  FontManager* fontManager)
     {
+        if (assetManager == nullptr || fontManager == nullptr)
+        {
+            return false;
+        }
+
         constexpr const char* kDefaultFontName = "Default";
         constexpr const char* kDefaultFontPath = "Resources/Fonts/!None.font.txt";
         constexpr const char* kBitmapFallbackName = "!None";
@@ -25,28 +31,28 @@ namespace nuvelocity
 
         bool hasAnyFont = false;
 
-        Font* defaultFontRaw = AssetManager::LoadFont(kDefaultFontPath);
+        Font* defaultFontRaw = assetManager->LoadFont(kDefaultFontPath);
         if (defaultFontRaw != nullptr)
         {
             auto defaultFont = std::unique_ptr<Font>(defaultFontRaw);
-            if (fontManager.RegisterFont(kDefaultFontName, std::move(defaultFont)))
+            if (fontManager->RegisterFont(kDefaultFontName, std::move(defaultFont)))
             {
-                fontManager.SetDefaultFont(kDefaultFontName);
+                fontManager->SetDefaultFont(kDefaultFontName);
                 hasAnyFont = true;
             }
         }
 
-        FontBitmap* fallbackBitmap = AssetManager::LoadFontBitmap(kBitmapFallbackPath);
+        FontBitmap* fallbackBitmap = assetManager->LoadFontBitmap(kBitmapFallbackPath);
         if (fallbackBitmap != nullptr)
         {
             auto fallbackFont = std::unique_ptr<Font>(static_cast<Font*>(fallbackBitmap));
-            if (fontManager.RegisterFont(kBitmapFallbackName, std::move(fallbackFont)))
+            if (fontManager->RegisterFont(kBitmapFallbackName, std::move(fallbackFont)))
             {
-                fontManager.SetFallbackFont(kBitmapFallbackName);
+                fontManager->SetFallbackFont(kBitmapFallbackName);
                 hasAnyFont = true;
                 if (defaultFontRaw == nullptr)
                 {
-                    fontManager.SetDefaultFont(kBitmapFallbackName);
+                    fontManager->SetDefaultFont(kBitmapFallbackName);
                 }
             }
         }
@@ -100,10 +106,9 @@ namespace nuvelocity
 
         UpdateMouseCursor();
 
-        mModuleInfo =
-            mModuleInfoPath.empty()
-                ? new ModuleInfo()
-                : static_cast<ModuleInfo*>(AssetManager::LoadPropertyFile(mModuleInfoPath));
+        mModuleInfo = mModuleInfoPath.empty()
+                          ? new ModuleInfo()
+                          : static_cast<ModuleInfo*>(mAsset->LoadPropertyFile(mModuleInfoPath));
 
         SDL_SetAppMetadata(mModuleInfo->GetModuleName().c_str(),
                            mModuleInfo->GetModuleVersion().c_str(),
@@ -199,7 +204,15 @@ namespace nuvelocity
             return Fail();
         }
 
-        (void)RegisterEngineDefaultFonts(*mFont);
+        if (RegisterEngineDefaultFonts(mAsset, mFont))
+        {
+            SDL_Log("Default engine fonts loaded successfully.");
+        }
+        else
+        {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                        "Failed to load default engine fonts. No fonts will be available.");
+        }
 
         mAudio = new AudioManager();
         if (!mAudio->Initialize(argv))
@@ -275,7 +288,7 @@ namespace nuvelocity
 
     void Game::UpdateMouseCursor()
     {
-        Sequence* cursorSequence = AssetManager::LoadSequence(mCursorSequencePath);
+        Sequence* cursorSequence = mAsset ? mAsset->LoadSequence(mCursorSequencePath) : nullptr;
         if (cursorSequence == nullptr || cursorSequence->GetFrameCount() == 0)
         {
             SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
