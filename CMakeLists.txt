@@ -1,6 +1,6 @@
 # NuVelocity Engine; a re-implementation of the Velocity Engine under SDL.
 #
-# Please see the file LICENSE.txt in the source's root directory.
+# Please see the file LICENSE in the source's root directory.
 
 set(NVE_VERSION 0.1.0)
 set(NVE_SOVERSION 1)
