@@ -194,7 +194,6 @@ namespace nuvelocity
 
             frame = new StandAloneFrame();
             frame->SetSurface(sourceSurface);
-            frame->SetSource(AssetSource::SourceAsset);
         }
         else
         {
@@ -210,19 +209,6 @@ namespace nuvelocity
 
             frame = FrameLoaderMode3::Load(stream);
             SDL_CloseIO(stream);
-            if (frame != nullptr)
-            {
-                frame->SetSource(loadedFromCache ? AssetSource::Cache : AssetSource::SourceAsset);
-#ifdef NVE_RESTORE_TGA
-                if (loadedFromCache && mRestoreMode &&
-                    !AssetExporter::ExportStandAloneFrameToTga(path, *frame))
-                {
-                    SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                                "Failed to export stand-alone frame '%s' to source TGA",
-                                path.c_str());
-                }
-#endif
-            }
         }
 
         if (frame != nullptr)
@@ -234,6 +220,17 @@ namespace nuvelocity
                 void* dest = frame;
                 PropertySerializer::Deserialize(propertiesText, dest);
             }
+
+            frame->SetSource(loadedFromCache ? AssetSource::Cache : AssetSource::SourceAsset);
+#ifdef NVE_RESTORE_TGA
+            if (loadedFromCache && mRestoreMode &&
+                !AssetExporter::ExportStandAloneFrameToTga(path, *frame))
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "Failed to export stand-alone frame '%s' to source TGA",
+                            path.c_str());
+            }
+#endif
         }
         return frame;
     }
