@@ -179,7 +179,20 @@ namespace nuvelocity
     bool AssetExporter::ExportStandAloneFrameToTga(const std::string& path,
                                                    const StandAloneFrame& frame)
     {
-        return SaveSurfaceAsUncompressedTga(frame.GetSurface(), path + kTgaExtension);
+        const bool tgaExported =
+            SaveSurfaceAsUncompressedTga(frame.GetSurface(), path + kTgaExtension);
+
+        // Dump hotspot to file (path + ".hotspot.txt")
+        const auto& hotspot = frame.mHotSpot;
+        std::ostringstream hotspotStream;
+        hotspotStream << "// StandAloneFrame::mHotSpot\n";
+        hotspotStream << "x: " << hotspot.x << "\n";
+        hotspotStream << "y: " << hotspot.y << "\n";
+        const std::string hotspotStr = hotspotStream.str();
+        const bool hotspotExported =
+            WriteBinaryFile(path + ".hotspot.txt", hotspotStr.data(), hotspotStr.size());
+
+        return tgaExported && hotspotExported;
     }
 
     bool AssetExporter::ExportSequenceToTga(const std::string& path, const Sequence& sequence)
@@ -249,8 +262,7 @@ namespace nuvelocity
         if (spriteAtlas != nullptr)
         {
             if (!SaveSurfaceAsUncompressedTga(
-                    spriteAtlas,
-                    (sequenceDirectoryPath / kAtlasFileName).generic_string()))
+                    spriteAtlas, (sequenceDirectoryPath / kAtlasFileName).generic_string()))
             {
                 return false;
             }

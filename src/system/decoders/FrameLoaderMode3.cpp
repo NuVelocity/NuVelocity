@@ -34,6 +34,8 @@ namespace nuvelocity
         SDL_ReadS32LE(stream, &hotSpotY);
         SDL_ReadU8(stream, &isCompressed);
 
+        frame->mHotSpot = {hotSpotX, hotSpotY};
+
         // Case 1: Compressed image data.
         if (isCompressed != 0U)
         {
