@@ -144,8 +144,6 @@ namespace nuvelocity
         mWindowHeight = mArgs.get<int>("--height");
 #ifdef NVE_RESTORE_TGA
         mRestoreMode = mArgs.get<bool>("--restore-mode");
-
-        mAsset->SetRestoreMode(mRestoreMode);
 #endif
 
         RegisterEngineObjectTypes();
@@ -155,6 +153,9 @@ namespace nuvelocity
         {
             return Fail();
         }
+#ifdef NVE_RESTORE_TGA
+        mAsset->SetRestoreMode(mRestoreMode);
+#endif
 
         UpdateMouseCursor();
 

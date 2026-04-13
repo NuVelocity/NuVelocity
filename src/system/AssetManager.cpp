@@ -26,7 +26,9 @@ namespace nuvelocity
     constexpr const char* kPropertiesFileName = "Properties.txt";
     constexpr const char* kTgaExtension = ".tga";
 
-    AssetManager::AssetManager() = default;
+    AssetManager::AssetManager()
+            : Manager()
+            , mRestoreMode(false) {};
 
     AssetManager::~AssetManager()
     {
@@ -208,7 +210,8 @@ namespace nuvelocity
             {
                 frame->SetSource(loadedFromCache ? AssetSource::Cache : AssetSource::SourceAsset);
 #ifdef NVE_RESTORE_TGA
-                if (loadedFromCache && mRestoreMode && !AssetExporter::ExportStandAloneFrameToTga(path, *frame))
+                if (loadedFromCache && mRestoreMode &&
+                    !AssetExporter::ExportStandAloneFrameToTga(path, *frame))
                 {
                     SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                                 "Failed to export stand-alone frame '%s' to source TGA",
@@ -362,7 +365,8 @@ namespace nuvelocity
         if (loadedFromCache)
         {
             const Sequence* sequence = fontBitmap->GetSequence();
-            if (sequence != nullptr && mRestoreMode && !AssetExporter::ExportSequenceToTga(path, *sequence))
+            if (sequence != nullptr && mRestoreMode &&
+                !AssetExporter::ExportSequenceToTga(path, *sequence))
             {
                 SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                             "Failed to export font bitmap '%s' to source TGA frames",

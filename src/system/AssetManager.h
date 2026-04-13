@@ -43,7 +43,7 @@ namespace nuvelocity
         }
 
 #ifdef NVE_RESTORE_TGA
-        bool mRestoreMode = false;
+        bool mRestoreMode;
 #endif
 
     public:
