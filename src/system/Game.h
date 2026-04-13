@@ -40,6 +40,9 @@ namespace nuvelocity
         SpriteBatch* mSpriteBatch;
 
         argparse::ArgumentParser mArgs;
+#ifdef NVE_RESTORE_TGA
+        bool mRestoreMode = false;
+#endif
 
         NVE_API Game(const char* aWindowTitle, int aWidth, int aHeight);
         NVE_API Game(const char* aWindowTitle);

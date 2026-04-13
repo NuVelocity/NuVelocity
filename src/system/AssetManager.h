@@ -42,6 +42,10 @@ namespace nuvelocity
             return PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
         }
 
+#ifdef NVE_RESTORE_TGA
+        bool mRestoreMode = false;
+#endif
+
     public:
         NVE_API AssetManager();
         NVE_API ~AssetManager();
@@ -66,6 +70,13 @@ namespace nuvelocity
         NVE_API void* LoadPropertyFile(const std::string& path);
 
         NVE_API JWindowSkin* LoadWindowSkin(const std::string& path);
+
+#ifdef NVE_RESTORE_TGA
+        NVE_API void SetRestoreMode(bool enabled)
+        {
+            mRestoreMode = enabled;
+        }
+#endif
     };
 } // namespace nuvelocity
 

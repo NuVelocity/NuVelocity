@@ -7,6 +7,7 @@
 #ifdef NVE_GPU_SUPPORT
 #include "GPUSpriteBatch.h"
 #endif
+#include "AssetExporter.h"
 #include "Game.h"
 #include "ObjectRegistration.h"
 #include "RendererSpriteBatch.h"
@@ -57,6 +58,13 @@ namespace nuvelocity
                     }
                     return std::string("gpu");
                 });
+
+#ifdef NVE_RESTORE_TGA
+        mArgs.add_argument("-rm", "--restore-mode")
+            .help("Enable restore mode (export cache to source TGA)")
+            .default_value(false)
+            .implicit_value(true);
+#endif
     }
 
     Game::Game(const char* aWindowTitle)
@@ -134,6 +142,11 @@ namespace nuvelocity
 
         mWindowWidth = mArgs.get<int>("--width");
         mWindowHeight = mArgs.get<int>("--height");
+#ifdef NVE_RESTORE_TGA
+        mRestoreMode = mArgs.get<bool>("--restore-mode");
+
+        mAsset->SetRestoreMode(mRestoreMode);
+#endif
 
         RegisterEngineObjectTypes();
 

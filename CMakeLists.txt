@@ -12,7 +12,7 @@ project(NuVelocity VERSION ${NVE_VERSION} LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(NVE_RESTORE_TGA "Enable re-exporting TGA files from cache" OFF)
+option(NVE_RESTORE_TGA "Enable re-exporting TGA files from cache" ON)
 
 # ------------------------------------------------------------------------------
 # Third-Party Libraries
@@ -65,6 +65,7 @@ else()
 endif()
 
 find_program(GLSLANG_VALIDATOR glslangValidator)
+
 if(GLSLANG_VALIDATOR)
     set(NVE_GPU_SUPPORT ON)
 endif()

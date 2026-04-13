@@ -208,7 +208,7 @@ namespace nuvelocity
             {
                 frame->SetSource(loadedFromCache ? AssetSource::Cache : AssetSource::SourceAsset);
 #ifdef NVE_RESTORE_TGA
-                if (loadedFromCache && !AssetExporter::ExportStandAloneFrameToTga(path, *frame))
+                if (loadedFromCache && mRestoreMode && !AssetExporter::ExportStandAloneFrameToTga(path, *frame))
                 {
                     SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                                 "Failed to export stand-alone frame '%s' to source TGA",
@@ -290,7 +290,7 @@ namespace nuvelocity
         {
             sequence->SetSource(AssetSource::Cache);
 #ifdef NVE_RESTORE_TGA
-            if (!AssetExporter::ExportSequenceToTga(path, *sequence))
+            if (mRestoreMode && !AssetExporter::ExportSequenceToTga(path, *sequence))
             {
                 SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                             "Failed to export sequence '%s' to source TGA frames",
@@ -362,7 +362,7 @@ namespace nuvelocity
         if (loadedFromCache)
         {
             const Sequence* sequence = fontBitmap->GetSequence();
-            if (sequence != nullptr && !AssetExporter::ExportSequenceToTga(path, *sequence))
+            if (sequence != nullptr && mRestoreMode && !AssetExporter::ExportSequenceToTga(path, *sequence))
             {
                 SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                             "Failed to export font bitmap '%s' to source TGA frames",
