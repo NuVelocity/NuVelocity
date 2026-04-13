@@ -286,18 +286,18 @@ namespace nuvelocity
             return nullptr;
         }
 
-#ifdef NVE_RESTORE_TGA
         if (loadedFromCache)
         {
             sequence->SetSource(AssetSource::Cache);
+#ifdef NVE_RESTORE_TGA
             if (!AssetExporter::ExportSequenceToTga(path, *sequence))
             {
                 SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
                             "Failed to export sequence '%s' to source TGA frames",
                             path.c_str());
             }
-        }
 #endif
+        }
 
         return sequence;
     }
