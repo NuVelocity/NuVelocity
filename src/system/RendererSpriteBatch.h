@@ -69,6 +69,7 @@ namespace nuvelocity
             SDL_Color color;
             float x1, y1, x2, y2;
             float thickness;
+            SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND;
         };
 
         SDL_Renderer* mRenderer;

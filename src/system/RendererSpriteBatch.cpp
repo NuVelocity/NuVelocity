@@ -29,7 +29,12 @@ namespace nuvelocity
                             .destRect = destRect != nullptr ? *destRect : SDL_FRect{},
                             .hasSrcRect = srcRect != nullptr,
                             .srcRect = srcRect != nullptr ? *srcRect : SDL_FRect{},
-                            .color = color};
+                            .color = color,
+                            .blendMode = SDL_BLENDMODE_BLEND};
+        if (surface != nullptr)
+        {
+            SDL_GetSurfaceBlendMode(surface, &command.blendMode);
+        }
         mDrawCommands.push_back(command);
     }
 
@@ -48,7 +53,12 @@ namespace nuvelocity
                             .destRect = SDL_FRect{},
                             .hasSrcRect = false,
                             .srcRect = SDL_FRect{},
-                            .color = {255, 255, 255, 255}};
+                            .color = {255, 255, 255, 255},
+                            .blendMode = SDL_BLENDMODE_BLEND};
+        if (surface != nullptr)
+        {
+            SDL_GetSurfaceBlendMode(surface, &command.blendMode);
+        }
         mDrawCommands.push_back(command);
     }
 
@@ -66,7 +76,8 @@ namespace nuvelocity
                             .y1 = y1,
                             .x2 = x2,
                             .y2 = y2,
-                            .thickness = thickness};
+                            .thickness = thickness,
+                            .blendMode = SDL_BLENDMODE_BLEND};
         mDrawCommands.push_back(command);
     }
 
@@ -131,7 +142,7 @@ namespace nuvelocity
 
                 SDL_SetTextureColorMod(texture, command.color.r, command.color.g, command.color.b);
                 SDL_SetTextureAlphaMod(texture, command.color.a);
-                SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+                SDL_SetTextureBlendMode(texture, command.blendMode);
 
                 if (command.centered)
                 {

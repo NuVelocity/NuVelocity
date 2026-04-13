@@ -49,14 +49,14 @@ namespace nuvelocity
             , mSwapchainWidth(0)
             , mSwapchainHeight(0)
             , mHasBlittedThisFrame(false)
-            , mPipeline(nullptr)
             , mSampler(nullptr)
             , mCurrentTexture(nullptr)
+            , mCurrentBlendMode(SDL_BLENDMODE_BLEND)
             , mHasCurrentClipRect(false)
     {
         if (mDevice != nullptr)
         {
-            InitializePipeline();
+            InitializePipelines();
         }
     }
 
@@ -82,10 +82,15 @@ namespace nuvelocity
             }
             mTextureCache.clear();
 
-            if (mPipeline != nullptr)
+            for (auto& [mode, pipeline] : mPipelines)
             {
-                SDL_ReleaseGPUGraphicsPipeline(mDevice, mPipeline);
+                if (pipeline != nullptr)
+                {
+                    SDL_ReleaseGPUGraphicsPipeline(mDevice, pipeline);
+                }
             }
+            mPipelines.clear();
+
             if (mSampler != nullptr)
             {
                 SDL_ReleaseGPUSampler(mDevice, mSampler);
@@ -97,11 +102,50 @@ namespace nuvelocity
         }
     }
 
-    void GPUSpriteBatch::InitializePipeline()
+    void GPUSpriteBatch::InitializePipelines()
     {
+        mPipelines[SDL_BLENDMODE_BLEND] = CreatePipelineForBlendMode(SDL_BLENDMODE_BLEND);
+        mPipelines[SDL_BLENDMODE_NONE] = CreatePipelineForBlendMode(SDL_BLENDMODE_NONE);
+        mPipelines[SDL_BLENDMODE_ADD] = CreatePipelineForBlendMode(SDL_BLENDMODE_ADD);
+        mPipelines[SDL_BLENDMODE_MOD] = CreatePipelineForBlendMode(SDL_BLENDMODE_MOD);
+        mPipelines[SDL_BLENDMODE_MUL] = CreatePipelineForBlendMode(SDL_BLENDMODE_MUL);
+
         if (mDevice == nullptr)
         {
             return;
+        }
+
+        SDL_GPUSamplerCreateInfo samplerInfo{
+            .min_filter = SDL_GPU_FILTER_LINEAR,
+            .mag_filter = SDL_GPU_FILTER_LINEAR,
+            .mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
+            .address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+            .address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+            .address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+        };
+        mSampler = SDL_CreateGPUSampler(mDevice, &samplerInfo);
+
+        // Create and cache the 1x1 white texture for primitives
+        SDL_Surface* ws = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
+        if (ws != nullptr)
+        {
+            Uint32* p = static_cast<Uint32*>(ws->pixels);
+            *p = 0xFFFFFFFF;
+            EnsureCommandBuffer();
+            mWhiteTexture = CreateAndUploadTexture(ws);
+            SDL_DestroySurface(ws);
+            // Submit the upload immediately so it doesn't bleed into the first frame's
+            // command buffer, which would mix a copy pass with a swapchain render pass.
+            SDL_SubmitGPUCommandBuffer(mCommandBuffer);
+            mCommandBuffer = nullptr;
+        }
+    }
+
+    SDL_GPUGraphicsPipeline* GPUSpriteBatch::CreatePipelineForBlendMode(SDL_BlendMode mode)
+    {
+        if (mDevice == nullptr)
+        {
+            return nullptr;
         }
 
         SDL_GPUShaderCreateInfo vertShaderInfo{.code_size = sprite_vert_spv_len,
@@ -130,15 +174,54 @@ namespace nuvelocity
         SDL_GPUShader* fragShader = SDL_CreateGPUShader(mDevice, &fragShaderInfo);
 
         SDL_GPUColorTargetDescription colorTarget = {
-            .format = SDL_GetGPUSwapchainTextureFormat(mDevice, mWindow),
-            .blend_state = {.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA,
-                            .dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
-                            .color_blend_op = SDL_GPU_BLENDOP_ADD,
-                            .src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE,
-                            .dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
-                            .alpha_blend_op = SDL_GPU_BLENDOP_ADD,
-                            .color_write_mask = 0xF,
-                            .enable_blend = true}};
+            .format = SDL_GetGPUSwapchainTextureFormat(mDevice, mWindow), .blend_state = {}};
+
+        if (mode == SDL_BLENDMODE_NONE)
+        {
+            colorTarget.blend_state.enable_blend = false;
+        }
+        else if (mode == SDL_BLENDMODE_BLEND)
+        {
+            colorTarget.blend_state.enable_blend = true;
+            colorTarget.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+            colorTarget.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+            colorTarget.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+            colorTarget.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+            colorTarget.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+            colorTarget.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+        }
+        else if (mode == SDL_BLENDMODE_ADD)
+        {
+            colorTarget.blend_state.enable_blend = true;
+            colorTarget.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+            colorTarget.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+            colorTarget.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+            colorTarget.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+            colorTarget.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+            colorTarget.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+        }
+        else if (mode == SDL_BLENDMODE_MOD)
+        {
+            colorTarget.blend_state.enable_blend = true;
+            colorTarget.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+            colorTarget.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_COLOR;
+            colorTarget.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+            colorTarget.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+            colorTarget.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+            colorTarget.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+        }
+        else if (mode == SDL_BLENDMODE_MUL)
+        {
+            colorTarget.blend_state.enable_blend = true;
+            colorTarget.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_DST_COLOR;
+            colorTarget.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+            colorTarget.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+            colorTarget.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_DST_ALPHA;
+            colorTarget.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+            colorTarget.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+        }
+
+        colorTarget.blend_state.color_write_mask = 0xF;
 
         SDL_GPUVertexBufferDescription vbufDesc = {.slot = 0,
                                                    .pitch = sizeof(nuvelocity::SpriteVertex),
@@ -168,41 +251,18 @@ namespace nuvelocity
             .primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
             .target_info = {.color_target_descriptions = &colorTarget, .num_color_targets = 1}};
 
-        mPipeline = SDL_CreateGPUGraphicsPipeline(mDevice, &pipelineInfo);
+        SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(mDevice, &pipelineInfo);
 
         SDL_ReleaseGPUShader(mDevice, vertShader);
         SDL_ReleaseGPUShader(mDevice, fragShader);
 
-        SDL_GPUSamplerCreateInfo samplerInfo{
-            .min_filter = SDL_GPU_FILTER_LINEAR,
-            .mag_filter = SDL_GPU_FILTER_LINEAR,
-            .mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
-            .address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
-            .address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
-            .address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
-        };
-        mSampler = SDL_CreateGPUSampler(mDevice, &samplerInfo);
-
-        // Create and cache the 1x1 white texture for primitives
-        SDL_Surface* ws = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
-        if (ws != nullptr)
-        {
-            Uint32* p = static_cast<Uint32*>(ws->pixels);
-            *p = 0xFFFFFFFF;
-            EnsureCommandBuffer();
-            mWhiteTexture = CreateAndUploadTexture(ws);
-            SDL_DestroySurface(ws);
-            // Submit the upload immediately so it doesn't bleed into the first frame's
-            // command buffer, which would mix a copy pass with a swapchain render pass.
-            SDL_SubmitGPUCommandBuffer(mCommandBuffer);
-            mCommandBuffer = nullptr;
-        }
+        return pipeline;
     }
 
     void GPUSpriteBatch::FlushBatch()
     {
         if (mVertexData.empty() || mCommandBuffer == nullptr || mDevice == nullptr ||
-            mPipeline == nullptr || mSwapchainTexture == nullptr)
+            mPipelines.empty() || mSwapchainTexture == nullptr)
         {
             return;
         }
@@ -251,7 +311,22 @@ namespace nuvelocity
 
         SDL_GPURenderPass* renderPass =
             SDL_BeginGPURenderPass(mCommandBuffer, &colorPassInfo, 1, nullptr);
-        SDL_BindGPUGraphicsPipeline(renderPass, mPipeline);
+
+        SDL_GPUGraphicsPipeline* pipeline = nullptr;
+        auto it = mPipelines.find(mCurrentBlendMode);
+        if (it != mPipelines.end())
+        {
+            pipeline = it->second;
+        }
+        else
+        {
+            pipeline = mPipelines[SDL_BLENDMODE_BLEND];
+        }
+
+        if (pipeline != nullptr)
+        {
+            SDL_BindGPUGraphicsPipeline(renderPass, pipeline);
+        }
 
         if (mHasCurrentClipRect)
         {
@@ -350,7 +425,8 @@ namespace nuvelocity
         }
         else if (mSwapchainWidth > 0 && mSwapchainHeight > 0)
         {
-            dr = SDL_FRect{0, 0, static_cast<float>(mSwapchainWidth), static_cast<float>(mSwapchainHeight)};
+            dr = SDL_FRect{
+                0, 0, static_cast<float>(mSwapchainWidth), static_cast<float>(mSwapchainHeight)};
         }
         else if (mWindow != nullptr)
         {
@@ -571,10 +647,14 @@ namespace nuvelocity
             mTextureCache[surface] = texture;
         }
 
-        if (texture != mCurrentTexture)
+        SDL_BlendMode surfaceMode = SDL_BLENDMODE_BLEND;
+        SDL_GetSurfaceBlendMode(surface, &surfaceMode);
+
+        if (texture != mCurrentTexture || surfaceMode != mCurrentBlendMode)
         {
             FlushBatch();
             mCurrentTexture = texture;
+            mCurrentBlendMode = surfaceMode;
         }
 
         SDL_FRect dr = destRect ? *destRect : SDL_FRect{0, 0, (float)surface->w, (float)surface->h};

@@ -62,13 +62,14 @@ namespace nuvelocity
         SDL_FColor mClearColor{.r = 0.0F, .g = 0.0F, .b = 0.0F, .a = 1.0F};
         bool mNeedsClear{false};
 
-        SDL_GPUGraphicsPipeline* mPipeline;
+        std::unordered_map<SDL_BlendMode, SDL_GPUGraphicsPipeline*> mPipelines;
         SDL_GPUSampler* mSampler;
         SDL_GPUTexture* mWhiteTexture;
 
         std::vector<SpriteVertex> mVertexData;
         std::vector<Uint16> mIndexData;
         SDL_GPUTexture* mCurrentTexture;
+        SDL_BlendMode mCurrentBlendMode;
         SDL_Rect mCurrentClipRect;
         bool mHasCurrentClipRect;
         std::unordered_map<SDL_Surface*, SDL_GPUTexture*> mTextureCache;
@@ -78,7 +79,8 @@ namespace nuvelocity
         SDL_GPUTexture* CreateAndUploadTexture(SDL_Surface* surface);
         void SubmitCommandBuffer();
         void FlushBatch();
-        void InitializePipeline();
+        void InitializePipelines();
+        SDL_GPUGraphicsPipeline* CreatePipelineForBlendMode(SDL_BlendMode mode);
     };
 } // namespace nuvelocity
 
