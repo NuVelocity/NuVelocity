@@ -2,6 +2,8 @@
 #define NVE_PROPERTY_H
 
 #include "LogCategory.h"
+#include <SDL3/SDL.h>
+#include <cstdio>
 #include <cstring>
 #include <map>
 #include <sstream>
@@ -26,7 +28,8 @@ namespace nuvelocity
         Enum,
         Array,
         Map,
-        UnorderedMap
+        UnorderedMap,
+        Color
     };
 
     class Property
@@ -656,6 +659,64 @@ namespace nuvelocity
         PropertyType GetType() const override
         {
             return PropertyType::Enum;
+        }
+    };
+
+    class ColorProperty : public Property
+    {
+    public:
+        ColorProperty(const std::string& name, size_t offset, size_t size)
+                : Property(name, offset, size)
+        {
+        }
+
+        SDL_Color GetColorValue(void* obj) const
+        {
+            return *(SDL_Color*)GetValuePtr(obj);
+        }
+
+        void SetColorValue(void* obj, SDL_Color value)
+        {
+            *(SDL_Color*)GetValuePtr(obj) = value;
+        }
+
+        void SetValue(void* obj, const void* valuePtr) override
+        {
+            *(SDL_Color*)GetValuePtr(obj) = *(const SDL_Color*)valuePtr;
+        }
+
+        void SetValue(void* obj, const std::string& value) override
+        {
+            int r, g, b, a = 255;
+            int count = sscanf(value.c_str(), "%d,%d,%d,%d", &r, &g, &b, &a);
+            if (count >= 3)
+            {
+                SDL_Color color;
+                color.r = static_cast<uint8_t>(r);
+                color.g = static_cast<uint8_t>(g);
+                color.b = static_cast<uint8_t>(b);
+                color.a = static_cast<uint8_t>(a);
+                SetColorValue(obj, color);
+            }
+            else
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "Failed to convert '%s' to color for property '%s': expected 'R,G,B' "
+                            "or 'R,G,B,A'",
+                            value.c_str(),
+                            mName.c_str());
+            }
+        }
+
+        void DumpValue(void* obj) const override
+        {
+            SDL_Color color = GetColorValue(obj);
+            SDL_Log("  %s: %d,%d,%d,%d", mName.c_str(), color.r, color.g, color.b, color.a);
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::Color;
         }
     };
 

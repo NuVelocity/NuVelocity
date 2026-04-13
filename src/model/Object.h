@@ -216,6 +216,10 @@ namespace nuvelocity
             {
                 prop = new DoubleProperty(name, offset, size);
             }
+            else if constexpr (std::is_same_v<MemberType, SDL_Color>)
+            {
+                prop = new ColorProperty(name, offset, size);
+            }
             else if constexpr (is_vector<MemberType>::value)
             {
                 using ElementType = typename is_vector<MemberType>::element_type;
