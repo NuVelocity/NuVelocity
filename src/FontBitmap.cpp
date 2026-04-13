@@ -73,6 +73,7 @@ namespace nuvelocity
             , mLastAscii(0)
             , mIsFixedWidth(false)
             , mXHeight(0)
+            , mColorable(false)
     {
     }
 
@@ -114,6 +115,16 @@ namespace nuvelocity
     void FontBitmap::SetXHeight(int xHeight)
     {
         mXHeight = xHeight;
+    }
+
+    bool FontBitmap::IsColorable() const
+    {
+        return mColorable;
+    }
+
+    void FontBitmap::SetColorable(bool colorable)
+    {
+        mColorable = colorable;
     }
 
     void FontBitmap::SetSequence(std::unique_ptr<Sequence>&& sequence)
@@ -251,8 +262,11 @@ namespace nuvelocity
             const float glyphHeight = SDL_max(1.0F, static_cast<float>(glyph->GetHeight()) * scale);
             SDL_FRect dstRect{.x = cursorX, .y = y, .w = glyphWidth, .h = glyphHeight};
 
-            // Use SpriteBatch to draw the glyph surface with color modulation
-            batch->Draw(glyphSurface, &dstRect, nullptr, color);
+            // Use SpriteBatch to draw the glyph surface with color modulation.
+            // If not colorable, use white but preserve the requested alpha.
+            const SDL_Color drawColor =
+                mColorable ? color : SDL_Color{255, 255, 255, color.a};
+            batch->Draw(glyphSurface, &dstRect, nullptr, drawColor);
 
             cursorX += glyphWidth;
         }

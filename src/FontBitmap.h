@@ -28,6 +28,9 @@ namespace nuvelocity
         const Sequence* GetSequence() const;
         Sequence* GetSequence();
 
+        bool IsColorable() const;
+        void SetColorable(bool colorable);
+
         bool MeasureString(const std::string& text,
                            int pointSize,
                            int& width,
@@ -57,6 +60,8 @@ namespace nuvelocity
             AddProperty(aInfo, "Last ASCII", &FontBitmap::mLastAscii);
             AddProperty(aInfo, "Fixed Width", &FontBitmap::mIsFixedWidth);
             AddProperty(aInfo, "Height Without Decenders", &FontBitmap::mXHeight);
+            // Extension: allow disabling color modulation for bitmap fonts.
+            AddProperty(aInfo, "Colorable", &FontBitmap::mColorable);
         }
 
     private:
@@ -64,6 +69,7 @@ namespace nuvelocity
         int mLastAscii;
         bool mIsFixedWidth;
         int mXHeight;
+        bool mColorable; // NuVelocity extension
         std::unique_ptr<Sequence> mSequence;
     };
 } // namespace nuvelocity
