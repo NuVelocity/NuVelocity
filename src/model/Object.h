@@ -5,25 +5,82 @@
 #include "ClassInfo.h"
 #include "Property.h"
 #include <cstdint>
+#include <string>
 #include <type_traits>
 #include <typeinfo>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 namespace nuvelocity
 {
-    // FIXME: This is inefficient because this means every object has a member for each
-    // "dynamic" property. We should move this to a separate component or use a more efficient
-    // storage method for storing dynamic properties. This will all go away eventually.
-    class PaletteHolder; // Forward declaration
     class ObjectBase
     {
     private:
-        std::string mComment;
-        PaletteHolder* mPaletteHolder;
+        void* mDynamicProperties = nullptr;
 
     public:
-        virtual ~ObjectBase() = default;
+        virtual ~ObjectBase()
+        {
+            if (mDynamicProperties)
+            {
+                auto* map = static_cast<
+                    std::unordered_map<std::string, std::tuple<bool, void*, ClassInfo*>>*>(
+                    mDynamicProperties);
+                for (auto& pair : *map)
+                {
+                    if (std::get<1>(pair.second) != nullptr)
+                    {
+                        if (!std::get<0>(pair.second)) // false means string
+                        {
+                            delete static_cast<std::string*>(std::get<1>(pair.second));
+                        }
+                        else
+                        {
+                            // Other dynamic properties like Palette are derived from ObjectBase
+                            delete static_cast<ObjectBase*>(std::get<1>(pair.second));
+                        }
+                    }
+                }
+                delete map;
+            }
+        }
+
+        void* GetDynamicProperty(const std::string& key) const
+        {
+            if (!mDynamicProperties)
+                return nullptr;
+            auto* map =
+                static_cast<std::unordered_map<std::string, std::tuple<bool, void*, ClassInfo*>>*>(
+                    mDynamicProperties);
+            auto it = map->find(key);
+            if (it != map->end())
+            {
+                return std::get<1>(it->second);
+            }
+            return nullptr;
+        }
+
+        void SetDynamicProperty(const std::string& key,
+                                void* value,
+                                bool isObject = false,
+                                ClassInfo* typeInfo = nullptr)
+        {
+            if (!mDynamicProperties)
+            {
+                mDynamicProperties =
+                    new std::unordered_map<std::string, std::tuple<bool, void*, ClassInfo*>>();
+            }
+            auto* map =
+                static_cast<std::unordered_map<std::string, std::tuple<bool, void*, ClassInfo*>>*>(
+                    mDynamicProperties);
+            (*map)[key] = std::make_tuple(isObject, value, typeInfo);
+        }
+
+        const void* GetDynamicPropertiesMap() const
+        {
+            return mDynamicProperties;
+        }
 
         // Optional vector-based hook for argument-based initialization.
         virtual void InitFromArgs(const std::vector<std::string>& args)

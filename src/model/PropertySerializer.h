@@ -35,7 +35,8 @@ namespace nuvelocity
         Root,
         Child,
         Container,
-        ByteArray
+        ByteArray,
+        DynamicProperties
     };
 
     class PropertySerializer
@@ -315,6 +316,7 @@ namespace nuvelocity
             {
                 auto [className, byteArrayInfo] = ParseObjectValue(value);
                 auto [childInfo, childObject] = InstantiateObject(className, byteArrayInfo);
+
                 if (childInfo == nullptr || childObject == nullptr)
                 {
                     throw std::runtime_error(
@@ -346,14 +348,39 @@ namespace nuvelocity
             }
         }
 
+        static void HandleDynamicPropertyAssignment(const std::string& key,
+                                                    const std::string& value,
+                                                    DeserializeContext& context)
+        {
+            if (context.currentObject == nullptr)
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS,
+                            "Cannot assign dynamic property: empty object state.");
+                return;
+            }
+
+            auto [className, byteArrayInfo] = ParseObjectValue(value);
+            auto [childInfo, childObject] = InstantiateObject(className, byteArrayInfo);
+
+            if (childObject)
+            {
+                static_cast<ObjectBase*>(context.currentObject)
+                    ->SetDynamicProperty(key, childObject, true, childInfo);
+                context.pendingChildInfo = childInfo;
+                context.pendingChildObject = childObject;
+            }
+            else
+            {
+                std::string* strVal = new std::string(value);
+                static_cast<ObjectBase*>(context.currentObject)
+                    ->SetDynamicProperty(key, strVal, false, nullptr);
+            }
+        }
+
         static void HandlePropertyAssignment(const std::string& key,
                                              const std::string& value,
                                              DeserializeContext& context)
         {
-            if (key == kKeyDynamicProperties)
-            {
-                return;
-            }
 
             if (context.scope == ParserScope::None || context.currentInfo == nullptr ||
                 context.currentObject == nullptr)
@@ -379,6 +406,11 @@ namespace nuvelocity
                 {
                     return;
                 }
+            }
+            else if (key == kKeyDynamicProperties)
+            {
+                PushScope(context, ParserScope::DynamicProperties);
+                return;
             }
             else
             {
@@ -722,6 +754,43 @@ namespace nuvelocity
             prop = prop->mNext;
         }
 
+        if (const void* dynPropsMapPtr =
+                static_cast<const ObjectBase*>(object)->GetDynamicPropertiesMap())
+        {
+            const auto* dynProps = static_cast<
+                const std::unordered_map<std::string, std::tuple<bool, void*, ClassInfo*>>*>(
+                dynPropsMapPtr);
+            if (!dynProps->empty())
+            {
+                AppendLine(output,
+                           indentLevel + 1,
+                           std::string(kKeyDynamicProperties) + "=" +
+                               std::to_string(dynProps->size()));
+                AppendLine(output, indentLevel + 1, std::string(kTokenOpenBrace));
+                for (const auto& [dynKey, tupleVal] : *dynProps)
+                {
+                    void* valPtr = std::get<1>(tupleVal);
+                    if (valPtr == nullptr)
+                        continue;
+
+                    if (!std::get<0>(tupleVal)) // string
+                    {
+                        std::string* strVal = static_cast<std::string*>(valPtr);
+                        AppendLine(output, indentLevel + 2, dynKey + "=" + *strVal);
+                    }
+                    else // object
+                    {
+                        ClassInfo* childInfo = std::get<2>(tupleVal);
+                        if (childInfo != nullptr)
+                        {
+                            SerializeObject(valPtr, childInfo, output, indentLevel + 1);
+                        }
+                    }
+                }
+                AppendLine(output, indentLevel + 1, std::string(kTokenCloseBrace));
+            }
+        }
+
         AppendLine(output, indentLevel, std::string(kTokenCloseBrace));
     }
 
@@ -813,7 +882,14 @@ namespace nuvelocity
                 const std::string key = kvp->first;
                 const std::string value = kvp->second;
                 delete kvp;
-                HandlePropertyAssignment(key, value, context);
+                if (context.scope == ParserScope::DynamicProperties)
+                {
+                    HandleDynamicPropertyAssignment(key, value, context);
+                }
+                else
+                {
+                    HandlePropertyAssignment(key, value, context);
+                }
             }
             else
             {
