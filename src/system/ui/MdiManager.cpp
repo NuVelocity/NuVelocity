@@ -115,7 +115,6 @@ namespace nuvelocity
             if (window != nullptr)
             {
                 window->Draw(game);
-                game->mSpriteBatch->Present();
             }
         }
     }
