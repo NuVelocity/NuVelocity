@@ -108,6 +108,7 @@ namespace nuvelocity
             if (frameInfo == nullptr)
             {
                 frames[i] = DecodeUtils::BuildTransparentSurface(1, 1);
+                SDL_SetSurfaceBlendMode(frames[i], SDL_BLENDMODE_BLEND);
                 continue;
             }
 
@@ -131,6 +132,7 @@ namespace nuvelocity
                 }
 
                 frames[i] = offsetSurface;
+                SDL_SetSurfaceBlendMode(frames[i], SDL_BLENDMODE_BLEND);
                 maxWidth = std::max(maxWidth, offsetSurface->w);
                 maxHeight = std::max(maxHeight, offsetSurface->h);
                 continue;
@@ -167,6 +169,7 @@ namespace nuvelocity
                 hotSpotY = maxHeight / 2;
             }
 
+            SDL_SetSurfaceBlendMode(frameSurface, SDL_BLENDMODE_BLEND);
             frames[i] = frameSurface;
         }
 

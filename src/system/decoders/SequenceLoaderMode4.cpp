@@ -228,7 +228,6 @@ namespace nuvelocity
         {
             return nullptr;
         }
-        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 
         SDL_memcpy(surface->pixels, imageData, expectedSize);
         return surface;

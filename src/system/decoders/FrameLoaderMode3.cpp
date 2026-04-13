@@ -92,13 +92,13 @@ namespace nuvelocity
             return false;
         }
         SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
-        frame->SetSurface(surface);
-
         // Process 4 planes of RGBA data with row offset addition
         for (int plane = 0; plane < 4; plane++)
         {
             DecodeUtils::MergeBitPlane(plane, plane, width, height, imageData, surface);
         }
+        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
+        frame->SetSurface(surface);
 
         SDL_free(imageData);
         return true;
@@ -129,7 +129,6 @@ namespace nuvelocity
             SDL_free(imageData);
             return false;
         }
-        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
         frame->SetSurface(surface);
 
         SDL_memcpy(surface->pixels, imageData, inflatedSize);
@@ -169,11 +168,11 @@ namespace nuvelocity
 
             // The original surface does not have an alpha channel.
             SDL_Surface* output = SDL_CreateSurface(surface->w, surface->h, SDL_PIXELFORMAT_RGBA32);
-            SDL_SetSurfaceBlendMode(output, SDL_BLENDMODE_NONE);
             if (output == nullptr)
             {
                 return false;
             }
+            SDL_SetSurfaceBlendMode(output, SDL_BLENDMODE_NONE);
 
             // Ignore padding byte.
             SDL_ReadU8(stream, nullptr);
@@ -200,6 +199,7 @@ namespace nuvelocity
             SDL_free(sourceMaskData);
 
             SDL_BlitSurface(surface, nullptr, output, nullptr);
+            SDL_SetSurfaceBlendMode(output, SDL_BLENDMODE_BLEND);
             frame->SetSurface(output);
             surface = output;
 

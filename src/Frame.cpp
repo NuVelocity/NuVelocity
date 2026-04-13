@@ -97,7 +97,7 @@ namespace nuvelocity
             throw std::runtime_error("Failed to create frame surface");
         }
         SetSurface(surface);
-        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
+        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
     }
 
     void Frame::InitFromArgs(const std::vector<std::string>& args)
