@@ -26,9 +26,13 @@ namespace nuvelocity
     constexpr const char* kPropertiesFileName = "Properties.txt";
     constexpr const char* kTgaExtension = ".tga";
 
+#ifdef NVE_RESTORE_TGA
     AssetManager::AssetManager()
             : Manager()
             , mRestoreMode(false) {};
+#else
+    AssetManager::AssetManager() = default;
+#endif
 
     AssetManager::~AssetManager()
     {
