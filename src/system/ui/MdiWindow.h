@@ -3,7 +3,7 @@
 
 #include "Widget.h"
 
-#include <Image.h>
+#include <SDL3/SDL.h>
 
 #include <functional>
 #include <memory>
@@ -12,6 +12,9 @@
 
 namespace nuvelocity
 {
+    class JWindowSkin;
+    class StandAloneFrame;
+
     class MdiWindow : public Widget
     {
     public:
@@ -36,7 +39,7 @@ namespace nuvelocity
         void Update(Game* aGame) override;
         void Draw(Game* game) override;
 
-        void SetRect(const SDL_FRect& rect);
+        void SetRect(const SDL_FRect& rect) override;
 
         void SetTitle(const std::string& title);
         const std::string& GetTitle() const;
@@ -50,8 +53,8 @@ namespace nuvelocity
         void SetActive(bool active);
         bool IsActive() const;
 
-        void SetBackgroundTile(const Image& image);
-        const Image& GetBackgroundTile() const;
+        void SetBackgroundTile(StandAloneFrame* frame);
+        StandAloneFrame* GetBackgroundTile() const;
 
         void SetStyle(const Style& style);
         const Style& GetWindowStyle() const;
@@ -66,11 +69,11 @@ namespace nuvelocity
 
         void SetOnClose(const std::function<void(MdiWindow&)>& callback);
 
-    private:
         SDL_FRect GetTitleBarRect() const;
         SDL_FRect GetCloseButtonRect() const;
         SDL_FRect GetClientRect() const;
 
+    private:
         std::string mTitle;
         bool mMovable;
         bool mClosable;
@@ -79,7 +82,7 @@ namespace nuvelocity
         bool mShouldClose;
 
         SDL_FPoint mDragGrabOffset;
-        Image mBackgroundTile;
+        StandAloneFrame* mBackgroundTile = nullptr;
         Style mWindowStyle;
 
         std::vector<std::shared_ptr<Widget>> mChildren;

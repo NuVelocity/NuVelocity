@@ -8,8 +8,6 @@ target_sources(
     Button.h
     FocusContainer.cpp
     FocusContainer.h
-    SkinnedButton.cpp
-    SkinnedButton.h
     TextBox.cpp
     TextBox.h
     MdiWindow.cpp
@@ -17,3 +15,5 @@ target_sources(
     MdiManager.cpp
     MdiManager.h
 )
+
+add_subdirectory(skin)

@@ -1,6 +1,6 @@
 #include "TextBox.h"
-
 #include "WidgetUtils.h"
+#include "skin/JWindowSkin.h"
 
 #include <system/FontManager.h>
 #include <system/Game.h>
@@ -83,44 +83,10 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_FRect rect = GetScreenRect();
-        const SDL_Color fillColor =
-            mFocused ? mTextBoxStyle.focusedColor : mTextBoxStyle.unfocusedColor;
-
-        FillRect(game->mSpriteBatch, rect, fillColor);
-        DrawBevel(game->mSpriteBatch,
-                  rect,
-                  BevelColors{.light = mStyle.borderLightColor, .dark = mStyle.borderDarkColor},
-                  true,
-                  mStyle.borderThickness);
-
-        SDL_FRect textRect{.x = rect.x + 6.0F,
-                           .y = rect.y + 3.0F,
-                           .w = SDL_max(0.0F, rect.w - 12.0F),
-                           .h = SDL_max(0.0F, rect.h - 6.0F)};
-        game->mFont->DrawString(game->mSpriteBatch,
-                                mText,
-                                textRect,
-                                mTextBoxStyle.textColor,
-                                mTextBoxStyle.fontPointSize,
-                                TextAlignment::Left,
-                                true);
-
-        if (mFocused)
+        JWindowSkin* skin = GetSkin(game);
+        if (skin != nullptr)
         {
-            int textWidth = 0;
-            int textHeight = 0;
-            game->mFont->MeasureString(mText, mTextBoxStyle.fontPointSize, textWidth, textHeight);
-
-            const bool visibleCaret = ((SDL_GetTicks() / 500U) % 2U) == 0U;
-            if (visibleCaret)
-            {
-                SDL_FRect caretRect{.x = rect.x + 6.0F + static_cast<float>(textWidth),
-                                    .y = rect.y + 4.0F,
-                                    .w = 1.0F,
-                                    .h = SDL_max(0.0F, rect.h - 8.0F)};
-                FillRect(game->mSpriteBatch, caretRect, mTextBoxStyle.caretColor);
-            }
+            skin->DrawTextBox(game, this);
         }
     }
 

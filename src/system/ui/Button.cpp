@@ -2,6 +2,7 @@
 
 #include "WidgetUtils.h"
 
+#include "skin/JWindowSkin.h"
 #include <system/FontManager.h>
 #include <system/Game.h>
 #include <system/InputManager.h>
@@ -76,7 +77,7 @@ namespace nuvelocity
             {
                 mFocused = false;
                 mSuppressFocusAfterClick = true;
-                mOnClick();
+                mOnClick(aGame);
             }
         }
 
@@ -88,7 +89,7 @@ namespace nuvelocity
         if (mFocused &&
             (input.IsKeyPressed(SDL_SCANCODE_RETURN) || input.IsKeyPressed(SDL_SCANCODE_SPACE)))
         {
-            Activate();
+            Activate(aGame);
         }
 
         const bool altDown =
@@ -96,7 +97,7 @@ namespace nuvelocity
         if (altDown && mMnemonicScancode != SDL_SCANCODE_UNKNOWN &&
             input.IsKeyPressed(mMnemonicScancode))
         {
-            Activate();
+            Activate(aGame);
         }
     }
 
@@ -109,47 +110,10 @@ namespace nuvelocity
 
         const SDL_FRect rect = GetScreenRect();
 
-        SDL_Color color = mStyle.backgroundColor;
-        if (!mEnabled)
+        JWindowSkin* skin = GetSkin(game);
+        if (skin != nullptr)
         {
-            color = mStyle.disabledColor;
-        }
-        else if (mPressed)
-        {
-            color = mButtonStyle.pressedColor;
-        }
-        else if (mHovered)
-        {
-            color = mButtonStyle.hoverColor;
-        }
-
-        FillRect(game->mSpriteBatch, rect, color);
-        DrawBevel(game->mSpriteBatch,
-                  rect,
-                  BevelColors{.light = mStyle.borderLightColor, .dark = mStyle.borderDarkColor},
-                  mPressed,
-                  mStyle.borderThickness);
-
-        SDL_FRect textRect{.x = rect.x + 4.0F,
-                           .y = rect.y + 2.0F,
-                           .w = SDL_max(0.0F, rect.w - 8.0F),
-                           .h = SDL_max(0.0F, rect.h - 4.0F)};
-        game->mFont->DrawString(game->mSpriteBatch,
-                                mDisplayCaption,
-                                textRect,
-                                mButtonStyle.textColor,
-                                mButtonStyle.fontPointSize,
-                                TextAlignment::Center,
-                                true,
-                                mMnemonicIndex);
-
-        if (mButtonStyle.showFocusRing && mFocused && !mHovered)
-        {
-            const SDL_FRect focusRect{.x = rect.x + 2.0F,
-                                      .y = rect.y + 2.0F,
-                                      .w = SDL_max(0.0F, rect.w - 4.0F),
-                                      .h = SDL_max(0.0F, rect.h - 4.0F)};
-            DrawRect(game->mSpriteBatch, focusRect, SDL_Color{255, 255, 255, 64});
+            skin->DrawButton(game, this);
         }
     }
 
@@ -202,16 +166,16 @@ namespace nuvelocity
         return mFocused;
     }
 
-    void Button::SetOnClick(const std::function<void()>& callback)
+    void Button::SetOnClick(const std::function<void(Game*)>& callback)
     {
         mOnClick = callback;
     }
 
-    void Button::Activate()
+    void Button::Activate(Game* game)
     {
         if (mOnClick)
         {
-            mOnClick();
+            mOnClick(game);
         }
     }
 
@@ -250,5 +214,15 @@ namespace nuvelocity
             mnemonicPending = false;
             mDisplayCaption.push_back(ch);
         }
+    }
+
+    bool Button::IsHovered() const
+    {
+        return mHovered;
+    }
+
+    bool Button::IsPressed() const
+    {
+        return mPressed;
     }
 } // namespace nuvelocity

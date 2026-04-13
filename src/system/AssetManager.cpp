@@ -425,6 +425,16 @@ namespace nuvelocity
         return nullptr;
     }
 
+    JWindowSkin* AssetManager::LoadWindowSkin(const std::string& path)
+    {
+        JWindowSkin* skin = static_cast<JWindowSkin*>(LoadPropertyFile(path));
+        if (skin != nullptr)
+        {
+            skin->Load(this);
+        }
+        return skin;
+    }
+
     SDL_Surface* AssetManager::LoadSurfaceFromAssetPath(const std::string& assetPath)
     {
         SDL_IOStream* frameStream = PHYSFSSDL3_openRead(assetPath.c_str());

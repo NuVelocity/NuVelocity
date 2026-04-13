@@ -8,6 +8,7 @@
 
 namespace nuvelocity
 {
+    class JWindowSkin;
     class TextBox : public Widget
     {
     public:

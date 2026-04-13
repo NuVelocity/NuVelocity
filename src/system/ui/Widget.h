@@ -10,6 +10,7 @@ namespace nuvelocity
 {
     class Game;
     class InputManager;
+    class JWindowSkin;
 
     struct WidgetStyle
     {
@@ -30,7 +31,7 @@ namespace nuvelocity
         void Update(Game* aGame) override = 0;
         void Draw(Game* aGame) override = 0;
 
-        void SetRect(const SDL_FRect& rect);
+        virtual void SetRect(const SDL_FRect& rect);
         SDL_FRect GetRect() const;
         SDL_FRect GetScreenRect() const;
 
@@ -43,6 +44,9 @@ namespace nuvelocity
         void SetStyle(const WidgetStyle& style);
         const WidgetStyle& GetStyle() const;
 
+        void SetSkin(JWindowSkin* skin);
+        JWindowSkin* GetSkin(Game* game) const;
+
     protected:
         bool ContainsPoint(const SDL_FPoint& point) const;
 
@@ -50,6 +54,7 @@ namespace nuvelocity
         WidgetStyle mStyle;
         bool mVisible;
         bool mEnabled;
+        JWindowSkin* mSkin;
     };
 } // namespace nuvelocity
 

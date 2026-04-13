@@ -1,7 +1,6 @@
 #include "MdiWindow.h"
-
-#include "WidgetUtils.h"
-
+#include "skin/JWindowSkin.h"
+#include <StandAloneFrame.h>
 #include <system/FontManager.h>
 #include <system/Game.h>
 #include <system/InputManager.h>
@@ -100,59 +99,16 @@ namespace nuvelocity
         }
 
         const SDL_FRect windowRect = GetScreenRect();
-        const SDL_FRect titleRect = GetTitleBarRect();
-        const SDL_FRect clientRect = GetClientRect();
+        const SDL_Rect clipRect = {static_cast<int>(windowRect.x),
+                                   static_cast<int>(windowRect.y),
+                                   static_cast<int>(windowRect.w),
+                                   static_cast<int>(windowRect.h)};
+        game->mSpriteBatch->SetClipRect(&clipRect);
 
-        FillRect(game->mSpriteBatch, windowRect, mStyle.backgroundColor);
-        DrawBevel(game->mSpriteBatch,
-                  windowRect,
-                  BevelColors{.light = mStyle.borderLightColor, .dark = mStyle.borderDarkColor},
-                  false,
-                  mWindowStyle.borderSize);
-
-        const SDL_Color titleColor =
-            mActive ? mWindowStyle.titleBarColor : mWindowStyle.titleBarInactiveColor;
-        FillRect(game->mSpriteBatch, titleRect, titleColor);
-
-        SDL_FRect titleTextRect{.x = titleRect.x + 6.0F,
-                                .y = titleRect.y,
-                                .w = SDL_max(0.0F, titleRect.w - 24.0F),
-                                .h = titleRect.h};
-        titleTextRect.h = titleRect.h;
-
-        game->mFont->DrawString(game->mSpriteBatch,
-                                mTitle,
-                                titleTextRect,
-                                mWindowStyle.titleTextColor,
-                                mWindowStyle.titleFontPointSize,
-                                TextAlignment::Left,
-                                true);
-
-        if (mWindowStyle.tileBackground && mBackgroundTile.IsValid())
+        JWindowSkin* skin = GetSkin(game);
+        if (skin != nullptr)
         {
-            DrawTiledImage(game->mSpriteBatch, mBackgroundTile, clientRect);
-        }
-        else
-        {
-            FillRect(game->mSpriteBatch, clientRect, mWindowStyle.clientColor);
-        }
-
-        if (mClosable)
-        {
-            SDL_FRect closeRect = GetCloseButtonRect();
-            FillRect(game->mSpriteBatch, closeRect, mWindowStyle.closeButtonColor);
-            DrawBevel(game->mSpriteBatch,
-                      closeRect,
-                      BevelColors{.light = mStyle.borderLightColor, .dark = mStyle.borderDarkColor},
-                      false,
-                      1.0F);
-            game->mFont->DrawString(game->mSpriteBatch,
-                                    "X",
-                                    closeRect,
-                                    mWindowStyle.titleTextColor,
-                                    mWindowStyle.titleFontPointSize,
-                                    TextAlignment::Center,
-                                    true);
+            skin->DrawMdiWindow(game, this);
         }
 
         for (const std::shared_ptr<Widget>& child : mChildren)
@@ -162,6 +118,8 @@ namespace nuvelocity
                 child->Draw(game);
             }
         }
+
+        game->mSpriteBatch->SetClipRect(nullptr);
     }
 
     void MdiWindow::SetTitle(const std::string& title)
@@ -204,12 +162,12 @@ namespace nuvelocity
         return mActive;
     }
 
-    void MdiWindow::SetBackgroundTile(const Image& image)
+    void MdiWindow::SetBackgroundTile(StandAloneFrame* frame)
     {
-        mBackgroundTile = image;
+        mBackgroundTile = frame;
     }
 
-    const Image& MdiWindow::GetBackgroundTile() const
+    StandAloneFrame* MdiWindow::GetBackgroundTile() const
     {
         return mBackgroundTile;
     }

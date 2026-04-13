@@ -36,11 +36,14 @@ namespace nuvelocity
         void SetFocused(bool focused);
         bool IsFocused() const;
 
-        void SetOnClick(const std::function<void()>& callback);
-        virtual void Activate();
+        void SetOnClick(const std::function<void(Game*)>& callback);
+        virtual void Activate(Game* game);
 
         void SetStyle(const Style& style);
         const Style& GetButtonStyle() const;
+
+        bool IsHovered() const;
+        bool IsPressed() const;
 
     protected:
         bool mHovered;
@@ -52,7 +55,7 @@ namespace nuvelocity
         std::string mCaption;
         std::string mDisplayCaption;
         Style mButtonStyle;
-        std::function<void()> mOnClick;
+        std::function<void(Game*)> mOnClick;
 
     private:
         void ParseCaption();

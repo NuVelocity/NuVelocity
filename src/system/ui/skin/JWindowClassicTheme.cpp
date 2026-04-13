@@ -1,0 +1,206 @@
+#include "JWindowClassicTheme.h"
+#include "ClassicSkinBorder.h"
+#include <system/FontManager.h>
+#include <system/Game.h>
+#include <system/SpriteBatch.h>
+#include <system/ui/Button.h>
+#include <system/ui/MdiWindow.h>
+#include <system/ui/TextBox.h>
+#include <system/ui/WidgetUtils.h>
+
+namespace nuvelocity
+{
+    void JWindowClassicTheme::DrawButton(Game* game, Button* button)
+    {
+        if (game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr ||
+            button == nullptr)
+        {
+            return;
+        }
+
+        const SDL_FRect rect = button->GetScreenRect();
+        const auto& style = button->GetStyle();
+        const auto& buttonStyle = button->GetButtonStyle();
+
+        // JWindowClassicTheme uses the standard hardcoded bevel for buttons
+        SDL_Color color = style.backgroundColor;
+        if (!button->IsEnabled())
+        {
+            color = style.disabledColor;
+        }
+        else if (button->IsPressed())
+        {
+            color = buttonStyle.pressedColor;
+        }
+        else if (button->IsHovered())
+        {
+            color = buttonStyle.hoverColor;
+        }
+
+        WidgetUtils::FillRect(game->mSpriteBatch, rect, color);
+        WidgetUtils::DrawBevel(game->mSpriteBatch,
+                               rect,
+                               WidgetUtils::BevelColors{.light = style.borderLightColor,
+                                                        .dark = style.borderDarkColor},
+                               button->IsPressed(),
+                               style.borderThickness);
+
+        // 3. Draw Text
+        SDL_FRect textRect{.x = rect.x + 4.0F,
+                           .y = rect.y + 2.0F,
+                           .w = SDL_max(0.0F, rect.w - 8.0F),
+                           .h = SDL_max(0.0F, rect.h - 4.0F)};
+
+        if (button->IsPressed())
+        {
+            textRect.x += 1.0F;
+            textRect.y += 1.0F;
+        }
+
+        game->mFont->DrawString(game->mSpriteBatch,
+                                button->GetDisplayCaption(),
+                                textRect,
+                                buttonStyle.textColor,
+                                buttonStyle.fontPointSize,
+                                TextAlignment::Center,
+                                true,
+                                button->GetMnemonicIndex());
+
+        if (buttonStyle.showFocusRing && button->IsFocused() && !button->IsHovered())
+        {
+            const SDL_FRect focusRect{.x = rect.x + 2.0F,
+                                      .y = rect.y + 2.0F,
+                                      .w = SDL_max(0.0F, rect.w - 4.0F),
+                                      .h = SDL_max(0.0F, rect.h - 4.0F)};
+            WidgetUtils::DrawRect(game->mSpriteBatch, focusRect, SDL_Color{255, 255, 255, 64});
+        }
+    }
+
+    void JWindowClassicTheme::DrawMdiWindow(Game* game, MdiWindow* window)
+    {
+        if (game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr ||
+            window == nullptr)
+        {
+            return;
+        }
+
+        const SDL_FRect windowRect = window->GetScreenRect();
+        const SDL_FRect titleRect = window->GetTitleBarRect();
+        const SDL_FRect clientRect = window->GetClientRect();
+
+        const auto& style = window->GetStyle();
+        const auto& windowStyle = window->GetWindowStyle();
+
+        // JWindowClassicTheme uses the standard hardcoded bevel for windows
+        WidgetUtils::FillRect(game->mSpriteBatch, windowRect, style.backgroundColor);
+        WidgetUtils::DrawBevel(game->mSpriteBatch,
+                               windowRect,
+                               WidgetUtils::BevelColors{.light = style.borderLightColor,
+                                                        .dark = style.borderDarkColor},
+                               false,
+                               windowStyle.borderSize);
+
+        // 2. Draw Title Bar
+        const SDL_Color titleColor =
+            window->IsActive() ? windowStyle.titleBarColor : windowStyle.titleBarInactiveColor;
+        WidgetUtils::FillRect(game->mSpriteBatch, titleRect, titleColor);
+
+        SDL_FRect titleTextRect{.x = titleRect.x + 6.0F,
+                                .y = titleRect.y,
+                                .w = SDL_max(0.0F, titleRect.w - 24.0F),
+                                .h = titleRect.h};
+
+        game->mFont->DrawString(game->mSpriteBatch,
+                                window->GetTitle(),
+                                titleTextRect,
+                                windowStyle.titleTextColor,
+                                windowStyle.titleFontPointSize,
+                                TextAlignment::Left,
+                                true);
+
+        // 3. Draw Client Background
+        if (windowStyle.tileBackground && window->GetBackgroundTile() != nullptr)
+        {
+            WidgetUtils::DrawTiledFrame(
+                game->mSpriteBatch, window->GetBackgroundTile(), clientRect);
+        }
+        else
+        {
+            WidgetUtils::FillRect(game->mSpriteBatch, clientRect, windowStyle.clientColor);
+        }
+
+        // 4. Draw Close Button
+        if (window->IsClosable())
+        {
+            SDL_FRect closeRect = window->GetCloseButtonRect();
+            WidgetUtils::FillRect(game->mSpriteBatch, closeRect, windowStyle.closeButtonColor);
+            WidgetUtils::DrawBevel(game->mSpriteBatch,
+                                   closeRect,
+                                   WidgetUtils::BevelColors{.light = style.borderLightColor,
+                                                            .dark = style.borderDarkColor},
+                                   false,
+                                   1.0F);
+            game->mFont->DrawString(game->mSpriteBatch,
+                                    "X",
+                                    closeRect,
+                                    windowStyle.titleTextColor,
+                                    windowStyle.titleFontPointSize,
+                                    TextAlignment::Center,
+                                    true);
+        }
+    }
+
+    void JWindowClassicTheme::DrawTextBox(Game* game, TextBox* textBox)
+    {
+        if (game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr ||
+            textBox == nullptr)
+        {
+            return;
+        }
+
+        const SDL_FRect rect = textBox->GetScreenRect();
+        const auto& style = textBox->GetTextBoxStyle();
+        const auto& baseStyle = textBox->GetStyle();
+
+        const SDL_Color fillColor =
+            textBox->IsFocused() ? style.focusedColor : style.unfocusedColor;
+
+        WidgetUtils::FillRect(game->mSpriteBatch, rect, fillColor);
+        WidgetUtils::DrawBevel(game->mSpriteBatch,
+                               rect,
+                               WidgetUtils::BevelColors{.light = baseStyle.borderLightColor,
+                                                        .dark = baseStyle.borderDarkColor},
+                               true,
+                               baseStyle.borderThickness);
+
+        SDL_FRect textRect{.x = rect.x + 6.0F,
+                           .y = rect.y + 3.0F,
+                           .w = SDL_max(0.0F, rect.w - 12.0F),
+                           .h = SDL_max(0.0F, rect.h - 6.0F)};
+        game->mFont->DrawString(game->mSpriteBatch,
+                                textBox->GetText(),
+                                textRect,
+                                style.textColor,
+                                style.fontPointSize,
+                                TextAlignment::Left,
+                                true);
+
+        if (textBox->IsFocused())
+        {
+            int textWidth = 0;
+            int textHeight = 0;
+            game->mFont->MeasureString(
+                textBox->GetText(), style.fontPointSize, textWidth, textHeight);
+
+            const bool visibleCaret = ((SDL_GetTicks() / 500U) % 2U) == 0U;
+            if (visibleCaret)
+            {
+                SDL_FRect caretRect{.x = rect.x + 6.0F + static_cast<float>(textWidth),
+                                    .y = rect.y + 4.0F,
+                                    .w = 1.0F,
+                                    .h = SDL_max(0.0F, rect.h - 8.0F)};
+                WidgetUtils::FillRect(game->mSpriteBatch, caretRect, style.caretColor);
+            }
+        }
+    }
+} // namespace nuvelocity

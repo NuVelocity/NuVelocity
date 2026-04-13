@@ -1,11 +1,10 @@
 #include "WidgetUtils.h"
-
-#include <Image.h>
+#include <StandAloneFrame.h>
 #include <system/SpriteBatch.h>
 
 namespace nuvelocity
 {
-    void FillRect(SpriteBatch* batch, const SDL_FRect& rect, const SDL_Color& color)
+    void WidgetUtils::FillRect(SpriteBatch* batch, const SDL_FRect& rect, const SDL_Color& color)
     {
         if (batch == nullptr)
         {
@@ -15,7 +14,7 @@ namespace nuvelocity
         batch->FillRect(&rect, color);
     }
 
-    void DrawRect(SpriteBatch* batch, const SDL_FRect& rect, const SDL_Color& color)
+    void WidgetUtils::DrawRect(SpriteBatch* batch, const SDL_FRect& rect, const SDL_Color& color)
     {
         if (batch == nullptr)
         {
@@ -28,11 +27,161 @@ namespace nuvelocity
         batch->DrawLine(rect.x, rect.y + rect.h, rect.x, rect.y, color);
     }
 
-    void DrawBevel(SpriteBatch* batch,
-                   const SDL_FRect& rect,
-                   const BevelColors& colors,
-                   bool sunken,
-                   float thickness)
+    void
+    WidgetUtils::DrawTiledFrame(SpriteBatch* batch, StandAloneFrame* frame, const SDL_FRect& area)
+    {
+        if (frame == nullptr)
+        {
+            return;
+        }
+        SDL_Surface* surface = frame->GetSurface();
+        if (surface == nullptr)
+        {
+            return;
+        }
+
+        SDL_FRect srcRect{
+            0.0F, 0.0F, static_cast<float>(surface->w), static_cast<float>(surface->h)};
+        DrawTiledFramePart(batch, frame, area, srcRect);
+    }
+
+    void
+    WidgetUtils::DrawTiledFrameH(SpriteBatch* batch, StandAloneFrame* frame, const SDL_FRect& area)
+    {
+        if (frame == nullptr)
+        {
+            return;
+        }
+        SDL_Surface* surface = frame->GetSurface();
+        if (surface == nullptr)
+        {
+            return;
+        }
+
+        SDL_FRect srcRect{
+            0.0F, 0.0F, static_cast<float>(surface->w), static_cast<float>(surface->h)};
+        DrawTiledFramePartH(batch, frame, area, srcRect);
+    }
+
+    void
+    WidgetUtils::DrawTiledFrameV(SpriteBatch* batch, StandAloneFrame* frame, const SDL_FRect& area)
+    {
+        if (frame == nullptr)
+        {
+            return;
+        }
+        SDL_Surface* surface = frame->GetSurface();
+        if (surface == nullptr)
+        {
+            return;
+        }
+
+        SDL_FRect srcRect{
+            0.0F, 0.0F, static_cast<float>(surface->w), static_cast<float>(surface->h)};
+        DrawTiledFramePartV(batch, frame, area, srcRect);
+    }
+
+    void WidgetUtils::DrawTiledFramePart(SpriteBatch* batch,
+                                         StandAloneFrame* frame,
+                                         const SDL_FRect& area,
+                                         const SDL_FRect& srcRect)
+    {
+        if (batch == nullptr || frame == nullptr || srcRect.w <= 0 || srcRect.h <= 0)
+        {
+            return;
+        }
+
+        SDL_Surface* surface = frame->GetSurface();
+        if (surface == nullptr)
+        {
+            return;
+        }
+
+        const float tileWidth = srcRect.w;
+        const float tileHeight = srcRect.h;
+
+        for (float y = area.y; y < area.y + area.h; y += tileHeight)
+        {
+            for (float x = area.x; x < area.x + area.w; x += tileWidth)
+            {
+                const float remainingW = (area.x + area.w) - x;
+                const float remainingH = (area.y + area.h) - y;
+
+                SDL_FRect currentSrc = srcRect;
+                currentSrc.w = SDL_min(tileWidth, remainingW);
+                currentSrc.h = SDL_min(tileHeight, remainingH);
+
+                SDL_FRect destRect{.x = x, .y = y, .w = currentSrc.w, .h = currentSrc.h};
+                batch->Draw(surface, &destRect, &currentSrc);
+            }
+        }
+    }
+
+    void WidgetUtils::DrawTiledFramePartH(SpriteBatch* batch,
+                                          StandAloneFrame* frame,
+                                          const SDL_FRect& area,
+                                          const SDL_FRect& srcRect)
+    {
+        if (batch == nullptr || frame == nullptr || srcRect.w <= 0 || srcRect.h <= 0)
+        {
+            return;
+        }
+
+        SDL_Surface* surface = frame->GetSurface();
+        if (surface == nullptr)
+        {
+            return;
+        }
+
+        const float tileWidth = srcRect.w;
+
+        for (float x = area.x; x < area.x + area.w; x += tileWidth)
+        {
+            const float remainingW = (area.x + area.w) - x;
+
+            SDL_FRect currentSrc = srcRect;
+            currentSrc.w = SDL_min(tileWidth, remainingW);
+
+            SDL_FRect destRect{.x = x, .y = area.y, .w = currentSrc.w, .h = currentSrc.h};
+            batch->Draw(surface, &destRect, &currentSrc);
+        }
+    }
+
+    void WidgetUtils::DrawTiledFramePartV(SpriteBatch* batch,
+                                          StandAloneFrame* frame,
+                                          const SDL_FRect& area,
+                                          const SDL_FRect& srcRect)
+    {
+        if (batch == nullptr || frame == nullptr || srcRect.w <= 0 || srcRect.h <= 0)
+        {
+            return;
+        }
+
+        SDL_Surface* surface = frame->GetSurface();
+        if (surface == nullptr)
+        {
+            return;
+        }
+
+        const float tileHeight = srcRect.h;
+
+        for (float y = area.y; y < area.y + area.h; y += tileHeight)
+        {
+            const float remainingH = (area.y + area.h) - y;
+
+            SDL_FRect currentSrc = srcRect;
+            currentSrc.h = SDL_min(tileHeight, remainingH);
+
+            SDL_FRect destRect{.x = area.x, .y = y, .w = currentSrc.w, .h = currentSrc.h};
+            batch->Draw(surface, &destRect, &currentSrc);
+        }
+    }
+
+    void WidgetUtils::DrawBevel(SpriteBatch* batch,
+                                const SDL_FRect& rect,
+                                const BevelColors& colors,
+                                bool sunken,
+                                float thickness)
     {
         if (batch == nullptr || thickness <= 0.0F)
         {
@@ -49,42 +198,9 @@ namespace nuvelocity
         SDL_FRect bottomEdge{
             .x = rect.x, .y = rect.y + rect.h - thickness, .w = rect.w, .h = thickness};
 
-        FillRect(batch, topEdge, topLeft);
-        FillRect(batch, leftEdge, topLeft);
-        FillRect(batch, rightEdge, bottomRight);
-        FillRect(batch, bottomEdge, bottomRight);
-    }
-
-    void DrawTiledImage(SpriteBatch* spriteBatch, Image& image, const SDL_FRect& area)
-    {
-        if (spriteBatch == nullptr || !image.IsValid())
-        {
-            return;
-        }
-
-        SDL_Surface* surface = image.GetSurface();
-        if (surface == nullptr || surface->w <= 0 || surface->h <= 0)
-        {
-            return;
-        }
-
-        const float tileWidth = static_cast<float>(surface->w);
-        const float tileHeight = static_cast<float>(surface->h);
-
-        for (float y = area.y; y < area.y + area.h; y += tileHeight)
-        {
-            for (float x = area.x; x < area.x + area.w; x += tileWidth)
-            {
-                const float remainingW = (area.x + area.w) - x;
-                const float remainingH = (area.y + area.h) - y;
-
-                SDL_FRect srcRect{.x = 0.0F,
-                                  .y = 0.0F,
-                                  .w = SDL_min(tileWidth, remainingW),
-                                  .h = SDL_min(tileHeight, remainingH)};
-                SDL_FRect destRect{.x = x, .y = y, .w = srcRect.w, .h = srcRect.h};
-                spriteBatch->Draw(image.GetSurface(), &destRect, &srcRect);
-            }
-        }
+        WidgetUtils::FillRect(batch, topEdge, topLeft);
+        WidgetUtils::FillRect(batch, leftEdge, topLeft);
+        WidgetUtils::FillRect(batch, rightEdge, bottomRight);
+        WidgetUtils::FillRect(batch, bottomEdge, bottomRight);
     }
 } // namespace nuvelocity

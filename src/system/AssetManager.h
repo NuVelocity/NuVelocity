@@ -15,6 +15,7 @@
 #include "Sequence.h"
 #include "SequenceFrameInfoList.h"
 #include "StandAloneFrame.h"
+#include "system/ui/skin/JWindowSkin.h"
 
 namespace nuvelocity
 {
@@ -63,6 +64,8 @@ namespace nuvelocity
         NVE_API void DumpPropertyFile(const std::string& path);
 
         NVE_API void* LoadPropertyFile(const std::string& path);
+
+        NVE_API JWindowSkin* LoadWindowSkin(const std::string& path);
     };
 } // namespace nuvelocity
 

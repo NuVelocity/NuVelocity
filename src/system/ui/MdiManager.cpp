@@ -2,13 +2,31 @@
 #include "Game.h"
 #include "MdiWindow.h"
 #include <algorithm>
+#include <system/AssetManager.h>
 #include <system/InputManager.h>
+#include <system/ui/skin/JWindowClassicTheme.h>
+#include <system/ui/skin/JWindowSkin.h>
 
 namespace nuvelocity
 {
+    MdiManager::~MdiManager()
+    {
+        for (auto& pair : mSkins)
+        {
+            delete pair.second;
+        }
+        mSkins.clear();
+    }
+
     bool MdiManager::Initialize(char** argv)
     {
         (void)argv;
+
+        // Register default Classic skin
+        auto* classic = new JWindowClassicTheme();
+        RegisterSkin("!None", classic);
+        SetDefaultSkin(classic);
+
         mInitialized = true;
         return true;
     }
@@ -19,6 +37,21 @@ namespace nuvelocity
         {
             mWindows.push_back(window);
         }
+    }
+
+    void MdiManager::AddCenteredWindow(Game* game, const std::shared_ptr<MdiWindow>& window)
+    {
+        if (game == nullptr || window == nullptr)
+        {
+            return;
+        }
+
+        const SDL_FRect windowRect = window->GetRect();
+        const float newX = (static_cast<float>(game->mWindowWidth) - windowRect.w) / 2.0F;
+        const float newY = (static_cast<float>(game->mWindowHeight) - windowRect.h) / 2.0F;
+
+        window->SetRect({newX, newY, windowRect.w, windowRect.h});
+        AddWindow(window);
     }
 
     void MdiManager::RemoveWindow(const std::shared_ptr<MdiWindow>& window)
@@ -82,6 +115,7 @@ namespace nuvelocity
             if (window != nullptr)
             {
                 window->Draw(game);
+                game->mSpriteBatch->Present();
             }
         }
     }
@@ -89,5 +123,34 @@ namespace nuvelocity
     const std::vector<std::shared_ptr<MdiWindow>>& MdiManager::GetWindows() const
     {
         return mWindows;
+    }
+
+    void MdiManager::RegisterSkin(const std::string& name, JWindowSkin* skin)
+    {
+        if (skin != nullptr)
+        {
+            mSkins[name] = skin;
+            SDL_Log("Registered skin '%s'", name.c_str());
+        }
+    }
+
+    JWindowSkin* MdiManager::GetSkin(const std::string& name) const
+    {
+        auto it = mSkins.find(name);
+        if (it != mSkins.end())
+        {
+            return it->second;
+        }
+        return nullptr;
+    }
+
+    void MdiManager::SetDefaultSkin(JWindowSkin* skin)
+    {
+        mDefaultSkin = skin;
+    }
+
+    JWindowSkin* MdiManager::GetDefaultSkin() const
+    {
+        return mDefaultSkin;
     }
 } // namespace nuvelocity

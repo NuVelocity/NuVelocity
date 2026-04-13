@@ -2,6 +2,8 @@
 
 #include <system/Game.h>
 #include <system/InputManager.h>
+#include <system/ui/MdiManager.h>
+#include <system/ui/skin/JWindowSkin.h>
 
 namespace nuvelocity
 {
@@ -9,6 +11,7 @@ namespace nuvelocity
             : mRect({.x = 0.0F, .y = 0.0F, .w = 0.0F, .h = 0.0F})
             , mVisible(true)
             , mEnabled(true)
+            , mSkin(nullptr)
     {
     }
 
@@ -62,5 +65,25 @@ namespace nuvelocity
         const SDL_FRect rect = GetScreenRect();
         return point.x >= rect.x && point.y >= rect.y && point.x <= rect.x + rect.w &&
                point.y <= rect.y + rect.h;
+    }
+
+    void Widget::SetSkin(JWindowSkin* skin)
+    {
+        mSkin = skin;
+    }
+
+    JWindowSkin* Widget::GetSkin(Game* game) const
+    {
+        if (mSkin != nullptr)
+        {
+            return mSkin;
+        }
+
+        if (game != nullptr && game->mMdi != nullptr)
+        {
+            return game->mMdi->GetDefaultSkin();
+        }
+
+        return nullptr;
     }
 } // namespace nuvelocity
