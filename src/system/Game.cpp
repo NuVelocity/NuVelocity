@@ -305,6 +305,8 @@ namespace nuvelocity
         {
             mMdi->Draw(this);
         }
+
+        mSpriteBatch->Present();
     }
 
     void Game::HandleEvent(const SDL_Event& event) const
