@@ -686,6 +686,15 @@ namespace nuvelocity
         // We don't release the texture here because it's now part of a batch
         // In a real system, we'd cache textures. For now, we'll flush to be safe if textures are
         // short-lived. FlushBatch();
+
+        if (mDebugDrawing)
+        {
+            OutlineRect(destRect, {255, 0, 255, 255}); // Magenta: Actual
+            if (srcRect != nullptr)
+            {
+                OutlineRect(srcRect, {0, 255, 255, 255}); // Cyan: Source
+            }
+        }
     }
 
     void GPUSpriteBatch::DrawCentered(SDL_Surface* surface)

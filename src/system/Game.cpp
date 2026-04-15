@@ -59,6 +59,11 @@ namespace nuvelocity
                     return std::string("gpu");
                 });
 
+        mArgs.add_argument("-drb", "--draw-bounds")
+            .help("Enable debug bounds drawing")
+            .default_value(false)
+            .implicit_value(true);
+
 #ifdef NVE_RESTORE_TGA
         mArgs.add_argument("-rm", "--restore-mode")
             .help("Enable restore mode (export cache to source TGA)")
@@ -229,6 +234,8 @@ namespace nuvelocity
 
         mSpriteBatch = new RendererSpriteBatch(mRenderer, mWindow);
 #endif
+
+        mSpriteBatch->SetDebugDrawing(mArgs.get<bool>("--draw-bounds"));
 
         SDL_ShowWindow(mWindow);
         {

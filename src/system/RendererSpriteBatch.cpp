@@ -36,6 +36,15 @@ namespace nuvelocity
             SDL_GetSurfaceBlendMode(surface, &command.blendMode);
         }
         mDrawCommands.push_back(command);
+
+        if (mDebugDrawing)
+        {
+            OutlineRect(destRect, {255, 0, 255, 255}); // Magenta: Actual
+            if (srcRect != nullptr)
+            {
+                OutlineRect(srcRect, {0, 255, 255, 255}); // Cyan: Source
+            }
+        }
     }
 
     void RendererSpriteBatch::DrawCentered(SDL_Surface* surface)

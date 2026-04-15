@@ -177,14 +177,7 @@ namespace nuvelocity
         {
             if (frame != nullptr)
             {
-                SDL_Surface* surface = frame->GetSurface();
-                if (surface != nullptr)
-                {
-                    SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
-                    SDL_FRect dest{
-                        x, y, static_cast<float>(surface->w), static_cast<float>(surface->h)};
-                    spriteBatch->Draw(surface, &dest, nullptr);
-                }
+                spriteBatch->Draw(frame, x, y);
             }
         };
 
