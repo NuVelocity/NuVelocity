@@ -37,7 +37,7 @@ namespace nuvelocity
         }
         mDrawCommands.push_back(command);
 
-        if (mDebugDrawing)
+        if (mDrawBounds)
         {
             OutlineRect(destRect, {255, 0, 255, 255}); // Magenta: Actual
             if (srcRect != nullptr)

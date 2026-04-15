@@ -687,7 +687,7 @@ namespace nuvelocity
         // In a real system, we'd cache textures. For now, we'll flush to be safe if textures are
         // short-lived. FlushBatch();
 
-        if (mDebugDrawing)
+        if (mDrawBounds)
         {
             OutlineRect(destRect, {255, 0, 255, 255}); // Magenta: Actual
             if (srcRect != nullptr)

@@ -117,14 +117,14 @@ namespace nuvelocity
 
         virtual void FillRect(const SDL_FRect* rect, SDL_Color color) = 0;
 
-        void SetDebugDrawing(bool enabled)
+        void SetDrawBounds(bool enabled)
         {
-            mDebugDrawing = enabled;
+            mDrawBounds = enabled;
         }
 
-        bool IsDebugDrawingEnabled() const
+        bool IsDrawBoundsEnabled() const
         {
-            return mDebugDrawing;
+            return mDrawBounds;
         }
 
         virtual void SetClipRect(const SDL_Rect* rect) = 0;
@@ -138,7 +138,7 @@ namespace nuvelocity
     protected:
         SpriteBatch() = default;
 
-        bool mDebugDrawing = false;
+        bool mDrawBounds = false;
     };
 } // namespace nuvelocity
 

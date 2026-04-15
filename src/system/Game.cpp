@@ -235,7 +235,7 @@ namespace nuvelocity
         mSpriteBatch = new RendererSpriteBatch(mRenderer, mWindow);
 #endif
 
-        mSpriteBatch->SetDebugDrawing(mArgs.get<bool>("--draw-bounds"));
+        mSpriteBatch->SetDrawBounds(mArgs.get<bool>("--draw-bounds"));
 
         SDL_ShowWindow(mWindow);
         {
@@ -421,7 +421,7 @@ namespace nuvelocity
 
         if (mInput->IsKeyPressed(SDL_SCANCODE_F2))
         {
-            mSpriteBatch->SetDebugDrawing(!mSpriteBatch->IsDebugDrawingEnabled());
+            mSpriteBatch->SetDrawBounds(!mSpriteBatch->IsDrawBoundsEnabled());
         }
     }
 
