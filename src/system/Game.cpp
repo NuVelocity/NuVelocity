@@ -306,6 +306,7 @@ namespace nuvelocity
         mTotalTime += static_cast<double>(mDeltaTime);
         mLastUpdateTick = now;
 
+        HandleDebugHotkeys();
         mScene->Update(this);
 
         if (mMdi != nullptr)
@@ -409,6 +410,19 @@ namespace nuvelocity
 
         mCursor = cursor;
         SDL_SetCursor(mCursor);
+    }
+
+    void Game::HandleDebugHotkeys()
+    {
+        if (mInput == nullptr)
+        {
+            return;
+        }
+
+        if (mInput->IsKeyPressed(SDL_SCANCODE_F2))
+        {
+            mSpriteBatch->SetDebugDrawing(!mSpriteBatch->IsDebugDrawingEnabled());
+        }
     }
 
     void Game::SetModuleInfo(std::string aModuleInfoPath)

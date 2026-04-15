@@ -94,6 +94,7 @@ namespace nuvelocity
         ModuleInfo* mModuleInfo;
         SDL_Cursor* mCursor;
         void UpdateMouseCursor();
+        void HandleDebugHotkeys();
     };
 } // namespace nuvelocity
 
