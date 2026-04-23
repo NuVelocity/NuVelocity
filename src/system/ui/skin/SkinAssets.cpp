@@ -9,6 +9,16 @@
 
 namespace nuvelocity
 {
+    AlphaSkinBorder::AlphaSkinBorder() = default;
+
+    AlphaSkinBorder::~AlphaSkinBorder()
+    {
+        if (mCachedSurface != nullptr)
+        {
+            SDL_DestroySurface(mCachedSurface);
+        }
+    }
+
     void AlphaSkinBorder::Load(AssetManager* assets)
     {
         if (assets == nullptr)
@@ -43,7 +53,30 @@ namespace nuvelocity
 
     void AlphaSkinBorder::DrawBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect)
     {
-        // 1. Calculate individual corner dimensions as integers for stable mask assembly.
+        if (rect.w <= 0 || rect.h <= 0)
+        {
+            return;
+        }
+
+        // 1. Check if we can reuse the cached composite surface
+        if (mCachedSurface != nullptr && mCachedW == rect.w && mCachedH == rect.h)
+        {
+            SDL_Rect compositeDest{rect.x, rect.y, rect.w, rect.h};
+            spriteBatch->Draw(mCachedSurface, &compositeDest, nullptr);
+            return;
+        }
+
+        // 2. Size changed or no cache - Rebuild
+        if (mCachedSurface != nullptr)
+        {
+            SDL_DestroySurface(mCachedSurface);
+            mCachedSurface = nullptr;
+        }
+
+        mCachedW = rect.w;
+        mCachedH = rect.h;
+
+        // Calculate individual corner dimensions as integers for stable mask assembly.
         // We use separate metrics for each side to handle asymmetrical skin assets.
         int lwT = (mTopLeftAlphaFrame != nullptr) ? mTopLeftAlphaFrame->GetWidth() : 0;
         int lwB = (mBottomLeftAlphaFrame != nullptr) ? mBottomLeftAlphaFrame->GetWidth() : 0;
@@ -161,13 +194,10 @@ namespace nuvelocity
 
         // Step 3: Draw the composite surface to the sprite batch
         SDL_SetSurfaceBlendMode(compositeSurface, SDL_BLENDMODE_BLEND);
-        SDL_Rect compositeDest{rect.x,
-                               rect.y,
-                               compositeSurface->w,
-                               compositeSurface->h};
-        spriteBatch->Draw(compositeSurface, &compositeDest, nullptr);
+        mCachedSurface = compositeSurface;
 
-        SDL_DestroySurface(compositeSurface);
+        SDL_Rect compositeDest{rect.x, rect.y, mCachedW, mCachedH};
+        spriteBatch->Draw(mCachedSurface, &compositeDest, nullptr);
     }
 
     void AlphaSkinBorder::DrawHighlights(SpriteBatch* spriteBatch, const SDL_Rect& rect)
@@ -221,40 +251,30 @@ namespace nuvelocity
         {
             WidgetUtils::DrawTiledFrameH(spriteBatch,
                                          mTopCenterHighlightFrame,
-                                         {rect.x + hlwTR,
-                                          rect.y,
-                                          areaW - hlwTL - hlwTR,
-                                          hlhTC});
+                                         {rect.x + hlwTR, rect.y, areaW - hlwTL - hlwTR, hlhTC});
         }
         // Bottom center highlight
         if (mBottomCenterHighlightFrame != nullptr)
         {
-            WidgetUtils::DrawTiledFrameH(spriteBatch,
-                                         mBottomCenterHighlightFrame,
-                                         {rect.x + hlwBL,
-                                          rect.y + areaH - hlhBC,
-                                          areaW - hlwBL - hlwBR,
-                                          hlhBC});
+            WidgetUtils::DrawTiledFrameH(
+                spriteBatch,
+                mBottomCenterHighlightFrame,
+                {rect.x + hlwBL, rect.y + areaH - hlhBC, areaW - hlwBL - hlwBR, hlhBC});
         }
         // Center left highlight
         if (mCenterLeftHighlightFrame != nullptr)
         {
             WidgetUtils::DrawTiledFrameV(spriteBatch,
                                          mCenterLeftHighlightFrame,
-                                         {rect.x,
-                                          rect.y + hlhTR,
-                                          hlwCL,
-                                          areaH - hlhTR - hlhBR});
+                                         {rect.x, rect.y + hlhTR, hlwCL, areaH - hlhTR - hlhBR});
         }
         // Center right highlight
         if (mCenterRightHighlightFrame != nullptr)
         {
-            WidgetUtils::DrawTiledFrameV(spriteBatch,
-                                         mCenterRightHighlightFrame,
-                                         {rect.x + areaW - hlwCR,
-                                          rect.y + hlhTR,
-                                          hlwCR,
-                                          areaH - hlhTR - hlhBR});
+            WidgetUtils::DrawTiledFrameV(
+                spriteBatch,
+                mCenterRightHighlightFrame,
+                {rect.x + areaW - hlwCR, rect.y + hlhTR, hlwCR, areaH - hlhTR - hlhBR});
         }
     }
 
@@ -292,9 +312,9 @@ namespace nuvelocity
 
         // 1. Draw Background (Tiled)
         SDL_Rect bgRect = {.x = rect.x + mTextureMargin,
-                            .y = rect.y + mTextureMargin,
-                            .w = SDL_max(0, rect.w - (mTextureMargin * 2)),
-                            .h = SDL_max(0, rect.h - (mTextureMargin * 2))};
+                           .y = rect.y + mTextureMargin,
+                           .w = SDL_max(0, rect.w - (mTextureMargin * 2)),
+                           .h = SDL_max(0, rect.h - (mTextureMargin * 2))};
         if (mBackgroundFrame != nullptr)
         {
             WidgetUtils::DrawTiledFrame(spriteBatch, mBackgroundFrame, bgRect);

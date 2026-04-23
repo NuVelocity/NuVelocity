@@ -14,6 +14,8 @@ namespace nuvelocity
     class AlphaSkinBorder : public Object<AlphaSkinBorder>
     {
     public:
+        AlphaSkinBorder();
+        virtual ~AlphaSkinBorder();
         std::string mBackgroundTexture;
         std::string mTopLeftAlpha;
         std::string mTopRightAlpha;
@@ -45,8 +47,7 @@ namespace nuvelocity
         StandAloneFrame* mSpecialTopRightHighlightFrame = nullptr;
 
         void Load(AssetManager* assets);
-        void
-        Draw(SpriteBatch* spriteBatch, const SDL_Rect& windowRect, const SDL_Rect& innerRect);
+        void Draw(SpriteBatch* spriteBatch, const SDL_Rect& windowRect, const SDL_Rect& innerRect);
 
         static void InitClassInfo(ClassInfo& info)
         {
@@ -71,6 +72,10 @@ namespace nuvelocity
     private:
         void DrawBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect);
         void DrawHighlights(SpriteBatch* spriteBatch, const SDL_Rect& rect);
+
+        SDL_Surface* mCachedSurface = nullptr;
+        int mCachedW = 0;
+        int mCachedH = 0;
     };
 } // namespace nuvelocity
 
