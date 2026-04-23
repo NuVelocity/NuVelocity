@@ -86,4 +86,14 @@ namespace nuvelocity
 
         return nullptr;
     }
+
+    void Widget::SetParent(Widget* parent)
+    {
+        mParent = parent;
+    }
+
+    Widget* Widget::GetParent() const
+    {
+        return mParent;
+    }
 } // namespace nuvelocity

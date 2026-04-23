@@ -47,6 +47,9 @@ namespace nuvelocity
         void SetSkin(JWindowSkin* skin);
         JWindowSkin* GetSkin(Game* game) const;
 
+        void SetParent(Widget* parent);
+        Widget* GetParent() const;
+
     protected:
         bool ContainsPoint(const SDL_FPoint& point) const;
 
@@ -55,6 +58,7 @@ namespace nuvelocity
         bool mVisible;
         bool mEnabled;
         JWindowSkin* mSkin;
+        Widget* mParent = nullptr;
     };
 } // namespace nuvelocity
 
