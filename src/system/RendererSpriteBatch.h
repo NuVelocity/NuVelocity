@@ -2,6 +2,7 @@
 #define NVE_RENDERER_SPRITE_BATCH_H
 
 #include <SDL3/SDL.h>
+#include <unordered_map>
 #include <vector>
 
 #include "SpriteBatch.h"
@@ -14,7 +15,7 @@ namespace nuvelocity
     {
     public:
         RendererSpriteBatch(SDL_Renderer* renderer, SDL_Window* window);
-        ~RendererSpriteBatch() override = default;
+        ~RendererSpriteBatch() override;
 
         RendererSpriteBatch(const RendererSpriteBatch&) = delete;
         RendererSpriteBatch& operator=(const RendererSpriteBatch&) = delete;
@@ -75,6 +76,7 @@ namespace nuvelocity
         SDL_Renderer* mRenderer;
         SDL_Window* mWindow;
         std::vector<DrawCommand> mDrawCommands;
+        std::unordered_map<SDL_Surface*, SDL_Texture*> mTextureCache;
     };
 } // namespace nuvelocity
 

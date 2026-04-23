@@ -11,6 +11,18 @@ namespace nuvelocity
     {
     }
 
+    RendererSpriteBatch::~RendererSpriteBatch()
+    {
+        for (auto& [surface, texture] : mTextureCache)
+        {
+            if (texture != nullptr)
+            {
+                SDL_DestroyTexture(texture);
+            }
+        }
+        mTextureCache.clear();
+    }
+
     void RendererSpriteBatch::Draw(SDL_Surface* surface,
                                    const SDL_Rect* destRect,
                                    const SDL_Rect* srcRect,
@@ -145,9 +157,16 @@ namespace nuvelocity
                 if (command.surface == nullptr)
                     continue;
 
-                SDL_Texture* texture = SDL_CreateTextureFromSurface(mRenderer, command.surface);
+                auto cacheIt = mTextureCache.find(command.surface);
+                SDL_Texture* texture = (cacheIt != mTextureCache.end()) ? cacheIt->second : nullptr;
+
                 if (texture == nullptr)
-                    continue;
+                {
+                    texture = SDL_CreateTextureFromSurface(mRenderer, command.surface);
+                    if (texture == nullptr)
+                        continue;
+                    mTextureCache[command.surface] = texture;
+                }
 
                 SDL_SetTextureColorMod(texture, command.color.r, command.color.g, command.color.b);
                 SDL_SetTextureAlphaMod(texture, command.color.a);
@@ -204,7 +223,6 @@ namespace nuvelocity
                     const SDL_FRect* dst = command.hasDestRect ? &fDst : nullptr;
                     SDL_RenderTexture(mRenderer, texture, src, dst);
                 }
-                SDL_DestroyTexture(texture);
                 break;
             }
             case CommandType::DrawTexture:
@@ -215,7 +233,7 @@ namespace nuvelocity
                 SDL_SetTextureColorMod(
                     command.texture, command.color.r, command.color.g, command.color.b);
                 SDL_SetTextureAlphaMod(command.texture, command.color.a);
-                SDL_SetTextureBlendMode(command.texture, SDL_BLENDMODE_BLEND);
+                SDL_SetTextureBlendMode(command.texture, command.blendMode);
 
                 const SDL_FRect fSrc{
                     static_cast<float>(command.srcRect.x),
