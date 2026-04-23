@@ -14,6 +14,8 @@ target_sources(
     MdiWindow.h
     MdiManager.cpp
     MdiManager.h
+    ButtonContainer.cpp
+    ButtonContainer.h
 )
 
 add_subdirectory(skin)
