@@ -165,14 +165,20 @@ namespace nuvelocity
         }
 
         // Step 3: Draw the composite surface to the sprite batch
+        float alphaRectX = rect.x;
+        float alphaRectY = rect.y;
         SDL_SetSurfaceBlendMode(compositeSurface, SDL_BLENDMODE_BLEND);
-        SDL_FRect compositeDest{rect.x,
-                                rect.y,
+        SDL_FRect compositeDest{alphaRectX,
+                                alphaRectY,
                                 static_cast<float>(compositeSurface->w),
                                 static_cast<float>(compositeSurface->h)};
         spriteBatch->Draw(compositeSurface, &compositeDest, nullptr);
 
+        SDL_DestroySurface(compositeSurface);
+
         // Step 4: Draw highlights on top
+        float highlightRectX = rect.x;
+        float highlightRectY = rect.y;
         auto drawFrame = [&](StandAloneFrame* frame, float x, float y)
         {
             if (frame != nullptr)
@@ -181,51 +187,85 @@ namespace nuvelocity
             }
         };
 
-        drawFrame(mTopLeftHighlightFrame, rect.x, rect.y);
-        drawFrame(mTopRightHighlightFrame, rect.x + static_cast<float>(areaW - rwT), rect.y);
-        drawFrame(mBottomLeftHighlightFrame, rect.x, rect.y + static_cast<float>(areaH - bhL));
-        drawFrame(mBottomRightHighlightFrame,
-                  rect.x + static_cast<float>(areaW - rwB),
-                  rect.y + static_cast<float>(areaH - bhR));
+        // Use common vars for highlight frame dimensions, matching alpha naming style
+        int hlwTL = (mTopLeftHighlightFrame != nullptr) ? mTopLeftHighlightFrame->GetWidth() : 0;
+        int hlwTR = (mTopRightHighlightFrame != nullptr) ? mTopRightHighlightFrame->GetWidth() : 0;
+        int hlwBL =
+            (mBottomLeftHighlightFrame != nullptr) ? mBottomLeftHighlightFrame->GetWidth() : 0;
+        int hlwBR =
+            (mBottomRightHighlightFrame != nullptr) ? mBottomRightHighlightFrame->GetWidth() : 0;
+        int hlwCL =
+            (mCenterLeftHighlightFrame != nullptr) ? mCenterLeftHighlightFrame->GetWidth() : 0;
+        int hlwCR =
+            (mCenterRightHighlightFrame != nullptr) ? mCenterRightHighlightFrame->GetWidth() : 0;
 
+        int hlhTL = (mTopLeftHighlightFrame != nullptr) ? mTopLeftHighlightFrame->GetHeight() : 0;
+        int hlhTR = (mTopRightHighlightFrame != nullptr) ? mTopRightHighlightFrame->GetHeight() : 0;
+        int hlhBL =
+            (mBottomLeftHighlightFrame != nullptr) ? mBottomLeftHighlightFrame->GetHeight() : 0;
+        int hlhBR =
+            (mBottomRightHighlightFrame != nullptr) ? mBottomRightHighlightFrame->GetHeight() : 0;
+        int hlhTC =
+            (mTopCenterHighlightFrame != nullptr) ? mTopCenterHighlightFrame->GetHeight() : 0;
+        int hlhBC =
+            (mBottomCenterHighlightFrame != nullptr) ? mBottomCenterHighlightFrame->GetHeight() : 0;
+        int hlhCL =
+            (mCenterLeftHighlightFrame != nullptr) ? mCenterLeftHighlightFrame->GetHeight() : 0;
+        int hlhCR =
+            (mCenterRightHighlightFrame != nullptr) ? mCenterRightHighlightFrame->GetHeight() : 0;
+
+        // Corners
+        drawFrame(mTopLeftHighlightFrame, highlightRectX, highlightRectY);
+        drawFrame(mTopRightHighlightFrame,
+                  highlightRectX + static_cast<float>(areaW - hlwTR),
+                  highlightRectY);
+        drawFrame(mBottomLeftHighlightFrame,
+                  highlightRectX,
+                  highlightRectY + static_cast<float>(areaH - hlhBL));
+        drawFrame(mBottomRightHighlightFrame,
+                  highlightRectX + static_cast<float>(areaW - hlwBR),
+                  highlightRectY + static_cast<float>(areaH - hlhBR));
+
+        // Top center highlight
         if (mTopCenterHighlightFrame != nullptr && interiorWT > 0)
         {
             WidgetUtils::DrawTiledFrameH(spriteBatch,
                                          mTopCenterHighlightFrame,
-                                         {rect.x + static_cast<float>(lwT),
-                                          rect.y,
-                                          static_cast<float>(interiorWT),
-                                          static_cast<float>(thL)});
+                                         {highlightRectX + static_cast<float>(hlwTR),
+                                          highlightRectY,
+                                          static_cast<float>(areaW - hlwTL - hlwTR),
+                                          static_cast<float>(hlhTC)});
         }
+        // Bottom center highlight
         if (mBottomCenterHighlightFrame != nullptr && interiorWB > 0)
         {
             WidgetUtils::DrawTiledFrameH(spriteBatch,
                                          mBottomCenterHighlightFrame,
-                                         {rect.x + static_cast<float>(lwB),
-                                          rect.y + static_cast<float>(areaH - bhR),
-                                          static_cast<float>(interiorWB),
-                                          static_cast<float>(bhR)});
+                                         {highlightRectX + static_cast<float>(hlwBL),
+                                          highlightRectY + static_cast<float>(areaH - hlhBC),
+                                          static_cast<float>(areaW - hlwBL - hlwBR),
+                                          static_cast<float>(hlhBC)});
         }
+        // Center left highlight
         if (mCenterLeftHighlightFrame != nullptr && interiorHL > 0)
         {
             WidgetUtils::DrawTiledFrameV(spriteBatch,
                                          mCenterLeftHighlightFrame,
-                                         {rect.x,
-                                          rect.y + static_cast<float>(thL),
-                                          static_cast<float>(lwT),
-                                          static_cast<float>(interiorHL)});
+                                         {highlightRectX,
+                                          highlightRectY + static_cast<float>(hlhTR),
+                                          static_cast<float>(hlwCL),
+                                          static_cast<float>(areaH - hlhTR - hlhBR)});
         }
+        // Center right highlight
         if (mCenterRightHighlightFrame != nullptr && interiorHR > 0)
         {
             WidgetUtils::DrawTiledFrameV(spriteBatch,
                                          mCenterRightHighlightFrame,
-                                         {rect.x + static_cast<float>(areaW - rwT),
-                                          rect.y + static_cast<float>(thR),
-                                          static_cast<float>(rwT),
-                                          static_cast<float>(interiorHR)});
+                                         {highlightRectX + static_cast<float>(areaW - hlwCR),
+                                          highlightRectY + static_cast<float>(hlhTR),
+                                          static_cast<float>(hlwCR),
+                                          static_cast<float>(areaH - hlhTR - hlhBR)});
         }
-
-        SDL_DestroySurface(compositeSurface);
     }
 
     void ClassicSkinBorder::Load(AssetManager* assets)
