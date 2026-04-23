@@ -78,8 +78,7 @@ namespace nuvelocity
         }
 
         // Use skin's general font if available
-        std::string fontName =
-            mOptions->mGeneralFont.empty() ? "Small Blue" : mOptions->mGeneralFont;
+        std::string fontName = mOptions->mGeneralFont.empty() ? "OCR" : mOptions->mGeneralFont;
 
         game->mFont->DrawStringWithFontAt(fontName,
                                           game->mSpriteBatch,
@@ -87,7 +86,7 @@ namespace nuvelocity
                                           textRect.x + rect.w / 2,
                                           textRect.y + rect.h / 2,
                                           textColor,
-                                          12,
+                                          13,
                                           TextAlignment::Center,
                                           nullptr,
                                           button->GetMnemonicIndex());
@@ -150,7 +149,7 @@ namespace nuvelocity
                                           titleX,
                                           titleY,
                                           window->GetWindowStyle().titleTextColor,
-                                          12,
+                                          13,
                                           TextAlignment::Center);
     }
 
