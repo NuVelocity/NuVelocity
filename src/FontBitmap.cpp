@@ -260,12 +260,14 @@ namespace nuvelocity
 
             const float glyphWidth = SDL_max(1.0F, static_cast<float>(glyph->GetWidth()) * scale);
             const float glyphHeight = SDL_max(1.0F, static_cast<float>(glyph->GetHeight()) * scale);
-            SDL_FRect dstRect{.x = cursorX, .y = y, .w = glyphWidth, .h = glyphHeight};
+            SDL_FRect dstRect{.x = cursorX + glyph->mHotSpot.x,
+                              .y = y + glyph->mHotSpot.y,
+                              .w = glyphWidth,
+                              .h = glyphHeight};
 
             // Use SpriteBatch to draw the glyph surface with color modulation.
             // If not colorable, use white but preserve the requested alpha.
-            const SDL_Color drawColor =
-                mColorable ? color : SDL_Color{255, 255, 255, color.a};
+            const SDL_Color drawColor = mColorable ? color : SDL_Color{255, 255, 255, color.a};
             batch->Draw(glyphSurface, &dstRect, nullptr, drawColor);
 
             cursorX += glyphWidth;
@@ -287,7 +289,7 @@ namespace nuvelocity
             const float lineY = y + SDL_max(0.0F, static_cast<float>(measuredHeight) - 2.0F);
             const float lineStartX = x + static_cast<float>(prefixWidth);
             const float lineEndX = lineStartX + static_cast<float>(SDL_max(1, characterWidth));
-            
+
             // Use SpriteBatch for line drawing
             batch->DrawLine(lineStartX, lineY, lineEndX, lineY, color);
         }

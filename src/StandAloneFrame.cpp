@@ -13,7 +13,6 @@ namespace nuvelocity
             , mQuality(kDefaultQuality)
             , mCenterHotSpot(false)
             , mSource(AssetSource::Unknown)
-            , mHotSpot({.x = 0, .y = 0})
     {
     }
 

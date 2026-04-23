@@ -37,6 +37,7 @@ namespace nuvelocity
             , mSurface(nullptr)
             , mTexture(nullptr)
             , mTextureRenderer(nullptr)
+            , mHotSpot({.x = 0, .y = 0})
     {
     }
 
@@ -48,6 +49,7 @@ namespace nuvelocity
             , mSurface(nullptr)
             , mTexture(nullptr)
             , mTextureRenderer(nullptr)
+            , mHotSpot({.x = 0, .y = 0})
     {
         Initialize(width, height, bpp);
     }

@@ -38,7 +38,7 @@ namespace nuvelocity
         int GetYOffset() const;
         bool GetCenterHotSpot() const;
 
-        void SetFrames(std::vector<SDL_Surface*>&& surfaces);
+        void SetFrames(std::vector<std::unique_ptr<Frame>>&& frames);
         std::size_t GetFrameCount() const;
         float GetFramesPerSecond() const;
         Frame* GetFrame(std::size_t index) const;

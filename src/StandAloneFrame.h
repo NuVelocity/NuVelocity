@@ -35,8 +35,6 @@ namespace nuvelocity
             AddProperty(aInfo, "Center Hot Spot", &StandAloneFrame::mCenterHotSpot);
         }
 
-        SDL_Point mHotSpot;
-
     private:
         bool mRle;
         bool mRleAllCopy;

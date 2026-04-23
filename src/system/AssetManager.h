@@ -33,8 +33,8 @@ namespace nuvelocity
         SDL_IOStream* LoadFromCache(const std::string& path, CacheKind kind, bool& loadedFromCache);
         SDL_Surface* LoadSurfaceFromAssetPath(const std::string& assetPath);
         bool LoadFrameSurfaces(const std::filesystem::path& sequenceDirectoryPath,
-                               std::vector<SDL_Surface*>& frames);
-        void DestroyFrameSurfaces(std::vector<SDL_Surface*>& frames);
+                               std::vector<std::unique_ptr<Frame>>& frames);
+        void DestroyFrameSurfaces(std::vector<std::unique_ptr<Frame>>& frames);
         Sequence* LoadSourceSequenceFrames(const std::string& path);
 
         static inline const char* GetErrorMessage()

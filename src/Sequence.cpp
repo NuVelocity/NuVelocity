@@ -93,17 +93,9 @@ namespace nuvelocity
         return mCenterHotSpot;
     }
 
-    void Sequence::SetFrames(std::vector<SDL_Surface*>&& surfaces)
+    void Sequence::SetFrames(std::vector<std::unique_ptr<Frame>>&& frames)
     {
-        mFrames.clear();
-        mFrames.reserve(surfaces.size());
-
-        for (SDL_Surface* surface : surfaces)
-        {
-            auto frame = std::make_unique<Frame>();
-            frame->SetSurface(surface);
-            mFrames.push_back(std::move(frame));
-        }
+        mFrames = std::move(frames);
     }
 
     std::size_t Sequence::GetFrameCount() const

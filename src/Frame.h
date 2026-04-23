@@ -64,6 +64,8 @@ namespace nuvelocity
         const_iterator cbegin() const;
         const_iterator cend() const;
 
+        SDL_Point mHotSpot;
+
     private:
         void Initialize(int width, int height, int bpp);
 

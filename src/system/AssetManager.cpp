@@ -454,7 +454,7 @@ namespace nuvelocity
     }
 
     bool AssetManager::LoadFrameSurfaces(const std::filesystem::path& sequenceDirectoryPath,
-                                         std::vector<SDL_Surface*>& frames)
+                                         std::vector<std::unique_ptr<Frame>>& frames)
     {
         char** files = PHYSFS_enumerateFiles(sequenceDirectoryPath.generic_string().c_str());
         if (files == nullptr)
@@ -479,7 +479,9 @@ namespace nuvelocity
                 return false;
             }
 
-            frames.push_back(frameSurface);
+            auto frame = std::make_unique<Frame>();
+            frame->SetSurface(frameSurface);
+            frames.push_back(std::move(frame));
         }
 
         PHYSFS_freeList(static_cast<void*>(files));
@@ -487,12 +489,8 @@ namespace nuvelocity
         return !frames.empty();
     }
 
-    void AssetManager::DestroyFrameSurfaces(std::vector<SDL_Surface*>& frames)
+    void AssetManager::DestroyFrameSurfaces(std::vector<std::unique_ptr<Frame>>& frames)
     {
-        for (SDL_Surface* frame : frames)
-        {
-            SDL_DestroySurface(frame);
-        }
         frames.clear();
     }
 
@@ -513,7 +511,7 @@ namespace nuvelocity
             return nullptr;
         }
 
-        std::vector<SDL_Surface*> frames;
+        std::vector<std::unique_ptr<Frame>> frames;
         if (!LoadFrameSurfaces(sequenceDirectoryPath, frames))
         {
             DestroyFrameSurfaces(frames);

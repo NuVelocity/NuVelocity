@@ -71,27 +71,10 @@ namespace nuvelocity
         return offsetSurface;
     }
 
-    static void DestroyFrameList(std::vector<SDL_Surface*>& frames)
-    {
-        for (SDL_Surface* frame : frames)
-        {
-            if (frame != nullptr)
-            {
-                SDL_DestroySurface(frame);
-            }
-        }
-    }
-
     static bool BuildFrameSurfaces(SDL_Surface* spriteAtlas,
                                    const Sequence* sequence,
                                    const std::vector<FrameInfo*>& frameInfos,
-                                   std::vector<SDL_Surface*>& frames,
-                                   std::vector<std::pair<int, int>>& offsets,
-                                   int& maxWidth,
-                                   int& maxHeight,
-                                   int& hotSpotX,
-                                   int& hotSpotY,
-                                   bool& centerHotSpot)
+                                   std::vector<std::unique_ptr<Frame>>& frames)
     {
         if (spriteAtlas == nullptr || sequence == nullptr)
         {
@@ -100,21 +83,22 @@ namespace nuvelocity
 
         const int baseXOffset = sequence->GetXOffset();
         const int baseYOffset = sequence->GetYOffset();
-        centerHotSpot = sequence->GetCenterHotSpot();
 
         for (size_t i = 0; i < frameInfos.size(); ++i)
         {
             const FrameInfo* frameInfo = frameInfos[i];
             if (frameInfo == nullptr)
             {
-                frames[i] = DecodeUtils::BuildTransparentSurface(1, 1);
-                SDL_SetSurfaceBlendMode(frames[i], SDL_BLENDMODE_BLEND);
+                SDL_Surface* transparent = DecodeUtils::BuildTransparentSurface(1, 1);
+                SDL_SetSurfaceBlendMode(transparent, SDL_BLENDMODE_BLEND);
+                frames[i] = std::make_unique<Frame>();
+                frames[i]->SetSurface(transparent);
+                frames[i]->mHotSpot = {0, 0};
                 continue;
             }
 
             const int offsetX = baseXOffset + frameInfo->GetUpperLeftXOffset();
             const int offsetY = baseYOffset + frameInfo->GetUpperLeftYOffset();
-            offsets[i] = {offsetX, offsetY};
 
             SDL_Surface* frameSurface = BuildSequenceFrameSurface(spriteAtlas, frameInfo);
             if (frameSurface == nullptr)
@@ -122,93 +106,10 @@ namespace nuvelocity
                 frameSurface = DecodeUtils::BuildTransparentSurface(1, 1);
             }
 
-            if (!centerHotSpot)
-            {
-                SDL_Surface* offsetSurface = BuildOffsetSurface(frameSurface, offsetX, offsetY);
-                SDL_DestroySurface(frameSurface);
-                if (offsetSurface == nullptr)
-                {
-                    offsetSurface = DecodeUtils::BuildTransparentSurface(1, 1);
-                }
-
-                frames[i] = offsetSurface;
-                SDL_SetSurfaceBlendMode(frames[i], SDL_BLENDMODE_BLEND);
-                maxWidth = std::max(maxWidth, offsetSurface->w);
-                maxHeight = std::max(maxHeight, offsetSurface->h);
-                continue;
-            }
-
-            const float frameWidth = static_cast<float>(frameSurface->w);
-            const float frameHeight = static_cast<float>(frameSurface->h);
-            const float offsetXF = static_cast<float>(offsetX);
-            const float offsetYF = static_cast<float>(offsetY);
-
-            const float deltaX = offsetXF - (frameWidth / 2.0F);
-            const float deltaY = offsetYF - (frameHeight / 2.0F);
-
-            float newWidth = frameWidth + (2.0F * std::fabs(deltaX));
-            float newHeight = frameHeight + (2.0F * std::fabs(deltaY));
-
-            if (offsetX > 0)
-            {
-                newWidth += frameWidth * 2.0F;
-            }
-            if (offsetY > 0)
-            {
-                newHeight += frameHeight * 2.0F;
-            }
-
-            if (newWidth >= static_cast<float>(maxWidth))
-            {
-                maxWidth = static_cast<int>(std::ceil(newWidth));
-                hotSpotX = maxWidth / 2;
-            }
-            if (newHeight >= static_cast<float>(maxHeight))
-            {
-                maxHeight = static_cast<int>(std::ceil(newHeight));
-                hotSpotY = maxHeight / 2;
-            }
-
             SDL_SetSurfaceBlendMode(frameSurface, SDL_BLENDMODE_BLEND);
-            frames[i] = frameSurface;
-        }
-
-        return true;
-    }
-
-    static bool PadFramesToCommonSize(std::vector<SDL_Surface*>& frames,
-                                      const std::vector<std::pair<int, int>>& offsets,
-                                      bool centerHotSpot,
-                                      int hotSpotX,
-                                      int hotSpotY,
-                                      int maxWidth,
-                                      int maxHeight)
-    {
-        for (size_t i = 0; i < frames.size(); ++i)
-        {
-            SDL_Surface* frameSurface = frames[i];
-            if (frameSurface == nullptr)
-            {
-                frameSurface = DecodeUtils::BuildTransparentSurface(1, 1);
-            }
-
-            const int dstX = centerHotSpot ? hotSpotX + offsets[i].first : 0;
-            const int dstY = centerHotSpot ? hotSpotY + offsets[i].second : 0;
-
-            SDL_Surface* padded = DecodeUtils::BuildTransparentSurface(maxWidth, maxHeight);
-            if (padded == nullptr)
-            {
-                if (frameSurface != nullptr)
-                {
-                    SDL_DestroySurface(frameSurface);
-                }
-                return false;
-            }
-
-            SDL_Rect dstRect{.x = dstX, .y = dstY, .w = frameSurface->w, .h = frameSurface->h};
-            SDL_BlitSurface(frameSurface, nullptr, padded, &dstRect);
-            SDL_DestroySurface(frameSurface);
-            frames[i] = padded;
+            frames[i] = std::make_unique<Frame>();
+            frames[i]->SetSurface(frameSurface);
+            frames[i]->mHotSpot = {offsetX, offsetY};
         }
 
         return true;
@@ -345,8 +246,10 @@ namespace nuvelocity
         {
             if (isEmpty)
             {
-                std::vector<SDL_Surface*> emptyFrames;
-                emptyFrames.push_back(DecodeUtils::BuildTransparentSurface(1, 1));
+                std::vector<std::unique_ptr<Frame>> emptyFrames;
+                auto frame = std::make_unique<Frame>();
+                frame->SetSurface(DecodeUtils::BuildTransparentSurface(1, 1));
+                emptyFrames.push_back(std::move(frame));
                 sequence->SetFrames(std::move(emptyFrames));
             }
             delete frameInfoList;
@@ -362,8 +265,10 @@ namespace nuvelocity
 
         if (!hasFrameInfoList)
         {
-            std::vector<SDL_Surface*> frames;
-            frames.push_back(spriteAtlas);
+            std::vector<std::unique_ptr<Frame>> frames;
+            auto frame = std::make_unique<Frame>();
+            frame->SetSurface(spriteAtlas);
+            frames.push_back(std::move(frame));
             sequence->SetFrames(std::move(frames));
             delete frameInfoList;
             return sequence;
@@ -456,25 +361,9 @@ namespace nuvelocity
         }
 
         const std::vector<FrameInfo*>& frameInfos = frameInfoList->GetValues();
-        std::vector<SDL_Surface*> frames(frameInfos.size(), nullptr);
-        std::vector<std::pair<int, int>> offsets(frameInfos.size(), {0, 0});
+        std::vector<std::unique_ptr<Frame>> frames(frameInfos.size());
 
-        int maxWidth = 1;
-        int maxHeight = 1;
-        int hotSpotX = 0;
-        int hotSpotY = 0;
-        bool centerHotSpot = false;
-
-        const bool builtSurfaces = BuildFrameSurfaces(spriteAtlas,
-                                                      sequence,
-                                                      frameInfos,
-                                                      frames,
-                                                      offsets,
-                                                      maxWidth,
-                                                      maxHeight,
-                                                      hotSpotX,
-                                                      hotSpotY,
-                                                      centerHotSpot);
+        const bool builtSurfaces = BuildFrameSurfaces(spriteAtlas, sequence, frameInfos, frames);
 
 #ifdef NVE_RESTORE_TGA
         SDL_Surface* atlasCopy = SDL_DuplicateSurface(spriteAtlas);
@@ -486,23 +375,8 @@ namespace nuvelocity
 #endif
         if (!builtSurfaces)
         {
-            DestroyFrameList(frames);
             return false;
         }
-
-        /*
-        if (!PadFramesToCommonSize(frames,
-                                   offsets,
-                                   centerHotSpot,
-                                   hotSpotX,
-                                   hotSpotY,
-                                   maxWidth,
-                                   maxHeight)
-        {
-            DestroyFrameList(frames);
-            return false;
-        }
-        */
 
         sequence->SetFrames(std::move(frames));
 
