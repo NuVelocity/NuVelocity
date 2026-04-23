@@ -301,40 +301,23 @@ namespace nuvelocity
         }
 
         // 1. Draw Background (Tiled)
+        SDL_FRect bgRect = {.x = rect.x + mTextureMargin,
+                            .y = rect.y + mTextureMargin,
+                            .w = SDL_max(0.0F, rect.w - (mTextureMargin * 2)),
+                            .h = SDL_max(0.0F, rect.h - (mTextureMargin * 2))};
         if (mBackgroundFrame != nullptr)
         {
-            WidgetUtils::DrawTiledFrame(spriteBatch, mBackgroundFrame, rect);
+            WidgetUtils::DrawTiledFrame(spriteBatch, mBackgroundFrame, bgRect);
         }
 
-        // 2. Draw Bevel
-        const float thickness = 1.0F; // Standard classic border thickness
-        const SDL_Color topLeft = sunken ? mBottomInnerColor : mTopOuterColor;
-        const SDL_Color bottomRight = sunken ? mTopOuterColor : mBottomInnerColor;
-        const SDL_Color innerTopLeft = sunken ? mBottomOuterColor : mTopInnerColor;
-        const SDL_Color innerBottomRight = sunken ? mTopInnerColor : mBottomOuterColor;
-
-        // Outer Bevel
-        WidgetUtils::DrawBevel(spriteBatch,
-                               rect,
-                               WidgetUtils::BevelColors{.light = topLeft, .dark = bottomRight},
-                               false,
-                               thickness);
-
-        // Inner Bevel (if margin allows)
-        if (mTextureMargin > 1)
-        {
-            SDL_FRect innerRect = rect;
-            innerRect.x += thickness;
-            innerRect.y += thickness;
-            innerRect.w -= thickness * 2.0F;
-            innerRect.h -= thickness * 2.0F;
-            WidgetUtils::DrawBevel(
-                spriteBatch,
-                innerRect,
-                WidgetUtils::BevelColors{.light = innerTopLeft, .dark = innerBottomRight},
-                false,
-                thickness);
-        }
+        // 2. Draw Border
+        WidgetUtils::DrawBorder(spriteBatch,
+                                rect,
+                                WidgetUtils::BorderColors{.topLeftOuter = mTopOuterColor,
+                                                          .topLeftInner = mTopInnerColor,
+                                                          .bottomRightInner = mBottomInnerColor,
+                                                          .bottomRightOuter = mBottomOuterColor},
+                                mTextureMargin);
     }
 
     void AlphaSkinData::Load(AssetManager* assets)

@@ -18,6 +18,14 @@ namespace nuvelocity
             SDL_Color dark = SDL_Color{.r = 96, .g = 96, .b = 96, .a = 255};
         };
 
+        struct BorderColors
+        {
+            SDL_Color topLeftOuter = SDL_Color{.r = 128, .g = 128, .b = 200, .a = 60};
+            SDL_Color topLeftInner = SDL_Color{.r = 128, .g = 128, .b = 200, .a = 60};
+            SDL_Color bottomRightInner = SDL_Color{.r = 0, .g = 0, .b = 0, .a = 128};
+            SDL_Color bottomRightOuter = SDL_Color{.r = 0, .g = 0, .b = 0, .a = 128};
+        };
+
         static void FillRect(SpriteBatch* batch, const SDL_FRect& rect, const SDL_Color& color);
         static void DrawRect(SpriteBatch* batch, const SDL_FRect& rect, const SDL_Color& color);
         static void
@@ -43,6 +51,10 @@ namespace nuvelocity
                               const BevelColors& colors,
                               bool sunken,
                               float thickness);
+        static void DrawBorder(SpriteBatch* batch,
+                               const SDL_FRect& rect,
+                               const BorderColors& colors,
+                               float thickness);
     };
 } // namespace nuvelocity
 

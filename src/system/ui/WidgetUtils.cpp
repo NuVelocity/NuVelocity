@@ -203,4 +203,28 @@ namespace nuvelocity
         WidgetUtils::FillRect(batch, rightEdge, bottomRight);
         WidgetUtils::FillRect(batch, bottomEdge, bottomRight);
     }
+
+    void WidgetUtils::DrawBorder(SpriteBatch* batch,
+                                 const SDL_FRect& rect,
+                                 const BorderColors& colors,
+                                 float thickness)
+    {
+        if (batch == nullptr || thickness <= 0.0F)
+        {
+            return;
+        }
+
+        SDL_FRect topEdge{.x = rect.x, .y = rect.y, .w = rect.w, .h = thickness};
+        SDL_FRect leftEdge{.x = rect.x, .y = rect.y, .w = thickness, .h = rect.h};
+        SDL_FRect rightEdge{
+            .x = rect.x + rect.w - thickness, .y = rect.y, .w = thickness, .h = rect.h};
+        SDL_FRect bottomEdge{
+            .x = rect.x, .y = rect.y + rect.h - thickness, .w = rect.w, .h = thickness};
+
+        WidgetUtils::FillRect(batch, topEdge, colors.topLeftOuter);
+        WidgetUtils::FillRect(batch, leftEdge, colors.topLeftInner);
+        WidgetUtils::FillRect(batch, rightEdge, colors.bottomRightInner);
+        WidgetUtils::FillRect(batch, bottomEdge, colors.bottomRightOuter);
+    }
+
 } // namespace nuvelocity
