@@ -81,6 +81,7 @@ namespace nuvelocity
 
     protected:
         Scene* mScene;
+        Scene* mPendingScene;
         static inline bool Fail();
         std::string mCursorSequencePath;
         std::string mModuleInfoPath;

@@ -307,17 +307,35 @@ namespace nuvelocity
         mLastUpdateTick = now;
 
         HandleDebugHotkeys();
-        mScene->Update(this);
+        if (mScene != nullptr)
+        {
+            mScene->Update(this);
+        }
 
         if (mMdi != nullptr)
         {
             mMdi->Update(this);
         }
+
+        if (mPendingScene != nullptr)
+        {
+            if (mScene != nullptr)
+            {
+                mScene->Unload(this);
+                delete mScene;
+            }
+            mScene = mPendingScene;
+            mScene->Load(this);
+            mPendingScene = nullptr;
+        }
     }
 
     void Game::Draw()
     {
-        mScene->Draw(this);
+        if (mScene != nullptr)
+        {
+            mScene->Draw(this);
+        }
 
         if (mMdi != nullptr)
         {
@@ -345,13 +363,7 @@ namespace nuvelocity
 
     void Game::SetScene(Scene* aScene)
     {
-        if (mScene != nullptr)
-        {
-            mScene->Unload(this);
-            delete mScene;
-        }
-        mScene = aScene;
-        mScene->Load(this);
+        mPendingScene = aScene;
     }
 
     Scene* Game::GetScene()
