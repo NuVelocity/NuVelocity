@@ -119,6 +119,11 @@ namespace nuvelocity
             }
         }
 
+        if (game->mSpriteBatch->IsDrawBoundsEnabled())
+        {
+            game->mSpriteBatch->OutlineRect(&windowRect, SDL_Color{255, 0, 0, 255}, 1.0F);
+        }
+
         game->mSpriteBatch->SetClipRect(nullptr);
     }
 
