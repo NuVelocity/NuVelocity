@@ -65,6 +65,12 @@ namespace nuvelocity
         void Close();
         bool ShouldClose() const;
 
+        void SetAutoResize(bool autoResize);
+        bool IsAutoResize() const;
+
+        void SetAutoCenter(bool autoCenter);
+        bool IsAutoCenter() const;
+
         bool Intersects(const SDL_FPoint& point) const;
 
         void SetOnClose(const std::function<void(MdiWindow&)>& callback);
@@ -80,6 +86,8 @@ namespace nuvelocity
         bool mActive;
         bool mDragging;
         bool mShouldClose;
+        bool mAutoResize = false;
+        bool mAutoCenter = false;
 
         SDL_FPoint mDragGrabOffset;
         StandAloneFrame* mBackgroundTile = nullptr;

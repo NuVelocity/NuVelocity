@@ -92,6 +92,44 @@ namespace nuvelocity
                 child->Update(aGame);
             }
         }
+
+        if (mAutoResize && !mChildren.empty())
+        {
+            float maxBottom = 0;
+            for (const auto& child : mChildren)
+            {
+                if (child->IsVisible())
+                {
+                    const SDL_FRect r = child->GetRect();
+                    maxBottom = SDL_max(maxBottom, r.y + r.h);
+                }
+            }
+
+            if (maxBottom > 0)
+            {
+                const SDL_FRect clientRect = GetClientRect();
+                const float bottomChrome = mRect.y + mRect.h - (clientRect.y + clientRect.h);
+                const float newHeight = (maxBottom - mRect.y) + bottomChrome;
+
+                if (std::abs(mRect.h - newHeight) > 0.5f)
+                {
+                    SDL_FRect newRect = mRect;
+                    newRect.h = newHeight;
+                    SetRect(newRect);
+                }
+            }
+        }
+
+        if (mAutoCenter && aGame != nullptr)
+        {
+            const float centerX = (static_cast<float>(aGame->mWindowWidth) - mRect.w) * 0.5f;
+            const float centerY = (static_cast<float>(aGame->mWindowHeight) - mRect.h) * 0.5f;
+
+            if (SDL_fabs(mRect.x - centerX) > 0.5f || SDL_fabs(mRect.y - centerY) > 0.5f)
+            {
+                SetRect({centerX, centerY, mRect.w, mRect.h});
+            }
+        }
     }
 
     void MdiWindow::Draw(Game* game)
@@ -200,6 +238,7 @@ namespace nuvelocity
             childRect.x += clientRect.x;
             childRect.y += clientRect.y;
             widget->SetRect(childRect);
+            widget->SetParent(this);
 
             mChildren.push_back(widget);
         }
@@ -227,6 +266,26 @@ namespace nuvelocity
     const std::vector<std::shared_ptr<Widget>>& MdiWindow::GetChildren() const
     {
         return mChildren;
+    }
+
+    void MdiWindow::SetAutoResize(bool autoResize)
+    {
+        mAutoResize = autoResize;
+    }
+
+    bool MdiWindow::IsAutoResize() const
+    {
+        return mAutoResize;
+    }
+
+    void MdiWindow::SetAutoCenter(bool autoCenter)
+    {
+        mAutoCenter = autoCenter;
+    }
+
+    bool MdiWindow::IsAutoCenter() const
+    {
+        return mAutoCenter;
     }
 
     void MdiWindow::Close()
@@ -276,6 +335,11 @@ namespace nuvelocity
 
     SDL_FRect MdiWindow::GetClientRect() const
     {
+        if (mSkin != nullptr)
+        {
+            return mSkin->GetInnerRect(this);
+        }
+
         const SDL_FRect rect = GetScreenRect();
 
         const float inset = mWindowStyle.borderSize;
