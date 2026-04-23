@@ -41,13 +41,8 @@ namespace nuvelocity
         mSpecialTopRightHighlightFrame = load(mSpecialTopRightHighlight);
     }
 
-    void AlphaSkinBorder::Draw(SpriteBatch* spriteBatch, const SDL_FRect& rect)
+    void AlphaSkinBorder::DrawBackground(SpriteBatch* spriteBatch, const SDL_FRect& rect)
     {
-        if (spriteBatch == nullptr)
-        {
-            return;
-        }
-
         // 1. Calculate individual corner dimensions as integers for stable mask assembly.
         // We use separate metrics for each side to handle asymmetrical skin assets.
         int lwT = (mTopLeftAlphaFrame != nullptr) ? mTopLeftAlphaFrame->GetWidth() : 0;
@@ -175,10 +170,15 @@ namespace nuvelocity
         spriteBatch->Draw(compositeSurface, &compositeDest, nullptr);
 
         SDL_DestroySurface(compositeSurface);
+    }
 
+    void AlphaSkinBorder::DrawHighlights(SpriteBatch* spriteBatch, const SDL_FRect& rect)
+    {
         // Step 4: Draw highlights on top
         float highlightRectX = rect.x;
         float highlightRectY = rect.y;
+        int areaW = static_cast<int>(rect.w);
+        int areaH = static_cast<int>(rect.h);
         auto drawFrame = [&](StandAloneFrame* frame, float x, float y)
         {
             if (frame != nullptr)
@@ -227,7 +227,7 @@ namespace nuvelocity
                   highlightRectY + static_cast<float>(areaH - hlhBR));
 
         // Top center highlight
-        if (mTopCenterHighlightFrame != nullptr && interiorWT > 0)
+        if (mTopCenterHighlightFrame != nullptr)
         {
             WidgetUtils::DrawTiledFrameH(spriteBatch,
                                          mTopCenterHighlightFrame,
@@ -237,7 +237,7 @@ namespace nuvelocity
                                           static_cast<float>(hlhTC)});
         }
         // Bottom center highlight
-        if (mBottomCenterHighlightFrame != nullptr && interiorWB > 0)
+        if (mBottomCenterHighlightFrame != nullptr)
         {
             WidgetUtils::DrawTiledFrameH(spriteBatch,
                                          mBottomCenterHighlightFrame,
@@ -247,7 +247,7 @@ namespace nuvelocity
                                           static_cast<float>(hlhBC)});
         }
         // Center left highlight
-        if (mCenterLeftHighlightFrame != nullptr && interiorHL > 0)
+        if (mCenterLeftHighlightFrame != nullptr)
         {
             WidgetUtils::DrawTiledFrameV(spriteBatch,
                                          mCenterLeftHighlightFrame,
@@ -257,7 +257,7 @@ namespace nuvelocity
                                           static_cast<float>(areaH - hlhTR - hlhBR)});
         }
         // Center right highlight
-        if (mCenterRightHighlightFrame != nullptr && interiorHR > 0)
+        if (mCenterRightHighlightFrame != nullptr)
         {
             WidgetUtils::DrawTiledFrameV(spriteBatch,
                                          mCenterRightHighlightFrame,
@@ -266,6 +266,19 @@ namespace nuvelocity
                                           static_cast<float>(hlwCR),
                                           static_cast<float>(areaH - hlhTR - hlhBR)});
         }
+    }
+
+    void AlphaSkinBorder::Draw(SpriteBatch* spriteBatch,
+                               const SDL_FRect& windowRect,
+                               const SDL_FRect& innerRect)
+    {
+        if (spriteBatch == nullptr)
+        {
+            return;
+        }
+
+        DrawBackground(spriteBatch, innerRect);
+        DrawHighlights(spriteBatch, windowRect);
     }
 
     void ClassicSkinBorder::Load(AssetManager* assets)

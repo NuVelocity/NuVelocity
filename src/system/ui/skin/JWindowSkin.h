@@ -22,6 +22,9 @@ namespace nuvelocity
         virtual void DrawButton(Game* game, Button* button) = 0;
         virtual void DrawMdiWindow(Game* game, MdiWindow* window) = 0;
         virtual void DrawTextBox(Game* game, TextBox* textBox) = 0;
+
+        virtual SDL_FRect GetInnerRect(const MdiWindow* window) const = 0;
+        virtual SDL_FRect GetCloseButtonRect(const MdiWindow* window) const = 0;
     };
 } // namespace nuvelocity
 

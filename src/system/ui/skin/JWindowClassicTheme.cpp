@@ -203,4 +203,14 @@ namespace nuvelocity
             }
         }
     }
+
+    SDL_FRect JWindowClassicTheme::GetInnerRect(const MdiWindow* window) const
+    {
+        return window->GetTitleBarRect();
+    }
+
+    SDL_FRect JWindowClassicTheme::GetCloseButtonRect(const MdiWindow* window) const
+    {
+        return window->GetCloseButtonRect();
+    }
 } // namespace nuvelocity

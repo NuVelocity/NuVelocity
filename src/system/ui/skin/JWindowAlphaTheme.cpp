@@ -116,7 +116,7 @@ namespace nuvelocity
         // 1. Draw Border and Background
         if (mOptions->mWindowBorder != nullptr)
         {
-            mOptions->mWindowBorder->Draw(game->mSpriteBatch, windowRect);
+            mOptions->mWindowBorder->Draw(game->mSpriteBatch, windowRect, GetInnerRect(window));
         }
         else
         {
@@ -213,5 +213,19 @@ namespace nuvelocity
                 WidgetUtils::FillRect(game->mSpriteBatch, caretRect, style.caretColor);
             }
         }
+    }
+
+    SDL_FRect JWindowAlphaTheme::GetInnerRect(const MdiWindow* window) const
+    {
+        // FIXME: hardcoded for now.
+        SDL_FRect titleBarRect = window->GetScreenRect();
+        return {titleBarRect.x + 20, titleBarRect.y + 30, titleBarRect.w - 40, titleBarRect.h - 50};
+    }
+
+    SDL_FRect JWindowAlphaTheme::GetCloseButtonRect(const MdiWindow* window) const
+    {
+        // FIXME: determine close button rect based on window rect and style.
+        // We are currently reusing the metrics for classic theme.
+        return window->GetCloseButtonRect();
     }
 } // namespace nuvelocity

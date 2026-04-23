@@ -39,8 +39,11 @@ namespace nuvelocity
 
         InputManager& input = *aGame->mInput;
         const SDL_FPoint mouse = input.GetMousePosition();
-        const SDL_FRect titleBar = GetTitleBarRect();
-        const SDL_FRect closeButton = GetCloseButtonRect();
+        JWindowSkin* skin = GetSkin(aGame);
+
+        SDL_FRect titleBar = skin == nullptr ? GetTitleBarRect() : skin->GetInnerRect(this);
+        SDL_FRect closeButton =
+            skin == nullptr ? GetCloseButtonRect() : skin->GetCloseButtonRect(this);
 
         const bool overTitle = mouse.x >= titleBar.x && mouse.y >= titleBar.y &&
                                mouse.x <= titleBar.x + titleBar.w &&

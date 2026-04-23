@@ -45,7 +45,8 @@ namespace nuvelocity
         StandAloneFrame* mSpecialTopRightHighlightFrame = nullptr;
 
         void Load(AssetManager* assets);
-        void Draw(SpriteBatch* spriteBatch, const SDL_FRect& rect);
+        void
+        Draw(SpriteBatch* spriteBatch, const SDL_FRect& windowRect, const SDL_FRect& innerRect);
 
         static void InitClassInfo(ClassInfo& info)
         {
@@ -66,6 +67,10 @@ namespace nuvelocity
             AddProperty(
                 info, "Special Top Right Highlight", &AlphaSkinBorder::mSpecialTopRightHighlight);
         }
+
+    private:
+        void DrawBackground(SpriteBatch* spriteBatch, const SDL_FRect& rect);
+        void DrawHighlights(SpriteBatch* spriteBatch, const SDL_FRect& rect);
     };
 } // namespace nuvelocity
 

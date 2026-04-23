@@ -18,6 +18,9 @@ namespace nuvelocity
         void DrawMdiWindow(Game* game, MdiWindow* window) override;
         void DrawTextBox(Game* game, TextBox* textBox) override;
 
+        SDL_FRect GetInnerRect(const MdiWindow* window) const override;
+        SDL_FRect GetCloseButtonRect(const MdiWindow* window) const override;
+
         static void InitClassInfo(ClassInfo& info)
         {
             info.mName = "CJWindowAlphaTheme";
