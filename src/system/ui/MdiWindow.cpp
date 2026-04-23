@@ -103,7 +103,7 @@ namespace nuvelocity
                                    static_cast<int>(windowRect.y),
                                    static_cast<int>(windowRect.w),
                                    static_cast<int>(windowRect.h)};
-        game->mSpriteBatch->SetClipRect(&clipRect);
+        // game->mSpriteBatch->SetClipRect(&clipRect);
 
         JWindowSkin* skin = GetSkin(game);
         if (skin != nullptr)
