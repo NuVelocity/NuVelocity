@@ -28,20 +28,21 @@ namespace nuvelocity
         GPUSpriteBatch& operator=(const GPUSpriteBatch&) = delete;
 
         void Draw(SDL_Surface* surface,
-                  const SDL_FRect* destRect = nullptr,
-                  const SDL_FRect* srcRect = nullptr,
+                  const SDL_Rect* destRect = nullptr,
+                  const SDL_Rect* srcRect = nullptr,
                   SDL_Color color = {255, 255, 255, 255}) override;
 
         void DrawCentered(SDL_Surface* surface) override;
 
-        void DrawLine(float x1,
-                      float y1,
-                      float x2,
-                      float y2,
+        void DrawLine(int x1,
+                      int y1,
+                      int x2,
+                      int y2,
                       SDL_Color color,
-                      float thickness = 1.0f) override;
+                      int thickness = 1) override;
 
-        void FillRect(const SDL_FRect* rect, SDL_Color color) override;
+        void FillRect(const SDL_Rect* rect, SDL_Color color) override;
+        void OutlineRect(const SDL_Rect* rect, SDL_Color color, int thickness = 1) override;
 
         void SetClipRect(const SDL_Rect* rect) override;
 

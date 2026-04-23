@@ -53,7 +53,7 @@ namespace nuvelocity
 
     void Font::DrawString(SpriteBatch* batch,
                           const std::string& text,
-                          const SDL_FRect& bounds,
+                          const SDL_Rect& bounds,
                           const SDL_Color& color,
                           int pointSize,
                           TextAlignment alignment,
@@ -72,14 +72,14 @@ namespace nuvelocity
             return;
         }
 
-        float textureWidth = static_cast<float>(surface->w);
-        float textureHeight = static_cast<float>(surface->h);
+        int textureWidth = surface->w;
+        int textureHeight = surface->h;
 
-        float x = bounds.x;
+        int x = bounds.x;
         switch (alignment)
         {
         case TextAlignment::Center:
-            x = bounds.x + (bounds.w - textureWidth) * 0.5F;
+            x = bounds.x + (bounds.w - textureWidth) / 2;
             break;
         case TextAlignment::Right:
             x = bounds.x + bounds.w - textureWidth;
@@ -89,13 +89,13 @@ namespace nuvelocity
             break;
         }
 
-        float y = bounds.y;
+        int y = bounds.y;
         if (verticalCenter)
         {
-            y = bounds.y + (bounds.h - textureHeight) * 0.5F;
+            y = bounds.y + (bounds.h - textureHeight) / 2;
         }
 
-        SDL_FRect target{.x = x, .y = y, .w = textureWidth, .h = textureHeight};
+        SDL_Rect target{.x = x, .y = y, .w = textureWidth, .h = textureHeight};
 
         // Use SpriteBatch to draw the surface. It will handle texture creation internally.
         // Surface already has color applied by TTF_RenderText_Blended.
@@ -114,9 +114,9 @@ namespace nuvelocity
             MeasureString(prefix, pointSize, prefixWidth, prefixHeight);
             MeasureString(underlinedCharacter, pointSize, characterWidth, characterHeight);
 
-            const float lineY = target.y + SDL_max(0.0F, target.h - 2.0F);
-            const float lineStartX = target.x + static_cast<float>(prefixWidth);
-            const float lineEndX = lineStartX + static_cast<float>(SDL_max(1, characterWidth));
+            const int lineY = target.y + SDL_max(0, target.h - 2);
+            const int lineStartX = target.x + prefixWidth;
+            const int lineEndX = lineStartX + SDL_max(1, characterWidth);
 
             // Use SpriteBatch for line drawing
             batch->DrawLine(lineStartX, lineY, lineEndX, lineY, color);
@@ -127,8 +127,8 @@ namespace nuvelocity
 
     void Font::DrawStringAt(SpriteBatch* batch,
                             const std::string& text,
-                            float x,
-                            float y,
+                            int x,
+                            int y,
                             const SDL_Color& color,
                             int pointSize,
                             TextAlignment alignment,
@@ -137,7 +137,7 @@ namespace nuvelocity
     {
         DrawString(batch,
                    text,
-                   SDL_FRect{.x = x, .y = y, .w = 0.0F, .h = 0.0F},
+                   SDL_Rect{.x = x, .y = y, .w = 0, .h = 0},
                    color,
                    pointSize,
                    alignment,

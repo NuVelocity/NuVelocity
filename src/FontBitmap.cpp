@@ -192,7 +192,7 @@ namespace nuvelocity
 
     void FontBitmap::DrawString(SpriteBatch* batch,
                                 const std::string& text,
-                                const SDL_FRect& bounds,
+                                const SDL_Rect& bounds,
                                 const SDL_Color& color,
                                 int pointSize,
                                 TextAlignment alignment,
@@ -211,56 +211,56 @@ namespace nuvelocity
             return;
         }
 
-        float x = bounds.x;
+        int x = bounds.x;
         switch (alignment)
         {
         case TextAlignment::Center:
-            x = bounds.x + (bounds.w - static_cast<float>(measuredWidth)) * 0.5F;
+            x = bounds.x + (bounds.w - measuredWidth) / 2;
             break;
         case TextAlignment::Right:
-            x = bounds.x + bounds.w - static_cast<float>(measuredWidth);
+            x = bounds.x + bounds.w - measuredWidth;
             break;
         case TextAlignment::Left:
         default:
             break;
         }
 
-        float y = bounds.y;
+        int y = bounds.y;
         if (verticalCenter)
         {
-            y = bounds.y + (bounds.h - static_cast<float>(measuredHeight)) * 0.5F;
+            y = bounds.y + (bounds.h - measuredHeight) / 2;
         }
 
         const float scale = ResolveBitmapScale(*this, pointSize);
         const int spaceAdvance = GetFallbackSpaceAdvance(*this, scale);
 
-        float cursorX = x;
+        int cursorX = x;
         for (char ch : text)
         {
             const uint8_t asciiCode = static_cast<uint8_t>(ch);
             if (asciiCode == static_cast<uint8_t>(' '))
             {
-                cursorX += static_cast<float>(spaceAdvance);
+                cursorX += spaceAdvance;
                 continue;
             }
 
             Frame* glyph = nullptr;
             if (!TryGetBitmapGlyphFrame(*this, asciiCode, glyph))
             {
-                cursorX += static_cast<float>(spaceAdvance);
+                cursorX += spaceAdvance;
                 continue;
             }
 
             SDL_Surface* glyphSurface = glyph->GetSurface();
             if (glyphSurface == nullptr)
             {
-                cursorX += static_cast<float>(spaceAdvance);
+                cursorX += spaceAdvance;
                 continue;
             }
 
-            const float glyphWidth = SDL_max(1.0F, static_cast<float>(glyph->GetWidth()) * scale);
-            const float glyphHeight = SDL_max(1.0F, static_cast<float>(glyph->GetHeight()) * scale);
-            SDL_FRect dstRect{.x = cursorX + glyph->mHotSpot.x,
+            const int glyphWidth = SDL_max(1, static_cast<int>(std::lround(static_cast<float>(glyph->GetWidth()) * scale)));
+            const int glyphHeight = SDL_max(1, static_cast<int>(std::lround(static_cast<float>(glyph->GetHeight()) * scale)));
+            SDL_Rect dstRect{.x = cursorX + glyph->mHotSpot.x,
                               .y = y + glyph->mHotSpot.y,
                               .w = glyphWidth,
                               .h = glyphHeight};
@@ -286,9 +286,9 @@ namespace nuvelocity
             MeasureString(prefix, pointSize, prefixWidth, prefixHeight);
             MeasureString(underlinedCharacter, pointSize, characterWidth, characterHeight);
 
-            const float lineY = y + SDL_max(0.0F, static_cast<float>(measuredHeight) - 2.0F);
-            const float lineStartX = x + static_cast<float>(prefixWidth);
-            const float lineEndX = lineStartX + static_cast<float>(SDL_max(1, characterWidth));
+            const int lineY = y + SDL_max(0, measuredHeight - 2);
+            const int lineStartX = x + prefixWidth;
+            const int lineEndX = lineStartX + SDL_max(1, characterWidth);
 
             // Use SpriteBatch for line drawing
             batch->DrawLine(lineStartX, lineY, lineEndX, lineY, color);
@@ -297,8 +297,8 @@ namespace nuvelocity
 
     void FontBitmap::DrawStringAt(SpriteBatch* batch,
                                   const std::string& text,
-                                  float x,
-                                  float y,
+                                  int x,
+                                  int y,
                                   const SDL_Color& color,
                                   int pointSize,
                                   TextAlignment alignment,
@@ -311,7 +311,7 @@ namespace nuvelocity
         }
         DrawString(batch,
                    text,
-                   SDL_FRect{.x = x, .y = y, .w = 0.0F, .h = 0.0F},
+                   SDL_Rect{.x = x, .y = y, .w = 0, .h = 0},
                    color,
                    pointSize,
                    alignment,

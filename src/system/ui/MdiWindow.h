@@ -27,9 +27,9 @@ namespace nuvelocity
             SDL_Color clientColor = SDL_Color{.r = 212, .g = 208, .b = 200, .a = 255};
             SDL_Color closeButtonColor = SDL_Color{.r = 192, .g = 192, .b = 192, .a = 255};
             int titleFontPointSize = 12;
-            float titleBarHeight = 24.0F;
-            float borderSize = 2.0F;
-            float closeButtonSize = 16.0F;
+            int titleBarHeight = 24;
+            int borderSize = 4;
+            int closeButtonSize = 16;
             bool tileBackground = false;
         };
 
@@ -39,7 +39,7 @@ namespace nuvelocity
         void Update(Game* aGame) override;
         void Draw(Game* game) override;
 
-        void SetRect(const SDL_FRect& rect) override;
+        void SetRect(const SDL_Rect& rect) override;
 
         void SetTitle(const std::string& title);
         const std::string& GetTitle() const;
@@ -71,13 +71,13 @@ namespace nuvelocity
         void SetAutoCenter(bool autoCenter);
         bool IsAutoCenter() const;
 
-        bool Intersects(const SDL_FPoint& point) const;
+        bool Intersects(const SDL_Point& point) const;
 
         void SetOnClose(const std::function<void(MdiWindow&)>& callback);
 
-        SDL_FRect GetTitleBarRect() const;
-        SDL_FRect GetCloseButtonRect() const;
-        SDL_FRect GetClientRect() const;
+        SDL_Rect GetTitleBarRect() const;
+        SDL_Rect GetCloseButtonRect() const;
+        SDL_Rect GetClientRect() const;
 
     private:
         std::string mTitle;
@@ -89,7 +89,7 @@ namespace nuvelocity
         bool mAutoResize = false;
         bool mAutoCenter = false;
 
-        SDL_FPoint mDragGrabOffset;
+        SDL_Point mDragGrabOffset;
         StandAloneFrame* mBackgroundTile = nullptr;
         Style mWindowStyle;
 

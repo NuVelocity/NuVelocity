@@ -22,12 +22,12 @@ namespace nuvelocity
         SpriteBatch& operator=(SpriteBatch&&) = delete;
 
         virtual void Draw(SDL_Surface* surface,
-                          const SDL_FRect* destRect = nullptr,
-                          const SDL_FRect* srcRect = nullptr,
+                          const SDL_Rect* destRect = nullptr,
+                          const SDL_Rect* srcRect = nullptr,
                           SDL_Color color = {255, 255, 255, 255}) = 0;
 
         virtual void
-        Draw(StandAloneFrame* frame, float x, float y, SDL_Color color = {255, 255, 255, 255})
+        Draw(StandAloneFrame* frame, int x, int y, SDL_Color color = {255, 255, 255, 255})
         {
             if (frame == nullptr)
             {
@@ -40,16 +40,15 @@ namespace nuvelocity
                 return;
             }
 
-            SDL_FRect destRect{
-                x, y, static_cast<float>(surface->w), static_cast<float>(surface->h)};
+            SDL_Rect destRect{x, y, surface->w, surface->h};
 
             Draw(surface, &destRect, nullptr, color);
         }
 
         virtual void Draw(Sequence* sequence,
                           std::size_t frameIndex,
-                          float x,
-                          float y,
+                          int x,
+                          int y,
                           SDL_Color color = {255, 255, 255, 255})
         {
             if (sequence == nullptr || frameIndex >= sequence->GetFrameCount())
@@ -63,8 +62,7 @@ namespace nuvelocity
                 return;
             }
 
-            SDL_FRect destRect{
-                x, y, static_cast<float>(surface->w), static_cast<float>(surface->h)};
+            SDL_Rect destRect{x, y, surface->w, surface->h};
             Draw(surface, &destRect, nullptr, color);
         }
 
@@ -103,9 +101,9 @@ namespace nuvelocity
         }
 
         virtual void DrawLine(
-            float x1, float y1, float x2, float y2, SDL_Color color, float thickness = 1.0f) = 0;
+            int x1, int y1, int x2, int y2, SDL_Color color, int thickness = 1) = 0;
 
-        virtual void OutlineRect(const SDL_FRect* rect, SDL_Color color, float thickness = 1.0f)
+        virtual void OutlineRect(const SDL_Rect* rect, SDL_Color color, int thickness = 1)
         {
             DrawLine(rect->x, rect->y, rect->x + rect->w, rect->y, color, thickness);
             DrawLine(
@@ -115,7 +113,7 @@ namespace nuvelocity
             DrawLine(rect->x, rect->y + rect->h, rect->x, rect->y, color, thickness);
         }
 
-        virtual void FillRect(const SDL_FRect* rect, SDL_Color color) = 0;
+        virtual void FillRect(const SDL_Rect* rect, SDL_Color color) = 0;
 
         void SetDrawBounds(bool enabled)
         {

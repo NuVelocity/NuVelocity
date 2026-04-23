@@ -33,7 +33,7 @@ namespace nuvelocity
         MeasureString(const std::string& text, int pointSize, int& width, int& height) const;
         virtual void DrawString(SpriteBatch* batch,
                                 const std::string& text,
-                                const SDL_FRect& bounds,
+                                const SDL_Rect& bounds,
                                 const SDL_Color& color,
                                 int pointSize,
                                 TextAlignment alignment = TextAlignment::Left,
@@ -41,8 +41,8 @@ namespace nuvelocity
                                 int underlineIndex = -1) const;
         virtual void DrawStringAt(SpriteBatch* batch,
                                   const std::string& text,
-                                  float x,
-                                  float y,
+                                  int x,
+                                  int y,
                                   const SDL_Color& color,
                                   int pointSize,
                                   TextAlignment alignment = TextAlignment::Left,

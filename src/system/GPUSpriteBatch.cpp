@@ -365,22 +365,30 @@ namespace nuvelocity
     }
 
     void GPUSpriteBatch::DrawLine(
-        float x1, float y1, float x2, float y2, SDL_Color color, float thickness)
+        int x1, int y1, int x2, int y2, SDL_Color color, int thickness)
     {
         if (mDevice == nullptr || mWindow == nullptr || mWhiteTexture == nullptr)
         {
             return;
         }
 
-        float dx = x2 - x1;
-        float dy = y2 - y1;
+        float fx1 = static_cast<float>(x1);
+        float fy1 = static_cast<float>(y1);
+        float fx2 = static_cast<float>(x2);
+        float fy2 = static_cast<float>(y2);
+        float fThickness = static_cast<float>(thickness);
+
+        float dx = fx2 - fx1;
+        float dy = fy2 - fy1;
         float len = std::sqrt(dx * dx + dy * dy);
         if (len < 0.001f)
+        {
             return;
+        }
 
         // Thickness offset (half of total thickness)
-        float wx = -dy / len * (thickness * 0.5f);
-        float wy = dx / len * (thickness * 0.5f);
+        float wx = -dy / len * (fThickness * 0.5f);
+        float wy = dx / len * (fThickness * 0.5f);
 
         if (mWhiteTexture != mCurrentTexture)
         {
@@ -394,10 +402,10 @@ namespace nuvelocity
         float a = color.a / 255.0f;
 
         Uint16 baseIdx = (Uint16)mVertexData.size();
-        mVertexData.push_back({x1 + wx, y1 + wy, 0.0f, 0.0f, r, g, b, a});
-        mVertexData.push_back({x1 - wx, y1 - wy, 1.0f, 0.0f, r, g, b, a});
-        mVertexData.push_back({x2 - wx, y2 - wy, 1.0f, 1.0f, r, g, b, a});
-        mVertexData.push_back({x2 + wx, y2 + wy, 0.0f, 1.0f, r, g, b, a});
+        mVertexData.push_back({fx1 + wx, fy1 + wy, 0.0f, 0.0f, r, g, b, a});
+        mVertexData.push_back({fx1 - wx, fy1 - wy, 1.0f, 0.0f, r, g, b, a});
+        mVertexData.push_back({fx2 - wx, fy2 - wy, 1.0f, 1.0f, r, g, b, a});
+        mVertexData.push_back({fx2 + wx, fy2 + wy, 0.0f, 1.0f, r, g, b, a});
 
         mIndexData.push_back(baseIdx + 0);
         mIndexData.push_back(baseIdx + 1);
@@ -407,10 +415,12 @@ namespace nuvelocity
         mIndexData.push_back(baseIdx + 3);
     }
 
-    void GPUSpriteBatch::FillRect(const SDL_FRect* rect, SDL_Color color)
+    void GPUSpriteBatch::FillRect(const SDL_Rect* rect, SDL_Color color)
     {
         if (mWhiteTexture == nullptr)
+        {
             return;
+        }
 
         if (mWhiteTexture != mCurrentTexture)
         {
@@ -418,22 +428,21 @@ namespace nuvelocity
             mCurrentTexture = mWhiteTexture;
         }
 
-        SDL_FRect dr;
+        SDL_Rect dr;
         if (rect != nullptr)
         {
             dr = *rect;
         }
         else if (mSwapchainWidth > 0 && mSwapchainHeight > 0)
         {
-            dr = SDL_FRect{
-                0, 0, static_cast<float>(mSwapchainWidth), static_cast<float>(mSwapchainHeight)};
+            dr = SDL_Rect{0, 0, static_cast<int>(mSwapchainWidth), static_cast<int>(mSwapchainHeight)};
         }
         else if (mWindow != nullptr)
         {
             int w = 0;
             int h = 0;
             SDL_GetWindowSizeInPixels(mWindow, &w, &h);
-            dr = SDL_FRect{0, 0, static_cast<float>(w), static_cast<float>(h)};
+            dr = SDL_Rect{0, 0, w, h};
         }
         else
         {
@@ -445,11 +454,16 @@ namespace nuvelocity
         float b = color.b / 255.0f;
         float a = color.a / 255.0f;
 
+        float fx = static_cast<float>(dr.x);
+        float fy = static_cast<float>(dr.y);
+        float fw = static_cast<float>(dr.w);
+        float fh = static_cast<float>(dr.h);
+
         Uint16 baseIdx = (Uint16)mVertexData.size();
-        mVertexData.push_back({dr.x, dr.y, 0, 0, r, g, b, a});
-        mVertexData.push_back({dr.x + dr.w, dr.y, 1, 0, r, g, b, a});
-        mVertexData.push_back({dr.x + dr.w, dr.y + dr.h, 1, 1, r, g, b, a});
-        mVertexData.push_back({dr.x, dr.y + dr.h, 0, 1, r, g, b, a});
+        mVertexData.push_back({fx, fy, 0, 0, r, g, b, a});
+        mVertexData.push_back({fx + fw, fy, 1, 0, r, g, b, a});
+        mVertexData.push_back({fx + fw, fy + fh, 1, 1, r, g, b, a});
+        mVertexData.push_back({fx, fy + fh, 0, 1, r, g, b, a});
 
         mIndexData.push_back(baseIdx + 0);
         mIndexData.push_back(baseIdx + 1);
@@ -457,6 +471,19 @@ namespace nuvelocity
         mIndexData.push_back(baseIdx + 0);
         mIndexData.push_back(baseIdx + 2);
         mIndexData.push_back(baseIdx + 3);
+    }
+
+    void GPUSpriteBatch::OutlineRect(const SDL_Rect* rect, SDL_Color color, int thickness)
+    {
+        if (rect == nullptr)
+        {
+            return;
+        }
+
+        DrawLine(rect->x, rect->y, rect->x + rect->w, rect->y, color, thickness);
+        DrawLine(rect->x + rect->w, rect->y, rect->x + rect->w, rect->y + rect->h, color, thickness);
+        DrawLine(rect->x + rect->w, rect->y + rect->h, rect->x, rect->y + rect->h, color, thickness);
+        DrawLine(rect->x, rect->y + rect->h, rect->x, rect->y, color, thickness);
     }
 
     void GPUSpriteBatch::SetClipRect(const SDL_Rect* rect)
@@ -601,8 +628,8 @@ namespace nuvelocity
     }
 
     void GPUSpriteBatch::Draw(SDL_Surface* surface,
-                              const SDL_FRect* destRect,
-                              const SDL_FRect* srcRect,
+                              const SDL_Rect* destRect,
+                              const SDL_Rect* srcRect,
                               SDL_Color color)
     {
         if (mDevice == nullptr || mWindow == nullptr || surface == nullptr)
@@ -657,24 +684,29 @@ namespace nuvelocity
             mCurrentBlendMode = surfaceMode;
         }
 
-        SDL_FRect dr = destRect ? *destRect : SDL_FRect{0, 0, (float)surface->w, (float)surface->h};
-        SDL_FRect sr = srcRect ? *srcRect : SDL_FRect{0, 0, (float)surface->w, (float)surface->h};
+        SDL_Rect dr = destRect ? *destRect : SDL_Rect{0, 0, surface->w, surface->h};
+        SDL_Rect sr = srcRect ? *srcRect : SDL_Rect{0, 0, surface->w, surface->h};
 
-        float u1 = sr.x / (float)surface->w;
-        float v1 = sr.y / (float)surface->h;
-        float u2 = (sr.x + sr.w) / (float)surface->w;
-        float v2 = (sr.y + sr.h) / (float)surface->h;
+        float u1 = static_cast<float>(sr.x) / static_cast<float>(surface->w);
+        float v1 = static_cast<float>(sr.y) / static_cast<float>(surface->h);
+        float u2 = static_cast<float>(sr.x + sr.w) / static_cast<float>(surface->w);
+        float v2 = static_cast<float>(sr.y + sr.h) / static_cast<float>(surface->h);
 
         float r = color.r / 255.0f;
         float g = color.g / 255.0f;
         float b = color.b / 255.0f;
         float a = color.a / 255.0f;
 
+        float fdx = static_cast<float>(dr.x);
+        float fdy = static_cast<float>(dr.y);
+        float fdw = static_cast<float>(dr.w);
+        float fdh = static_cast<float>(dr.h);
+
         Uint16 baseIdx = (Uint16)mVertexData.size();
-        mVertexData.push_back({dr.x, dr.y, u1, v1, r, g, b, a});
-        mVertexData.push_back({dr.x + dr.w, dr.y, u2, v1, r, g, b, a});
-        mVertexData.push_back({dr.x + dr.w, dr.y + dr.h, u2, v2, r, g, b, a});
-        mVertexData.push_back({dr.x, dr.y + dr.h, u1, v2, r, g, b, a});
+        mVertexData.push_back({fdx, fdy, u1, v1, r, g, b, a});
+        mVertexData.push_back({fdx + fdw, fdy, u2, v1, r, g, b, a});
+        mVertexData.push_back({fdx + fdw, fdy + fdh, u2, v2, r, g, b, a});
+        mVertexData.push_back({fdx, fdy + fdh, u1, v2, r, g, b, a});
 
         mIndexData.push_back(baseIdx + 0);
         mIndexData.push_back(baseIdx + 1);
@@ -689,10 +721,10 @@ namespace nuvelocity
 
         if (mDrawBounds)
         {
-            OutlineRect(destRect, {255, 0, 255, 255}); // Magenta: Actual
+            OutlineRect(&dr, {255, 0, 255, 255}); // Magenta: Actual
             if (srcRect != nullptr)
             {
-                OutlineRect(srcRect, {0, 255, 255, 255}); // Cyan: Source
+                OutlineRect(&sr, {0, 255, 255, 255}); // Cyan: Source
             }
         }
     }
@@ -708,11 +740,11 @@ namespace nuvelocity
         int winHeight = 0;
         SDL_GetWindowSizeInPixels(mWindow, &winWidth, &winHeight);
 
-        SDL_FRect destRect{
-            .x = (static_cast<float>(winWidth) - static_cast<float>(surface->w)) * kCenterFactor,
-            .y = (static_cast<float>(winHeight) - static_cast<float>(surface->h)) * kCenterFactor,
-            .w = static_cast<float>(surface->w),
-            .h = static_cast<float>(surface->h)};
+        SDL_Rect destRect{
+            .x = (winWidth - surface->w) / 2,
+            .y = (winHeight - surface->h) / 2,
+            .w = surface->w,
+            .h = surface->h};
 
         Draw(surface, &destRect, nullptr);
     }

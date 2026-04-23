@@ -21,7 +21,7 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_FRect rect = button->GetScreenRect();
+        const SDL_Rect rect = button->GetScreenRect();
         SDL_Color textColor = button->GetButtonStyle().textColor;
 
         // 1. Determine which border to use
@@ -69,7 +69,7 @@ namespace nuvelocity
             WidgetUtils::DrawRect(game->mSpriteBatch, rect, SDL_Color{100, 100, 100, 255});
         }
 
-        SDL_FRect textRect = rect;
+        SDL_Rect textRect = rect;
         // Apply slight offset if pressed
         if (button->IsPressed())
         {
@@ -93,10 +93,10 @@ namespace nuvelocity
 
         if (button->GetButtonStyle().showFocusRing && button->IsFocused() && !button->IsHovered())
         {
-            const SDL_FRect focusRect{.x = rect.x + 2.0F,
-                                      .y = rect.y + 2.0F,
-                                      .w = SDL_max(0.0F, rect.w - 4.0F),
-                                      .h = SDL_max(0.0F, rect.h - 4.0F)};
+            const SDL_Rect focusRect{.x = rect.x + 2,
+                                      .y = rect.y + 2,
+                                      .w = SDL_max(0, rect.w - 4),
+                                      .h = SDL_max(0, rect.h - 4)};
             WidgetUtils::DrawRect(game->mSpriteBatch, focusRect, SDL_Color{255, 255, 255, 64});
         }
     }
@@ -109,8 +109,8 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_FRect windowRect = window->GetScreenRect();
-        const SDL_FRect titleRect = window->GetTitleBarRect();
+        const SDL_Rect windowRect = window->GetScreenRect();
+        const SDL_Rect titleRect = window->GetTitleBarRect();
 
         // 1. Draw Border and Background
         if (mOptions->mWindowBorder != nullptr)
@@ -124,20 +124,20 @@ namespace nuvelocity
         }
 
         // 2. Draw Title
-        float topFrameHeight = 0.0f;
+        int topFrameHeight = 0;
         if (mOptions->mWindowBorder != nullptr &&
             mOptions->mWindowBorder->mTopCenterHighlightFrame != nullptr)
         {
             if (SDL_Surface* surface =
                     mOptions->mWindowBorder->mTopCenterHighlightFrame->GetSurface())
             {
-                topFrameHeight = static_cast<float>(surface->h);
+                topFrameHeight = surface->h;
             }
         }
 
-        const float titleX = titleRect.x + (titleRect.w * 0.5f);
-        const float titleY =
-            titleRect.y + topFrameHeight + static_cast<float>(mOptions->mWindowHeadingOffset);
+        const int titleX = titleRect.x + (titleRect.w / 2);
+        const int titleY =
+            titleRect.y + topFrameHeight + mOptions->mWindowHeadingOffset;
 
         // Use skinned font if available
         std::string fontName =
@@ -161,7 +161,7 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_FRect rect = textBox->GetScreenRect();
+        const SDL_Rect rect = textBox->GetScreenRect();
         const auto& style = textBox->GetTextBoxStyle();
 
         const SDL_Color fillColor =
@@ -178,10 +178,10 @@ namespace nuvelocity
             true,
             textBox->GetStyle().borderThickness);
 
-        SDL_FRect textRect{.x = rect.x + 6.0F,
-                           .y = rect.y + 3.0F,
-                           .w = SDL_max(0.0F, rect.w - 12.0F),
-                           .h = SDL_max(0.0F, rect.h - 6.0F)};
+        SDL_Rect textRect{.x = rect.x + 6,
+                           .y = rect.y + 3,
+                           .w = SDL_max(0, rect.w - 12),
+                           .h = SDL_max(0, rect.h - 6)};
 
         std::string fontName =
             mOptions->mGeneralFont.empty() ? "Small Blue" : mOptions->mGeneralFont;
@@ -205,23 +205,23 @@ namespace nuvelocity
             const bool visibleCaret = ((SDL_GetTicks() / 500U) % 2U) == 0U;
             if (visibleCaret)
             {
-                SDL_FRect caretRect{.x = rect.x + 6.0F + static_cast<float>(textWidth),
-                                    .y = rect.y + 4.0F,
-                                    .w = 1.0F,
-                                    .h = SDL_max(0.0F, rect.h - 8.0F)};
+                SDL_Rect caretRect{.x = rect.x + 6 + textWidth,
+                                    .y = rect.y + 4,
+                                    .w = 1,
+                                    .h = SDL_max(0, rect.h - 8)};
                 WidgetUtils::FillRect(game->mSpriteBatch, caretRect, style.caretColor);
             }
         }
     }
 
-    SDL_FRect JWindowAlphaTheme::GetInnerRect(const MdiWindow* window) const
+    SDL_Rect JWindowAlphaTheme::GetInnerRect(const MdiWindow* window) const
     {
         // FIXME: hardcoded for now.
-        SDL_FRect titleBarRect = window->GetScreenRect();
+        SDL_Rect titleBarRect = window->GetScreenRect();
         return {titleBarRect.x + 20, titleBarRect.y + 30, titleBarRect.w - 40, titleBarRect.h - 50};
     }
 
-    SDL_FRect JWindowAlphaTheme::GetCloseButtonRect(const MdiWindow* window) const
+    SDL_Rect JWindowAlphaTheme::GetCloseButtonRect(const MdiWindow* window) const
     {
         // FIXME: determine close button rect based on window rect and style.
         // We are currently reusing the metrics for classic theme.

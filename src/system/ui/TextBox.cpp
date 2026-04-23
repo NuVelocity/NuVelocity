@@ -31,7 +31,7 @@ namespace nuvelocity
 
         InputManager& input = *aGame->mInput;
 
-        const SDL_FPoint mouse = input.GetMousePosition();
+        const SDL_Point mouse = input.GetMousePosition();
         if (input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
         {
             const bool wasFocused = mFocused;

@@ -41,7 +41,7 @@ namespace nuvelocity
         mSpecialTopRightHighlightFrame = load(mSpecialTopRightHighlight);
     }
 
-    void AlphaSkinBorder::DrawBackground(SpriteBatch* spriteBatch, const SDL_FRect& rect)
+    void AlphaSkinBorder::DrawBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect)
     {
         // 1. Calculate individual corner dimensions as integers for stable mask assembly.
         // We use separate metrics for each side to handle asymmetrical skin assets.
@@ -55,8 +55,8 @@ namespace nuvelocity
         int bhL = (mBottomLeftAlphaFrame != nullptr) ? mBottomLeftAlphaFrame->GetHeight() : 0;
         int bhR = (mBottomRightAlphaFrame != nullptr) ? mBottomRightAlphaFrame->GetHeight() : 0;
 
-        int areaW = static_cast<int>(rect.w);
-        int areaH = static_cast<int>(rect.h);
+        int areaW = rect.w;
+        int areaH = rect.h;
 
         int interiorWT = SDL_max(0, areaW - lwT - rwT);
         int interiorWB = SDL_max(0, areaW - lwB - rwB);
@@ -160,26 +160,22 @@ namespace nuvelocity
         }
 
         // Step 3: Draw the composite surface to the sprite batch
-        float alphaRectX = rect.x;
-        float alphaRectY = rect.y;
         SDL_SetSurfaceBlendMode(compositeSurface, SDL_BLENDMODE_BLEND);
-        SDL_FRect compositeDest{alphaRectX,
-                                alphaRectY,
-                                static_cast<float>(compositeSurface->w),
-                                static_cast<float>(compositeSurface->h)};
+        SDL_Rect compositeDest{rect.x,
+                               rect.y,
+                               compositeSurface->w,
+                               compositeSurface->h};
         spriteBatch->Draw(compositeSurface, &compositeDest, nullptr);
 
         SDL_DestroySurface(compositeSurface);
     }
 
-    void AlphaSkinBorder::DrawHighlights(SpriteBatch* spriteBatch, const SDL_FRect& rect)
+    void AlphaSkinBorder::DrawHighlights(SpriteBatch* spriteBatch, const SDL_Rect& rect)
     {
         // Step 4: Draw highlights on top
-        float highlightRectX = rect.x;
-        float highlightRectY = rect.y;
-        int areaW = static_cast<int>(rect.w);
-        int areaH = static_cast<int>(rect.h);
-        auto drawFrame = [&](StandAloneFrame* frame, float x, float y)
+        int areaW = rect.w;
+        int areaH = rect.h;
+        auto drawFrame = [&](StandAloneFrame* frame, int x, int y)
         {
             if (frame != nullptr)
             {
@@ -215,62 +211,56 @@ namespace nuvelocity
             (mCenterRightHighlightFrame != nullptr) ? mCenterRightHighlightFrame->GetHeight() : 0;
 
         // Corners
-        drawFrame(mTopLeftHighlightFrame, highlightRectX, highlightRectY);
-        drawFrame(mTopRightHighlightFrame,
-                  highlightRectX + static_cast<float>(areaW - hlwTR),
-                  highlightRectY);
-        drawFrame(mBottomLeftHighlightFrame,
-                  highlightRectX,
-                  highlightRectY + static_cast<float>(areaH - hlhBL));
-        drawFrame(mBottomRightHighlightFrame,
-                  highlightRectX + static_cast<float>(areaW - hlwBR),
-                  highlightRectY + static_cast<float>(areaH - hlhBR));
+        drawFrame(mTopLeftHighlightFrame, rect.x, rect.y);
+        drawFrame(mTopRightHighlightFrame, rect.x + areaW - hlwTR, rect.y);
+        drawFrame(mBottomLeftHighlightFrame, rect.x, rect.y + areaH - hlhBL);
+        drawFrame(mBottomRightHighlightFrame, rect.x + areaW - hlwBR, rect.y + areaH - hlhBR);
 
         // Top center highlight
         if (mTopCenterHighlightFrame != nullptr)
         {
             WidgetUtils::DrawTiledFrameH(spriteBatch,
                                          mTopCenterHighlightFrame,
-                                         {highlightRectX + static_cast<float>(hlwTR),
-                                          highlightRectY,
-                                          static_cast<float>(areaW - hlwTL - hlwTR),
-                                          static_cast<float>(hlhTC)});
+                                         {rect.x + hlwTR,
+                                          rect.y,
+                                          areaW - hlwTL - hlwTR,
+                                          hlhTC});
         }
         // Bottom center highlight
         if (mBottomCenterHighlightFrame != nullptr)
         {
             WidgetUtils::DrawTiledFrameH(spriteBatch,
                                          mBottomCenterHighlightFrame,
-                                         {highlightRectX + static_cast<float>(hlwBL),
-                                          highlightRectY + static_cast<float>(areaH - hlhBC),
-                                          static_cast<float>(areaW - hlwBL - hlwBR),
-                                          static_cast<float>(hlhBC)});
+                                         {rect.x + hlwBL,
+                                          rect.y + areaH - hlhBC,
+                                          areaW - hlwBL - hlwBR,
+                                          hlhBC});
         }
         // Center left highlight
         if (mCenterLeftHighlightFrame != nullptr)
         {
             WidgetUtils::DrawTiledFrameV(spriteBatch,
                                          mCenterLeftHighlightFrame,
-                                         {highlightRectX,
-                                          highlightRectY + static_cast<float>(hlhTR),
-                                          static_cast<float>(hlwCL),
-                                          static_cast<float>(areaH - hlhTR - hlhBR)});
+                                         {rect.x,
+                                          rect.y + hlhTR,
+                                          hlwCL,
+                                          areaH - hlhTR - hlhBR});
         }
         // Center right highlight
         if (mCenterRightHighlightFrame != nullptr)
         {
             WidgetUtils::DrawTiledFrameV(spriteBatch,
                                          mCenterRightHighlightFrame,
-                                         {highlightRectX + static_cast<float>(areaW - hlwCR),
-                                          highlightRectY + static_cast<float>(hlhTR),
-                                          static_cast<float>(hlwCR),
-                                          static_cast<float>(areaH - hlhTR - hlhBR)});
+                                         {rect.x + areaW - hlwCR,
+                                          rect.y + hlhTR,
+                                          hlwCR,
+                                          areaH - hlhTR - hlhBR});
         }
     }
 
     void AlphaSkinBorder::Draw(SpriteBatch* spriteBatch,
-                               const SDL_FRect& windowRect,
-                               const SDL_FRect& innerRect)
+                               const SDL_Rect& windowRect,
+                               const SDL_Rect& innerRect)
     {
         if (spriteBatch == nullptr)
         {
@@ -293,7 +283,7 @@ namespace nuvelocity
         }
     }
 
-    void ClassicSkinBorder::Draw(SpriteBatch* spriteBatch, const SDL_FRect& rect, bool sunken)
+    void ClassicSkinBorder::Draw(SpriteBatch* spriteBatch, const SDL_Rect& rect, bool sunken)
     {
         if (spriteBatch == nullptr)
         {
@@ -301,10 +291,10 @@ namespace nuvelocity
         }
 
         // 1. Draw Background (Tiled)
-        SDL_FRect bgRect = {.x = rect.x + mTextureMargin,
+        SDL_Rect bgRect = {.x = rect.x + mTextureMargin,
                             .y = rect.y + mTextureMargin,
-                            .w = SDL_max(0.0F, rect.w - (mTextureMargin * 2)),
-                            .h = SDL_max(0.0F, rect.h - (mTextureMargin * 2))};
+                            .w = SDL_max(0, rect.w - (mTextureMargin * 2)),
+                            .h = SDL_max(0, rect.h - (mTextureMargin * 2))};
         if (mBackgroundFrame != nullptr)
         {
             WidgetUtils::DrawTiledFrame(spriteBatch, mBackgroundFrame, bgRect);

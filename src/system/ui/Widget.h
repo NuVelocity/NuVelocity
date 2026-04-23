@@ -19,7 +19,7 @@ namespace nuvelocity
         SDL_Color borderDarkColor = SDL_Color{.r = 96, .g = 96, .b = 96, .a = 255};
         SDL_Color accentColor = SDL_Color{.r = 0, .g = 120, .b = 215, .a = 255};
         SDL_Color disabledColor = SDL_Color{.r = 128, .g = 128, .b = 128, .a = 255};
-        float borderThickness = 1.0F;
+        int borderThickness = 1;
     };
 
     class Widget : public GameComponent
@@ -31,9 +31,9 @@ namespace nuvelocity
         void Update(Game* aGame) override = 0;
         void Draw(Game* aGame) override = 0;
 
-        virtual void SetRect(const SDL_FRect& rect);
-        SDL_FRect GetRect() const;
-        SDL_FRect GetScreenRect() const;
+        virtual void SetRect(const SDL_Rect& rect);
+        SDL_Rect GetRect() const;
+        SDL_Rect GetScreenRect() const;
 
         void SetVisible(bool visible);
         bool IsVisible() const;
@@ -51,9 +51,9 @@ namespace nuvelocity
         Widget* GetParent() const;
 
     protected:
-        bool ContainsPoint(const SDL_FPoint& point) const;
+        bool ContainsPoint(const SDL_Point& point) const;
 
-        SDL_FRect mRect;
+        SDL_Rect mRect;
         WidgetStyle mStyle;
         bool mVisible;
         bool mEnabled;

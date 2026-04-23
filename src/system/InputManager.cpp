@@ -3,9 +3,9 @@
 namespace nuvelocity
 {
     InputManager::InputManager()
-            : mMousePosition({.x = 0.0F, .y = 0.0F})
-            , mMouseDelta({.x = 0.0F, .y = 0.0F})
-            , mWheelDelta({.x = 0.0F, .y = 0.0F})
+            : mMousePosition({.x = 0, .y = 0})
+            , mMouseDelta({.x = 0, .y = 0})
+            , mWheelDelta({.x = 0, .y = 0})
             , mQuitRequested(false)
     {
     }
@@ -56,10 +56,10 @@ namespace nuvelocity
         }
 
         case SDL_EVENT_MOUSE_MOTION:
-            mMousePosition.x = event.motion.x;
-            mMousePosition.y = event.motion.y;
-            mMouseDelta.x += event.motion.xrel;
-            mMouseDelta.y += event.motion.yrel;
+            mMousePosition.x = static_cast<int>(event.motion.x);
+            mMousePosition.y = static_cast<int>(event.motion.y);
+            mMouseDelta.x += static_cast<int>(event.motion.xrel);
+            mMouseDelta.y += static_cast<int>(event.motion.yrel);
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -86,8 +86,8 @@ namespace nuvelocity
         }
 
         case SDL_EVENT_MOUSE_WHEEL:
-            mWheelDelta.x += event.wheel.x;
-            mWheelDelta.y += event.wheel.y;
+            mWheelDelta.x += static_cast<int>(event.wheel.x);
+            mWheelDelta.y += static_cast<int>(event.wheel.y);
             break;
 
         case SDL_EVENT_TEXT_INPUT:
@@ -162,8 +162,8 @@ namespace nuvelocity
         ResetButtonTransitions(mMouseButtonStates);
         ResetGamepadTransitions(mGamepads);
 
-        mMouseDelta = SDL_FPoint{.x = 0.0F, .y = 0.0F};
-        mWheelDelta = SDL_FPoint{.x = 0.0F, .y = 0.0F};
+        mMouseDelta = SDL_Point{.x = 0, .y = 0};
+        mWheelDelta = SDL_Point{.x = 0, .y = 0};
         mTextInput.clear();
         mFrameEvents.clear();
     }
@@ -203,17 +203,17 @@ namespace nuvelocity
         return GetMouseButtonState(mMouseButtonStates, button, &ButtonState::released);
     }
 
-    SDL_FPoint InputManager::GetMousePosition() const
+    SDL_Point InputManager::GetMousePosition() const
     {
         return mMousePosition;
     }
 
-    SDL_FPoint InputManager::GetMouseDelta() const
+    SDL_Point InputManager::GetMouseDelta() const
     {
         return mMouseDelta;
     }
 
-    SDL_FPoint InputManager::GetWheelDelta() const
+    SDL_Point InputManager::GetWheelDelta() const
     {
         return mWheelDelta;
     }

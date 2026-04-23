@@ -8,24 +8,24 @@
 namespace nuvelocity
 {
     Widget::Widget()
-            : mRect({.x = 0.0F, .y = 0.0F, .w = 0.0F, .h = 0.0F})
+            : mRect({.x = 0, .y = 0, .w = 0, .h = 0})
             , mVisible(true)
             , mEnabled(true)
             , mSkin(nullptr)
     {
     }
 
-    void Widget::SetRect(const SDL_FRect& rect)
+    void Widget::SetRect(const SDL_Rect& rect)
     {
         mRect = rect;
     }
 
-    SDL_FRect Widget::GetRect() const
+    SDL_Rect Widget::GetRect() const
     {
         return mRect;
     }
 
-    SDL_FRect Widget::GetScreenRect() const
+    SDL_Rect Widget::GetScreenRect() const
     {
         return mRect;
     }
@@ -60,9 +60,9 @@ namespace nuvelocity
         return mStyle;
     }
 
-    bool Widget::ContainsPoint(const SDL_FPoint& point) const
+    bool Widget::ContainsPoint(const SDL_Point& point) const
     {
-        const SDL_FRect rect = GetScreenRect();
+        const SDL_Rect rect = GetScreenRect();
         return point.x >= rect.x && point.y >= rect.y && point.x <= rect.x + rect.w &&
                point.y <= rect.y + rect.h;
     }

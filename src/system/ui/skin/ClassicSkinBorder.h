@@ -25,7 +25,7 @@ namespace nuvelocity
         StandAloneFrame* mBackgroundFrame = nullptr;
 
         void Load(AssetManager* assets);
-        void Draw(SpriteBatch* spriteBatch, const SDL_FRect& rect, bool sunken);
+        void Draw(SpriteBatch* spriteBatch, const SDL_Rect& rect, bool sunken);
 
         static void InitClassInfo(ClassInfo& info)
         {

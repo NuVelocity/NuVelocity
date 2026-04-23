@@ -20,7 +20,7 @@ namespace nuvelocity
             , mActive(false)
             , mDragging(false)
             , mShouldClose(false)
-            , mDragGrabOffset({.x = 0.0F, .y = 0.0F})
+            , mDragGrabOffset({.x = 0, .y = 0})
     {
         Widget::SetStyle(mWindowStyle.baseStyle);
     }
@@ -38,11 +38,11 @@ namespace nuvelocity
         }
 
         InputManager& input = *aGame->mInput;
-        const SDL_FPoint mouse = input.GetMousePosition();
+        const SDL_Point mouse = input.GetMousePosition();
         JWindowSkin* skin = GetSkin(aGame);
 
-        SDL_FRect titleBar = skin == nullptr ? GetTitleBarRect() : skin->GetInnerRect(this);
-        SDL_FRect closeButton =
+        SDL_Rect titleBar = skin == nullptr ? GetTitleBarRect() : skin->GetInnerRect(this);
+        SDL_Rect closeButton =
             skin == nullptr ? GetCloseButtonRect() : skin->GetCloseButtonRect(this);
 
         const bool overTitle = mouse.x >= titleBar.x && mouse.y >= titleBar.y &&
@@ -65,15 +65,15 @@ namespace nuvelocity
         if (mMovable && overTitle && input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
         {
             mDragging = true;
-            const SDL_FRect screenRect = GetScreenRect();
-            mDragGrabOffset = SDL_FPoint{.x = mouse.x - screenRect.x, .y = mouse.y - screenRect.y};
+            const SDL_Rect screenRect = GetScreenRect();
+            mDragGrabOffset = SDL_Point{.x = mouse.x - screenRect.x, .y = mouse.y - screenRect.y};
         }
 
         if (mDragging)
         {
             if (input.IsMouseButtonDown(SDL_BUTTON_LEFT))
             {
-                const SDL_FRect newRect{.x = mouse.x - mDragGrabOffset.x,
+                const SDL_Rect newRect{.x = mouse.x - mDragGrabOffset.x,
                                         .y = mouse.y - mDragGrabOffset.y,
                                         .w = mRect.w,
                                         .h = mRect.h};
@@ -95,25 +95,25 @@ namespace nuvelocity
 
         if (mAutoResize && !mChildren.empty())
         {
-            float maxBottom = 0;
+            int maxBottom = 0;
             for (const auto& child : mChildren)
             {
                 if (child->IsVisible())
                 {
-                    const SDL_FRect r = child->GetRect();
+                    const SDL_Rect r = child->GetRect();
                     maxBottom = SDL_max(maxBottom, r.y + r.h);
                 }
             }
 
             if (maxBottom > 0)
             {
-                const SDL_FRect clientRect = GetClientRect();
-                const float bottomChrome = mRect.y + mRect.h - (clientRect.y + clientRect.h);
-                const float newHeight = (maxBottom - mRect.y) + bottomChrome;
+                const SDL_Rect clientRect = GetClientRect();
+                const int bottomChrome = mRect.y + mRect.h - (clientRect.y + clientRect.h);
+                const int newHeight = (maxBottom - mRect.y) + bottomChrome;
 
-                if (std::abs(mRect.h - newHeight) > 0.5f)
+                if (mRect.h != newHeight)
                 {
-                    SDL_FRect newRect = mRect;
+                    SDL_Rect newRect = mRect;
                     newRect.h = newHeight;
                     SetRect(newRect);
                 }
@@ -122,10 +122,10 @@ namespace nuvelocity
 
         if (mAutoCenter && aGame != nullptr)
         {
-            const float centerX = (static_cast<float>(aGame->mWindowWidth) - mRect.w) * 0.5f;
-            const float centerY = (static_cast<float>(aGame->mWindowHeight) - mRect.h) * 0.5f;
+            const int centerX = (aGame->mWindowWidth - mRect.w) / 2;
+            const int centerY = (aGame->mWindowHeight - mRect.h) / 2;
 
-            if (SDL_fabs(mRect.x - centerX) > 0.5f || SDL_fabs(mRect.y - centerY) > 0.5f)
+            if (mRect.x != centerX || mRect.y != centerY)
             {
                 SetRect({centerX, centerY, mRect.w, mRect.h});
             }
@@ -139,11 +139,11 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_FRect windowRect = GetScreenRect();
-        const SDL_Rect clipRect = {static_cast<int>(windowRect.x),
-                                   static_cast<int>(windowRect.y),
-                                   static_cast<int>(windowRect.w),
-                                   static_cast<int>(windowRect.h)};
+        const SDL_Rect windowRect = GetScreenRect();
+        const SDL_Rect clipRect = {windowRect.x,
+                                   windowRect.y,
+                                   windowRect.w,
+                                   windowRect.h};
         // game->mSpriteBatch->SetClipRect(&clipRect);
 
         JWindowSkin* skin = GetSkin(game);
@@ -162,7 +162,7 @@ namespace nuvelocity
 
         if (game->mSpriteBatch->IsDrawBoundsEnabled())
         {
-            game->mSpriteBatch->OutlineRect(&windowRect, SDL_Color{255, 0, 0, 255}, 1.0F);
+            game->mSpriteBatch->OutlineRect(&windowRect, SDL_Color{255, 0, 0, 255}, 1);
         }
 
         game->mSpriteBatch->SetClipRect(nullptr);
@@ -233,8 +233,8 @@ namespace nuvelocity
     {
         if (widget != nullptr)
         {
-            const SDL_FRect clientRect = GetClientRect();
-            SDL_FRect childRect = widget->GetRect();
+            const SDL_Rect clientRect = GetClientRect();
+            SDL_Rect childRect = widget->GetRect();
             childRect.x += clientRect.x;
             childRect.y += clientRect.y;
             widget->SetRect(childRect);
@@ -244,10 +244,10 @@ namespace nuvelocity
         }
     }
 
-    void MdiWindow::SetRect(const SDL_FRect& rect)
+    void MdiWindow::SetRect(const SDL_Rect& rect)
     {
-        const float deltaX = rect.x - mRect.x;
-        const float deltaY = rect.y - mRect.y;
+        const int deltaX = rect.x - mRect.x;
+        const int deltaY = rect.y - mRect.y;
 
         mRect = rect;
 
@@ -255,7 +255,7 @@ namespace nuvelocity
         {
             if (child != nullptr)
             {
-                SDL_FRect r = child->GetRect();
+                SDL_Rect r = child->GetRect();
                 r.x += deltaX;
                 r.y += deltaY;
                 child->SetRect(r);
@@ -302,7 +302,7 @@ namespace nuvelocity
         return mShouldClose;
     }
 
-    bool MdiWindow::Intersects(const SDL_FPoint& point) const
+    bool MdiWindow::Intersects(const SDL_Point& point) const
     {
         return point.x >= mRect.x && point.y >= mRect.y && point.x <= mRect.x + mRect.w &&
                point.y <= mRect.y + mRect.h;
@@ -313,41 +313,41 @@ namespace nuvelocity
         mOnClose = callback;
     }
 
-    SDL_FRect MdiWindow::GetTitleBarRect() const
+    SDL_Rect MdiWindow::GetTitleBarRect() const
     {
-        const SDL_FRect rect = GetScreenRect();
-        return SDL_FRect{.x = rect.x,
+        const SDL_Rect rect = GetScreenRect();
+        return SDL_Rect{.x = rect.x,
                          .y = rect.y,
                          .w = rect.w,
                          .h = SDL_min(rect.h, mWindowStyle.titleBarHeight)};
     }
 
-    SDL_FRect MdiWindow::GetCloseButtonRect() const
+    SDL_Rect MdiWindow::GetCloseButtonRect() const
     {
-        const SDL_FRect titleBar = GetTitleBarRect();
-        const float margin = (titleBar.h - mWindowStyle.closeButtonSize) * 0.5F;
+        const SDL_Rect titleBar = GetTitleBarRect();
+        const int margin = (titleBar.h - mWindowStyle.closeButtonSize) / 2;
 
-        return SDL_FRect{.x = titleBar.x + titleBar.w - mWindowStyle.closeButtonSize - margin,
+        return SDL_Rect{.x = titleBar.x + titleBar.w - mWindowStyle.closeButtonSize - margin,
                          .y = titleBar.y + margin,
                          .w = mWindowStyle.closeButtonSize,
                          .h = mWindowStyle.closeButtonSize};
     }
 
-    SDL_FRect MdiWindow::GetClientRect() const
+    SDL_Rect MdiWindow::GetClientRect() const
     {
         if (mSkin != nullptr)
         {
             return mSkin->GetInnerRect(this);
         }
 
-        const SDL_FRect rect = GetScreenRect();
+        const SDL_Rect rect = GetScreenRect();
 
-        const float inset = mWindowStyle.borderSize;
-        const float topInset = mWindowStyle.titleBarHeight;
+        const int inset = mWindowStyle.borderSize;
+        const int topInset = mWindowStyle.titleBarHeight;
 
-        return SDL_FRect{.x = rect.x + inset,
+        return SDL_Rect{.x = rect.x + inset,
                          .y = rect.y + topInset,
-                         .w = SDL_max(0.0F, rect.w - (inset * 2.0F)),
-                         .h = SDL_max(0.0F, rect.h - topInset - inset)};
+                         .w = SDL_max(0, rect.w - (inset * 2)),
+                         .h = SDL_max(0, rect.h - topInset - inset)};
     }
 } // namespace nuvelocity

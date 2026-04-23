@@ -18,20 +18,20 @@ namespace nuvelocity
         void Update(Game* aGame) override;
         void Draw(Game* aGame) override;
 
-        void SetSpacing(float spacing);
-        float GetSpacing() const;
+        void SetSpacing(int spacing);
+        int GetSpacing() const;
 
         struct Padding
         {
-            float top = 0.0f;
-            float right = 0.0f;
-            float bottom = 0.0f;
-            float left = 0.0f;
+            int top = 0;
+            int right = 0;
+            int bottom = 0;
+            int left = 0;
         };
 
-        void SetPadding(float padding);
-        void SetPadding(float horizontal, float vertical);
-        void SetPadding(float top, float right, float bottom, float left);
+        void SetPadding(int padding);
+        void SetPadding(int horizontal, int vertical);
+        void SetPadding(int top, int right, int bottom, int left);
         const Padding& GetPadding() const;
 
         void SetAutoCenter(bool autoCenter);
@@ -39,7 +39,7 @@ namespace nuvelocity
 
     private:
         std::vector<std::shared_ptr<Button>> mButtons;
-        float mSpacing = 8.0f;
+        int mSpacing = 8;
         Padding mPadding;
         bool mAutoCenter = false;
     };

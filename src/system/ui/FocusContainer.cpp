@@ -58,13 +58,13 @@ namespace nuvelocity
 
         UpdateFocusNavigation(aGame->mInput);
 
-        const SDL_FPoint mousePosition = aGame->mInput->GetMousePosition();
+        const SDL_Point mousePosition = aGame->mInput->GetMousePosition();
         bool clickedOnItem = false;
 
         for (std::size_t i = 0; i < mItemCount; ++i)
         {
-            const SDL_FRect rect = mItems[i]->GetScreenRect();
-            if (SDL_PointInRectFloat(&mousePosition, &rect))
+            const SDL_Rect rect = mItems[i]->GetScreenRect();
+            if (SDL_PointInRect(&mousePosition, &rect))
             {
                 if (aGame->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
                 {

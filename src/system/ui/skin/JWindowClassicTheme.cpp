@@ -18,7 +18,7 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_FRect rect = button->GetScreenRect();
+        const SDL_Rect rect = button->GetScreenRect();
         const auto& style = button->GetStyle();
         const auto& buttonStyle = button->GetButtonStyle();
 
@@ -46,15 +46,15 @@ namespace nuvelocity
                                style.borderThickness);
 
         // 3. Draw Text
-        SDL_FRect textRect{.x = rect.x + 4.0F,
-                           .y = rect.y + 2.0F,
-                           .w = SDL_max(0.0F, rect.w - 8.0F),
-                           .h = SDL_max(0.0F, rect.h - 4.0F)};
+        SDL_Rect textRect{.x = rect.x + 4,
+                           .y = rect.y + 2,
+                           .w = SDL_max(0, rect.w - 8),
+                           .h = SDL_max(0, rect.h - 4)};
 
         if (button->IsPressed())
         {
-            textRect.x += 1.0F;
-            textRect.y += 1.0F;
+            textRect.x += 1;
+            textRect.y += 1;
         }
 
         game->mFont->DrawString(game->mSpriteBatch,
@@ -68,10 +68,10 @@ namespace nuvelocity
 
         if (buttonStyle.showFocusRing && button->IsFocused() && !button->IsHovered())
         {
-            const SDL_FRect focusRect{.x = rect.x + 2.0F,
-                                      .y = rect.y + 2.0F,
-                                      .w = SDL_max(0.0F, rect.w - 4.0F),
-                                      .h = SDL_max(0.0F, rect.h - 4.0F)};
+            const SDL_Rect focusRect{.x = rect.x + 2,
+                                      .y = rect.y + 2,
+                                      .w = SDL_max(0, rect.w - 4),
+                                      .h = SDL_max(0, rect.h - 4)};
             WidgetUtils::DrawRect(game->mSpriteBatch, focusRect, SDL_Color{255, 255, 255, 64});
         }
     }
@@ -84,9 +84,9 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_FRect windowRect = window->GetScreenRect();
-        const SDL_FRect titleRect = window->GetTitleBarRect();
-        const SDL_FRect clientRect = window->GetClientRect();
+        const SDL_Rect windowRect = window->GetScreenRect();
+        const SDL_Rect titleRect = window->GetTitleBarRect();
+        const SDL_Rect clientRect = window->GetClientRect();
 
         const auto& style = window->GetStyle();
         const auto& windowStyle = window->GetWindowStyle();
@@ -105,9 +105,9 @@ namespace nuvelocity
             window->IsActive() ? windowStyle.titleBarColor : windowStyle.titleBarInactiveColor;
         WidgetUtils::FillRect(game->mSpriteBatch, titleRect, titleColor);
 
-        SDL_FRect titleTextRect{.x = titleRect.x + 6.0F,
+        SDL_Rect titleTextRect{.x = titleRect.x + 6,
                                 .y = titleRect.y,
-                                .w = SDL_max(0.0F, titleRect.w - 24.0F),
+                                .w = SDL_max(0, titleRect.w - 24),
                                 .h = titleRect.h};
 
         game->mFont->DrawString(game->mSpriteBatch,
@@ -132,14 +132,14 @@ namespace nuvelocity
         // 4. Draw Close Button
         if (window->IsClosable())
         {
-            SDL_FRect closeRect = window->GetCloseButtonRect();
+            SDL_Rect closeRect = window->GetCloseButtonRect();
             WidgetUtils::FillRect(game->mSpriteBatch, closeRect, windowStyle.closeButtonColor);
             WidgetUtils::DrawBevel(game->mSpriteBatch,
                                    closeRect,
                                    WidgetUtils::BevelColors{.light = style.borderLightColor,
                                                             .dark = style.borderDarkColor},
                                    false,
-                                   1.0F);
+                                   1);
             game->mFont->DrawString(game->mSpriteBatch,
                                     "X",
                                     closeRect,
@@ -158,7 +158,7 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_FRect rect = textBox->GetScreenRect();
+        const SDL_Rect rect = textBox->GetScreenRect();
         const auto& style = textBox->GetTextBoxStyle();
         const auto& baseStyle = textBox->GetStyle();
 
@@ -173,10 +173,10 @@ namespace nuvelocity
                                true,
                                baseStyle.borderThickness);
 
-        SDL_FRect textRect{.x = rect.x + 6.0F,
-                           .y = rect.y + 3.0F,
-                           .w = SDL_max(0.0F, rect.w - 12.0F),
-                           .h = SDL_max(0.0F, rect.h - 6.0F)};
+        SDL_Rect textRect{.x = rect.x + 6,
+                           .y = rect.y + 3,
+                           .w = SDL_max(0, rect.w - 12),
+                           .h = SDL_max(0, rect.h - 6)};
         game->mFont->DrawString(game->mSpriteBatch,
                                 textBox->GetText(),
                                 textRect,
@@ -195,21 +195,21 @@ namespace nuvelocity
             const bool visibleCaret = ((SDL_GetTicks() / 500U) % 2U) == 0U;
             if (visibleCaret)
             {
-                SDL_FRect caretRect{.x = rect.x + 6.0F + static_cast<float>(textWidth),
-                                    .y = rect.y + 4.0F,
-                                    .w = 1.0F,
-                                    .h = SDL_max(0.0F, rect.h - 8.0F)};
+                SDL_Rect caretRect{.x = rect.x + 6 + textWidth,
+                                    .y = rect.y + 4,
+                                    .w = 1,
+                                    .h = SDL_max(0, rect.h - 8)};
                 WidgetUtils::FillRect(game->mSpriteBatch, caretRect, style.caretColor);
             }
         }
     }
 
-    SDL_FRect JWindowClassicTheme::GetInnerRect(const MdiWindow* window) const
+    SDL_Rect JWindowClassicTheme::GetInnerRect(const MdiWindow* window) const
     {
         return window->GetTitleBarRect();
     }
 
-    SDL_FRect JWindowClassicTheme::GetCloseButtonRect(const MdiWindow* window) const
+    SDL_Rect JWindowClassicTheme::GetCloseButtonRect(const MdiWindow* window) const
     {
         return window->GetCloseButtonRect();
     }

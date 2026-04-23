@@ -48,9 +48,9 @@ namespace nuvelocity
         bool IsMouseButtonPressed(uint8_t button) const;
         bool IsMouseButtonReleased(uint8_t button) const;
 
-        SDL_FPoint GetMousePosition() const;
-        SDL_FPoint GetMouseDelta() const;
-        SDL_FPoint GetWheelDelta() const;
+        SDL_Point GetMousePosition() const;
+        SDL_Point GetMouseDelta() const;
+        SDL_Point GetWheelDelta() const;
 
         bool IsGamepadConnected(SDL_JoystickID gamepadId) const;
         bool IsGamepadButtonDown(SDL_JoystickID gamepadId, SDL_GamepadButton button) const;
@@ -66,9 +66,9 @@ namespace nuvelocity
         std::unordered_map<uint8_t, ButtonState> mMouseButtonStates;
         std::unordered_map<SDL_JoystickID, GamepadState> mGamepads;
 
-        SDL_FPoint mMousePosition;
-        SDL_FPoint mMouseDelta;
-        SDL_FPoint mWheelDelta;
+        SDL_Point mMousePosition;
+        SDL_Point mMouseDelta;
+        SDL_Point mWheelDelta;
 
         bool mQuitRequested;
         std::string mTextInput;

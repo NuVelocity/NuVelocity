@@ -27,7 +27,7 @@ namespace nuvelocity
 
         if (mAutoCenter && mParent != nullptr)
         {
-            SDL_FRect parentRect;
+            SDL_Rect parentRect;
             if (auto* mdi = dynamic_cast<MdiWindow*>(mParent))
             {
                 parentRect = mdi->GetClientRect();
@@ -37,27 +37,27 @@ namespace nuvelocity
                 parentRect = mParent->GetScreenRect();
             }
 
-            const float centerX = parentRect.x + (parentRect.w - mRect.w) * 0.5f;
-            if (SDL_fabs(mRect.x - centerX) > 0.5f)
+            const int centerX = parentRect.x + (parentRect.w - mRect.w) / 2;
+            if (mRect.x != centerX)
             {
                 mRect.x = centerX;
             }
         }
 
-        float currentY = mPadding.top;
-        float availableWidth = mRect.w - mPadding.left - mPadding.right;
+        int currentY = mPadding.top;
+        int availableWidth = mRect.w - mPadding.left - mPadding.right;
 
         for (auto& btn : mButtons)
         {
-            SDL_FRect btnRect = btn->GetRect();
+            SDL_Rect btnRect = btn->GetRect();
             if (btnRect.w > 0 && btnRect.w < availableWidth)
             {
-                btnRect.x = mRect.x + mPadding.left + (availableWidth - btnRect.w) * 0.5f;
+                btnRect.x = mRect.x + mPadding.left + (availableWidth - btnRect.w) / 2;
             }
             else
             {
                 btnRect.x = mRect.x + mPadding.left;
-                btnRect.w = SDL_max(0.0f, availableWidth);
+                btnRect.w = SDL_max(0, availableWidth);
             }
             btnRect.y = mRect.y + currentY;
             btn->SetRect(btnRect);
@@ -66,7 +66,7 @@ namespace nuvelocity
             btn->Update(aGame);
         }
 
-        mRect.h = SDL_max(0.0f, currentY - (mButtons.empty() ? 0 : mSpacing) + mPadding.bottom);
+        mRect.h = SDL_max(0, currentY - (mButtons.empty() ? 0 : mSpacing) + mPadding.bottom);
     }
 
     void ButtonContainer::Draw(Game* aGame)
@@ -82,27 +82,27 @@ namespace nuvelocity
         }
     }
 
-    void ButtonContainer::SetSpacing(float spacing)
+    void ButtonContainer::SetSpacing(int spacing)
     {
         mSpacing = spacing;
     }
 
-    float ButtonContainer::GetSpacing() const
+    int ButtonContainer::GetSpacing() const
     {
         return mSpacing;
     }
 
-    void ButtonContainer::SetPadding(float padding)
+    void ButtonContainer::SetPadding(int padding)
     {
         mPadding = {padding, padding, padding, padding};
     }
 
-    void ButtonContainer::SetPadding(float horizontal, float vertical)
+    void ButtonContainer::SetPadding(int horizontal, int vertical)
     {
         mPadding = {vertical, horizontal, vertical, horizontal};
     }
 
-    void ButtonContainer::SetPadding(float top, float right, float bottom, float left)
+    void ButtonContainer::SetPadding(int top, int right, int bottom, int left)
     {
         mPadding = {top, right, bottom, left};
     }

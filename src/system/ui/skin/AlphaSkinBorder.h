@@ -46,7 +46,7 @@ namespace nuvelocity
 
         void Load(AssetManager* assets);
         void
-        Draw(SpriteBatch* spriteBatch, const SDL_FRect& windowRect, const SDL_FRect& innerRect);
+        Draw(SpriteBatch* spriteBatch, const SDL_Rect& windowRect, const SDL_Rect& innerRect);
 
         static void InitClassInfo(ClassInfo& info)
         {
@@ -69,8 +69,8 @@ namespace nuvelocity
         }
 
     private:
-        void DrawBackground(SpriteBatch* spriteBatch, const SDL_FRect& rect);
-        void DrawHighlights(SpriteBatch* spriteBatch, const SDL_FRect& rect);
+        void DrawBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect);
+        void DrawHighlights(SpriteBatch* spriteBatch, const SDL_Rect& rect);
     };
 } // namespace nuvelocity
 

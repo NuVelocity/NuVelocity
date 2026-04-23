@@ -61,7 +61,7 @@ namespace nuvelocity
 
         InputManager& input = *aGame->mInput;
 
-        const SDL_FPoint mouse = input.GetMousePosition();
+        const SDL_Point mouse = input.GetMousePosition();
         mHovered = ContainsPoint(mouse);
 
         if (mHovered && input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
@@ -108,7 +108,7 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_FRect rect = GetScreenRect();
+        const SDL_Rect rect = GetScreenRect();
 
         JWindowSkin* skin = GetSkin(game);
         if (skin != nullptr)

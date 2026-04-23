@@ -46,9 +46,9 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_FRect windowRect = window->GetRect();
-        const float newX = (static_cast<float>(game->mWindowWidth) - windowRect.w) / 2.0F;
-        const float newY = (static_cast<float>(game->mWindowHeight) - windowRect.h) / 2.0F;
+        const SDL_Rect windowRect = window->GetRect();
+        const int newX = (game->mWindowWidth - windowRect.w) / 2;
+        const int newY = (game->mWindowHeight - windowRect.h) / 2;
 
         window->SetRect({newX, newY, windowRect.w, windowRect.h});
         AddWindow(window);
@@ -72,7 +72,7 @@ namespace nuvelocity
         }
 
         InputManager& input = *aGame->mInput;
-        const SDL_FPoint mousePosition = input.GetMousePosition();
+        const SDL_Point mousePosition = input.GetMousePosition();
 
         if (input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
         {
