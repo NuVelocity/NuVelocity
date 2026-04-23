@@ -2,6 +2,7 @@
 #include "WidgetUtils.h"
 #include "skin/JWindowSkin.h"
 
+#include <SDL3/SDL.h>
 #include <system/FontManager.h>
 #include <system/Game.h>
 #include <system/InputManager.h>
@@ -33,12 +34,27 @@ namespace nuvelocity
         const SDL_FPoint mouse = input.GetMousePosition();
         if (input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
         {
+            const bool wasFocused = mFocused;
             mFocused = ContainsPoint(mouse);
+            if (mFocused && !wasFocused)
+            {
+                SDL_StartTextInput(aGame->mWindow);
+            }
+            else if (!mFocused && wasFocused)
+            {
+                SDL_StopTextInput(aGame->mWindow);
+            }
         }
 
         if (!mFocused || mReadOnly)
         {
             return;
+        }
+
+        // Ensure text input is active if we are focused (e.g., set via SetFocused)
+        if (!SDL_TextInputActive(aGame->mWindow))
+        {
+            SDL_StartTextInput(aGame->mWindow);
         }
 
         bool changed = false;
