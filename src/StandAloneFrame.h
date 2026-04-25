@@ -23,6 +23,63 @@ namespace nuvelocity
         bool IsSourceCache() const;
         bool IsSourceAsset() const;
 
+        bool GetRle() const
+        {
+            return mRle;
+        }
+        bool GetRleAllCopy() const
+        {
+            return mRleAllCopy;
+        }
+        bool GetCropColor0() const
+        {
+            return mCropColor0;
+        }
+        bool GetDoDither() const
+        {
+            return mDoDither;
+        }
+        bool GetLossless() const
+        {
+            return mLossless;
+        }
+        int16_t GetQuality() const
+        {
+            return mQuality;
+        }
+        bool GetCenterHotSpot() const
+        {
+            return mCenterHotSpot;
+        }
+        void SetRle(bool value)
+        {
+            mRle = value;
+        }
+        void SetRleAllCopy(bool value)
+        {
+            mRleAllCopy = value;
+        }
+        void SetCropColor0(bool value)
+        {
+            mCropColor0 = value;
+        }
+        void SetDoDither(bool value)
+        {
+            mDoDither = value;
+        }
+        void SetLossless(bool value)
+        {
+            mLossless = value;
+        }
+        void SetQuality(int16_t value)
+        {
+            mQuality = value;
+        }
+        void SetCenterHotSpot(bool value)
+        {
+            mCenterHotSpot = value;
+        }
+
         static void InitClassInfo(ClassInfo& aInfo)
         {
             aInfo.mName = "CStandAloneFrame";
