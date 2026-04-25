@@ -27,7 +27,7 @@ namespace nuvelocity
         SDL_Texture* GetTexture(SDL_Renderer* renderer);
 
     private:
-        enum class Kind
+        enum class Kind : uint8_t
         {
             None,
             Sequence,

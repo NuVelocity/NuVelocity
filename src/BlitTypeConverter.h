@@ -22,7 +22,7 @@ namespace nuvelocity
      *       Removed: Normal Scale, Blit As Shadow.
      * (BT6 TODO) Ricochet Xtreme, Swarm -> Values in use: 2, 5, and 6.
      */
-    enum class BlitTypeRevision
+    enum class BlitTypeRevision : uint8_t
     {
         Type1,
         Type2,

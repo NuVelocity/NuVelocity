@@ -34,7 +34,7 @@ namespace nuvelocity
         uint8_t* data = nullptr;
     };
 
-    enum class SerializationMode
+    enum class SerializationMode : uint8_t
     {
         Standard, // Normal property-based serialization
         ByteArray // Special mode for byte array data (e.g., CFrame pixel data)

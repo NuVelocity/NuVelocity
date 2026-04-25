@@ -3,6 +3,7 @@
 
 #include "LogCategory.h"
 #include <SDL3/SDL.h>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <map>
@@ -15,7 +16,7 @@ namespace nuvelocity
 {
     class ClassInfo;
 
-    enum class PropertyType
+    enum class PropertyType : uint8_t
     {
         Object,
         Int,

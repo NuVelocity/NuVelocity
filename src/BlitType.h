@@ -2,11 +2,12 @@
 #define NVE_BLITTYPE_H
 
 #include <array>
+#include <cstdint>
 #include <utility>
 
 namespace nuvelocity
 {
-    enum BlitType
+    enum BlitType : uint8_t
     {
         BLIT_TRANSPARENT_MASK = 0,
         BLIT_NORMAL = 1,

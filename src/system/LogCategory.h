@@ -2,8 +2,9 @@
 #define NVE_LOGCATEGORY_H
 
 #include <SDL3/SDL_log.h>
+#include <cstdint>
 
-enum LogCategory
+enum LogCategory : uint8_t
 {
     NVE_LOG_CATEGORY_ENGINE = SDL_LOG_CATEGORY_CUSTOM,
     NVE_LOG_CATEGORY_ASSETS,

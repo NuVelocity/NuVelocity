@@ -3,12 +3,14 @@
 
 #include "API.h"
 #include "ClassInfo.h"
+#include "Object.h"
 #include "ObjectRegistry.h"
 #include "Utils.h"
 #include "system/LogCategory.h"
 #include <algorithm>
 #include <cassert>
 #include <cctype>
+#include <cstdint>
 #include <cstring>
 #include <iomanip>
 #include <sstream>
@@ -29,7 +31,7 @@ namespace nuvelocity
     static constexpr std::string_view kKeyArrayItem = "Array Item";
     static constexpr std::string_view kKeyArray = "Array";
 
-    enum class ParserScope
+    enum class ParserScope : uint8_t
     {
         None,
         Root,

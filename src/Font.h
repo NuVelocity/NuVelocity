@@ -12,7 +12,7 @@
 
 namespace nuvelocity
 {
-    enum class TextAlignment
+    enum class TextAlignment : uint8_t
     {
         Left,
         Center,

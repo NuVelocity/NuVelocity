@@ -16,9 +16,9 @@
 
 namespace nuvelocity
 {
-    enum class BlitTypeRevision;
+    enum class BlitTypeRevision : uint8_t;
 
-    enum class ImagePropertyListFormat
+    enum class ImagePropertyListFormat : uint8_t
     {
         Format1,
         Format2,

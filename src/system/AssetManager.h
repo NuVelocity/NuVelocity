@@ -4,6 +4,7 @@
 #include "API.h"
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>
+#include <cstdint>
 #include <filesystem>
 #include <physfs.h>
 #include <string>
@@ -22,7 +23,7 @@ namespace nuvelocity
     class AssetManager : public Manager
     {
     private:
-        enum class CacheKind
+        enum class CacheKind : uint8_t
         {
             Unknown = 0,
             StandAloneFrame = 1,

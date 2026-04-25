@@ -2,6 +2,7 @@
 #define NVE_RENDERER_SPRITE_BATCH_H
 
 #include <SDL3/SDL.h>
+#include <cstdint>
 #include <unordered_map>
 #include <vector>
 
@@ -40,7 +41,7 @@ namespace nuvelocity
         void Present() override;
 
     private:
-        enum class CommandType
+        enum class CommandType : uint8_t
         {
             DrawSurface,
             DrawTexture,
