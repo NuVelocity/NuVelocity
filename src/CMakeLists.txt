@@ -40,6 +40,8 @@ target_sources(
     ${NVE_OBJECT_REGISTRATION_CPP}
     Font.cpp
     Font.h
+    ParticleType.cpp
+    ParticleType.h
     FontBitmap.cpp
     FontBitmap.h
     FrameInfo.cpp
