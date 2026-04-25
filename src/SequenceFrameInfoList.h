@@ -3,9 +3,8 @@
 
 #include "BlitTypeConverter.h"
 #include "FrameInfo.h"
+#include "Object.h"
 #include "Sequence.h"
-#include "SequenceFlags.h"
-#include "model/Model.h"
 #include <vector>
 
 namespace nuvelocity

@@ -1,7 +1,6 @@
 #ifndef NVE_FRAME_INFO_H
 #define NVE_FRAME_INFO_H
-
-#include "model/Model.h"
+#include "Object.h"
 
 namespace nuvelocity
 {

@@ -4,12 +4,11 @@
 #include "AssetSource.h"
 #include "BlitType.h"
 #include "Frame.h"
+#include "Object.h"
 #include "SequenceFlags.h"
-#include "model/Model.h"
 #include <SDL3/SDL.h>
 #include <cstddef>
 #include <cstdint>
-#include <limits>
 #include <memory>
 #include <string>
 #include <vector>

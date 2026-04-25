@@ -1,7 +1,6 @@
 #ifndef NVE_PALETTE_HOLDER_H
 #define NVE_PALETTE_HOLDER_H
-
-#include "model/Model.h"
+#include "Object.h"
 
 namespace nuvelocity
 {

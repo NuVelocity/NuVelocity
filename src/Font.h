@@ -2,9 +2,8 @@
 #define NVE_FONT_H
 
 #include "BlitType.h"
+#include "Object.h"
 #include "SpriteBatch.h"
-#include "model/Model.h"
-
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <string>
@@ -49,7 +48,7 @@ namespace nuvelocity
                                   bool verticalCenter = false,
                                   int underlineIndex = -1) const;
 
-        inline void AttachFontStream(SDL_IOStream* fontStream)
+        void AttachFontStream(SDL_IOStream* fontStream)
         {
             mFontStream = fontStream;
         }

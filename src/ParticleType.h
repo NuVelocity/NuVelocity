@@ -1,7 +1,7 @@
 #ifndef NVE_PARTICLE_TYPE_H
 #define NVE_PARTICLE_TYPE_H
 
-#include "model/Model.h"
+#include "Object.h"
 #include <string>
 
 namespace nuvelocity

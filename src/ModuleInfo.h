@@ -1,7 +1,7 @@
 #ifndef NVE_MODULE_INFO_H
 #define NVE_MODULE_INFO_H
 
-#include "model/Model.h"
+#include "Object.h"
 #include <string>
 
 namespace nuvelocity

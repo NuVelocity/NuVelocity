@@ -6,9 +6,8 @@
 
 #include "API.h"
 #include "AssetSource.h"
-#include "BlitType.h"
 #include "Frame.h"
-#include "model/Model.h"
+#include "Object.h"
 
 namespace nuvelocity
 {

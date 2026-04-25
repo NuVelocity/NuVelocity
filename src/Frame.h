@@ -3,8 +3,7 @@
 
 #include <SDL3/SDL.h>
 
-#include "model/Model.h"
-#include <stdexcept>
+#include "Object.h"
 #include <string>
 
 namespace nuvelocity
