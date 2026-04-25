@@ -101,6 +101,14 @@ namespace nuvelocity
             window->Update(aGame);
         }
 
+        if (input.IsKeyPressed(SDL_SCANCODE_ESCAPE))
+        {
+            if (!mWindows.empty())
+            {
+                mWindows.back()->Close();
+            }
+        }
+
         mWindows.erase(std::remove_if(mWindows.begin(),
                                       mWindows.end(),
                                       [](const std::shared_ptr<MdiWindow>& window)
