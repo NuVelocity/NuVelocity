@@ -65,6 +65,9 @@ namespace nuvelocity
         NVE_API Font* LoadFont(const std::string& path);
         NVE_API FontBitmap* LoadFontBitmap(const std::string& path);
 
+        NVE_API StandAloneFrame* TryLoadStandAloneFrame(const std::string& path);
+        NVE_API Sequence* TryLoadSequence(const std::string& path);
+
         NVE_API std::vector<std::string> EnumerateRoundSets();
 
         NVE_API std::string LoadTextFile(const std::string& path);

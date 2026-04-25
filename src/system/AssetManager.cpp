@@ -405,6 +405,62 @@ namespace nuvelocity
         return text;
     }
 
+    StandAloneFrame* AssetManager::TryLoadStandAloneFrame(const std::string& path)
+    {
+        StandAloneFrame* frame = LoadStandAloneFrame(path);
+        if (frame != nullptr)
+        {
+            return frame;
+        }
+
+        SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                    "Failed to load standalone frame at '%s'. Attempting fallback path. Consider "
+                    "correcting the asset reference if this warning appears frequently.",
+                    path.c_str());
+
+        std::filesystem::path oldPath(path);
+        if (oldPath.has_parent_path() && oldPath.parent_path().has_parent_path())
+        {
+            std::filesystem::path newPath =
+                oldPath.parent_path().parent_path() / oldPath.filename();
+            if (newPath == oldPath)
+            {
+                return nullptr; // Prevent infinite loop
+            }
+            return TryLoadStandAloneFrame(newPath.string());
+        }
+
+        return nullptr;
+    }
+
+    Sequence* AssetManager::TryLoadSequence(const std::string& path)
+    {
+        Sequence* sequence = LoadSequence(path);
+        if (sequence != nullptr)
+        {
+            return sequence;
+        }
+
+        SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                    "Failed to load sequence at '%s'. Attempting fallback path. Consider "
+                    "correcting the asset reference if this warning appears frequently.",
+                    path.c_str());
+
+        std::filesystem::path oldPath(path);
+        if (oldPath.has_parent_path() && oldPath.parent_path().has_parent_path())
+        {
+            std::filesystem::path newPath =
+                oldPath.parent_path().parent_path() / oldPath.filename();
+            if (newPath == oldPath)
+            {
+                return nullptr;
+            }
+            return TryLoadSequence(newPath.string());
+        }
+
+        return nullptr;
+    }
+
     std::vector<std::string> AssetManager::EnumerateRoundSets()
     {
         std::vector<std::string> roundSets;
