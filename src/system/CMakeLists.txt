@@ -32,6 +32,7 @@ target_sources(
     RendererSpriteBatch.cpp
     RendererSpriteBatch.h
     SpriteBatch.h
+    SpriteBatch.cpp
     Utils.h
 )
 

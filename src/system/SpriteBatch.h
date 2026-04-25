@@ -30,104 +30,25 @@ namespace nuvelocity
                           int x,
                           int y,
                           SDL_Color color = {255, 255, 255, 255},
-                          bool useHotSpot = true)
-        {
-            if (frame == nullptr)
-            {
-                return;
-            }
-
-            SDL_Surface* surface = frame->GetSurface();
-            if (surface == nullptr)
-            {
-                return;
-            }
-
-            SDL_Rect destRect{.x = x + (useHotSpot ? frame->mHotSpot.x + (surface->w / 2) : 0),
-                              .y = y + (useHotSpot ? frame->mHotSpot.y + (surface->h / 2) : 0),
-                              .w = surface->w,
-                              .h = surface->h};
-
-            Draw(surface, &destRect, nullptr, color);
-        }
+                          bool useHotSpot = true);
 
         virtual void Draw(Sequence* sequence,
                           std::size_t frameIndex,
                           int x,
                           int y,
                           SDL_Color color = {255, 255, 255, 255},
-                          bool useHotSpot = true)
-        {
-            if (sequence == nullptr || frameIndex >= sequence->GetFrameCount())
-            {
-                return;
-            }
-
-            Frame* frame = sequence->GetFrame(frameIndex);
-            if (frame == nullptr)
-            {
-                return;
-            }
-
-            SDL_Surface* surface = frame->GetSurface();
-            if (surface == nullptr)
-            {
-                return;
-            }
-
-            SDL_Rect destRect{.x = x + (useHotSpot ? frame->mHotSpot.x : 0),
-                              .y = y + (useHotSpot ? frame->mHotSpot.y : 0),
-                              .w = surface->w,
-                              .h = surface->h};
-            Draw(surface, &destRect, nullptr, color);
-        }
+                          bool useHotSpot = true);
 
         virtual void DrawCentered(SDL_Surface* surface) = 0;
 
-        virtual void DrawCentered(StandAloneFrame* frame)
-        {
-            if (frame == nullptr)
-            {
-                return;
-            }
+        virtual void DrawCentered(StandAloneFrame* frame);
 
-            SDL_Surface* surface = frame->GetSurface();
-            if (surface == nullptr)
-            {
-                return;
-            }
+        virtual void DrawCentered(Sequence* sequence, std::size_t frameIndex);
 
-            DrawCentered(surface);
-        }
+        virtual void
+        DrawLine(int x1, int y1, int x2, int y2, SDL_Color color, int thickness = 1) = 0;
 
-        virtual void DrawCentered(Sequence* sequence, std::size_t frameIndex)
-        {
-            if (sequence == nullptr || frameIndex >= sequence->GetFrameCount())
-            {
-                return;
-            }
-
-            SDL_Surface* surface = sequence->GetSurface(frameIndex);
-            if (surface == nullptr)
-            {
-                return;
-            }
-
-            DrawCentered(surface);
-        }
-
-        virtual void DrawLine(
-            int x1, int y1, int x2, int y2, SDL_Color color, int thickness = 1) = 0;
-
-        virtual void OutlineRect(const SDL_Rect* rect, SDL_Color color, int thickness = 1)
-        {
-            DrawLine(rect->x, rect->y, rect->x + rect->w, rect->y, color, thickness);
-            DrawLine(
-                rect->x + rect->w, rect->y, rect->x + rect->w, rect->y + rect->h, color, thickness);
-            DrawLine(
-                rect->x + rect->w, rect->y + rect->h, rect->x, rect->y + rect->h, color, thickness);
-            DrawLine(rect->x, rect->y + rect->h, rect->x, rect->y, color, thickness);
-        }
+        virtual void OutlineRect(const SDL_Rect* rect, SDL_Color color, int thickness = 1);
 
         virtual void FillRect(const SDL_Rect* rect, SDL_Color color) = 0;
 
