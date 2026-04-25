@@ -77,19 +77,15 @@ namespace nuvelocity
             textRect.y += 1;
         }
 
-        // Use skin's general font if available
-        std::string fontName = mOptions->mGeneralFont.empty() ? "OCR" : mOptions->mGeneralFont;
-
-        game->mFont->DrawStringWithFontAt(fontName,
-                                          game->mSpriteBatch,
-                                          button->GetDisplayCaption(),
-                                          textRect.x + rect.w / 2,
-                                          textRect.y + rect.h / 2,
-                                          textColor,
-                                          13,
-                                          TextAlignment::Center,
-                                          nullptr,
-                                          button->GetMnemonicIndex());
+        game->mFont->DrawStringWithFont(mOptions->mGeneralFont,
+                                        game->mSpriteBatch,
+                                        button->GetDisplayCaption(),
+                                        textRect,
+                                        textColor,
+                                        13,
+                                        TextAlignment::Center,
+                                        true,
+                                        button->GetMnemonicIndex());
 
         if (button->GetButtonStyle().showFocusRing && button->IsFocused() && !button->IsHovered())
         {
@@ -136,14 +132,9 @@ namespace nuvelocity
         }
 
         const int titleX = titleRect.x + (titleRect.w / 2);
-        const int titleY =
-            titleRect.y + topFrameHeight + mOptions->mWindowHeadingOffset;
+        const int titleY = titleRect.y + topFrameHeight + mOptions->mWindowHeadingOffset;
 
-        // Use skinned font if available
-        std::string fontName =
-            mOptions->mWindowHeadingFont.empty() ? "Small Blue" : mOptions->mWindowHeadingFont;
-
-        game->mFont->DrawStringWithFontAt(fontName,
+        game->mFont->DrawStringWithFontAt(mOptions->mWindowHeadingFont,
                                           game->mSpriteBatch,
                                           window->GetTitle(),
                                           titleX,
@@ -183,10 +174,7 @@ namespace nuvelocity
                            .w = SDL_max(0, rect.w - 12),
                            .h = SDL_max(0, rect.h - 6)};
 
-        std::string fontName =
-            mOptions->mGeneralFont.empty() ? "Small Blue" : mOptions->mGeneralFont;
-
-        game->mFont->DrawStringWithFont(fontName,
+        game->mFont->DrawStringWithFont(mOptions->mGeneralFont,
                                         game->mSpriteBatch,
                                         textBox->GetText(),
                                         textRect,
@@ -199,8 +187,11 @@ namespace nuvelocity
         {
             int textWidth = 0;
             int textHeight = 0;
-            game->mFont->MeasureStringWithFont(
-                fontName, textBox->GetText(), style.fontPointSize, textWidth, textHeight);
+            game->mFont->MeasureStringWithFont(mOptions->mGeneralFont,
+                                               textBox->GetText(),
+                                               style.fontPointSize,
+                                               textWidth,
+                                               textHeight);
 
             const bool visibleCaret = ((SDL_GetTicks() / 500U) % 2U) == 0U;
             if (visibleCaret)
