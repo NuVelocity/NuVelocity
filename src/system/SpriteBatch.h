@@ -26,8 +26,11 @@ namespace nuvelocity
                           const SDL_Rect* srcRect = nullptr,
                           SDL_Color color = {255, 255, 255, 255}) = 0;
 
-        virtual void
-        Draw(StandAloneFrame* frame, int x, int y, SDL_Color color = {255, 255, 255, 255})
+        virtual void Draw(StandAloneFrame* frame,
+                          int x,
+                          int y,
+                          SDL_Color color = {255, 255, 255, 255},
+                          bool useHotSpot = true)
         {
             if (frame == nullptr)
             {
@@ -40,7 +43,10 @@ namespace nuvelocity
                 return;
             }
 
-            SDL_Rect destRect{x, y, surface->w, surface->h};
+            SDL_Rect destRect{.x = x + (useHotSpot ? frame->mHotSpot.x + (surface->w / 2) : 0),
+                              .y = y + (useHotSpot ? frame->mHotSpot.y + (surface->h / 2) : 0),
+                              .w = surface->w,
+                              .h = surface->h};
 
             Draw(surface, &destRect, nullptr, color);
         }
@@ -49,20 +55,30 @@ namespace nuvelocity
                           std::size_t frameIndex,
                           int x,
                           int y,
-                          SDL_Color color = {255, 255, 255, 255})
+                          SDL_Color color = {255, 255, 255, 255},
+                          bool useHotSpot = true)
         {
             if (sequence == nullptr || frameIndex >= sequence->GetFrameCount())
             {
                 return;
             }
 
-            SDL_Surface* surface = sequence->GetSurface(frameIndex);
+            Frame* frame = sequence->GetFrame(frameIndex);
+            if (frame == nullptr)
+            {
+                return;
+            }
+
+            SDL_Surface* surface = frame->GetSurface();
             if (surface == nullptr)
             {
                 return;
             }
 
-            SDL_Rect destRect{x, y, surface->w, surface->h};
+            SDL_Rect destRect{.x = x + (useHotSpot ? frame->mHotSpot.x : 0),
+                              .y = y + (useHotSpot ? frame->mHotSpot.y : 0),
+                              .w = surface->w,
+                              .h = surface->h};
             Draw(surface, &destRect, nullptr, color);
         }
 
