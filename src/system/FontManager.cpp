@@ -73,6 +73,11 @@ namespace nuvelocity
 
     Font* FontManager::FindFont(const std::string& name) const
     {
+        if (name.empty())
+        {
+            return nullptr;
+        }
+
         auto fontIt = mFonts.find(name);
         if (fontIt == mFonts.end())
         {
