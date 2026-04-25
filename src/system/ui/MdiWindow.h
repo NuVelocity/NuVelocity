@@ -71,6 +71,9 @@ namespace nuvelocity
         void SetAutoCenter(bool autoCenter);
         bool IsAutoCenter() const;
 
+        void SetFullScreen(bool fullScreen);
+        bool IsFullScreen() const;
+
         bool Intersects(const SDL_Point& point) const;
 
         void SetOnClose(const std::function<void(MdiWindow&)>& callback);
@@ -88,6 +91,7 @@ namespace nuvelocity
         bool mShouldClose;
         bool mAutoResize = false;
         bool mAutoCenter = false;
+        bool mFullScreen = false;
 
         SDL_Point mDragGrabOffset;
         StandAloneFrame* mBackgroundTile = nullptr;

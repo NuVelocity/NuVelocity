@@ -130,6 +130,16 @@ namespace nuvelocity
                 SetRect({centerX, centerY, mRect.w, mRect.h});
             }
         }
+
+        if (mFullScreen && aGame != nullptr)
+        {
+            if (mRect.x != 0 || mRect.y != 0 || mRect.w != aGame->mWindowWidth ||
+                mRect.h != aGame->mWindowHeight)
+            {
+                SetRect({.x = 0, .y = 0, .w = aGame->mWindowWidth, .h = aGame->mWindowHeight});
+            }
+            mDragging = false;
+        }
     }
 
     void MdiWindow::Draw(Game* game)
@@ -286,6 +296,16 @@ namespace nuvelocity
     bool MdiWindow::IsAutoCenter() const
     {
         return mAutoCenter;
+    }
+
+    void MdiWindow::SetFullScreen(bool fullScreen)
+    {
+        mFullScreen = fullScreen;
+    }
+
+    bool MdiWindow::IsFullScreen() const
+    {
+        return mFullScreen;
     }
 
     void MdiWindow::Close()
