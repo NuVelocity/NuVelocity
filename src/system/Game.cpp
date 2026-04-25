@@ -83,45 +83,39 @@ namespace nuvelocity
         return false;
     }
 
-    inline static bool RegisterEngineDefaultFonts(AssetManager* assetManager,
-                                                  FontManager* fontManager)
+    inline static bool RegisterFonts(AssetManager* assetManager, FontManager* fontManager)
     {
         if (assetManager == nullptr || fontManager == nullptr)
         {
             return false;
         }
 
-        constexpr const char* kDefaultFontName = "Default";
-        constexpr const char* kDefaultFontPath = "Resources/Fonts/!None.font.txt";
-        constexpr const char* kBitmapFallbackName = "!None";
-        constexpr const char* kBitmapFallbackPath = "Fonts/!None";
-
         bool hasAnyFont = false;
 
-        Font* defaultFontRaw = assetManager->LoadFont(kDefaultFontPath);
-        if (defaultFontRaw != nullptr)
+        // Load font bitmaps without a property file.
+        auto rawFontBitmaps = assetManager->EnumerateRawFontBitmaps();
+        for (const auto& [path, name] : rawFontBitmaps)
         {
-            auto defaultFont = std::unique_ptr<Font>(defaultFontRaw);
-            if (fontManager->RegisterFont(kDefaultFontName, std::move(defaultFont)))
+            FontBitmap* bitmapFont = assetManager->LoadFontBitmap(path);
+            if (bitmapFont == nullptr)
             {
-                fontManager->SetDefaultFont(kDefaultFontName);
-                hasAnyFont = true;
+                continue;
             }
+            fontManager->RegisterFont(name, std::unique_ptr<Font>(static_cast<Font*>(bitmapFont)));
+            hasAnyFont = true;
         }
 
-        FontBitmap* fallbackBitmap = assetManager->LoadFontBitmap(kBitmapFallbackPath);
-        if (fallbackBitmap != nullptr)
+        // Load fonts with property files.
+        auto fonts = assetManager->EnumerateFonts();
+        for (const auto& [path, name] : fonts)
         {
-            auto fallbackFont = std::unique_ptr<Font>(static_cast<Font*>(fallbackBitmap));
-            if (fontManager->RegisterFont(kBitmapFallbackName, std::move(fallbackFont)))
+            Font* font = assetManager->LoadFont(path);
+            if (font == nullptr)
             {
-                fontManager->SetFallbackFont(kBitmapFallbackName);
-                hasAnyFont = true;
-                if (defaultFontRaw == nullptr)
-                {
-                    fontManager->SetDefaultFont(kBitmapFallbackName);
-                }
+                continue;
             }
+            fontManager->RegisterFont(name, std::unique_ptr<Font>(font));
+            hasAnyFont = true;
         }
 
         return hasAnyFont;
@@ -266,7 +260,7 @@ namespace nuvelocity
             return Fail();
         }
 
-        if (RegisterEngineDefaultFonts(mAsset, mFont))
+        if (RegisterFonts(mAsset, mFont))
         {
             SDL_Log("Default engine fonts loaded successfully.");
         }
