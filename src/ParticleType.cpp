@@ -2,12 +2,12 @@
 
 namespace nuvelocity
 {
-    constexpr const char* DEFAULT_PARTICLE_TYPE = "!None";
-    constexpr int DEFAULT_WEIGHT = 10;
+    constexpr const char* kDefaultParticleType = "!None";
+    constexpr int kDefaultWeight = 10;
 
     ParticleType::ParticleType()
-            : mParticleType(DEFAULT_PARTICLE_TYPE)
-            , mWeight(DEFAULT_WEIGHT)
+            : mParticleType(kDefaultParticleType)
+            , mWeight(kDefaultWeight)
     {
     }
 

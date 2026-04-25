@@ -42,7 +42,7 @@ namespace nuvelocity
             , mMipmapForNativeVersion(true)
 #else
             : mFramesPerSecond(kSequenceDefaultFramesPerSecond)
-            , mBlitType(BLIT_TRANSPARENT_MASK)
+            , mBlitType(BlitTransparentMask)
             , mXOffset(0)
             , mYOffset(0)
             , mCenterHotSpot(true)

@@ -4,7 +4,7 @@ namespace nuvelocity
 {
     Font::Font()
             : mFontFamily(kFontDefaultFamily)
-            , mBlitType(BLIT_TRANSPARENT_MASK)
+            , mBlitType(BlitTransparentMask)
             , mPointSize(kFontDefaultPointSize)
             , mGenerateAllCaps(false)
             , mFontStream(nullptr)

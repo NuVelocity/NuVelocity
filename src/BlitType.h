@@ -7,28 +7,31 @@
 
 namespace nuvelocity
 {
+    inline constexpr int kBlitTypeCount = 7;
+
     enum BlitType : uint8_t
     {
-        BLIT_TRANSPARENT_MASK = 0,
-        BLIT_NORMAL = 1,
-        BLIT_BLEND_BLACK_BIAS = 2,
-        BLIT_BLEND_TEST_LIGHT = 3,
-        BLIT_BLIT_AS_SHADOW = 4,
-        BLIT_NORMAL_SCALE = 5,
-        BLIT_AMPLIFY_LIGHT = 6
+        BlitTransparentMask = 0,
+        BlitNormal = 1,
+        BlitBlendBlackBias = 2,
+        BlitBlendTestLight = 3,
+        BlitBlitAsShadow = 4,
+        BlitNormalScale = 5,
+        BlitAmplifyLight = 6
     };
 
     inline constexpr std::array<std::pair<int, const char*>, 7> kBlitTypeSerializedValues = {{
-        {BLIT_TRANSPARENT_MASK, "Transparent Mask"},
-        {BLIT_NORMAL, "Normal"},
-        {BLIT_BLEND_BLACK_BIAS, "Blend Black Bias"},
-        {BLIT_BLEND_TEST_LIGHT, "Blend Test Light"},
-        {BLIT_BLIT_AS_SHADOW, "Blit As Shadow"},
-        {BLIT_NORMAL_SCALE, "Normal Scale"},
-        {BLIT_AMPLIFY_LIGHT, "Blend Amplify Light"},
+        {BlitTransparentMask, "Transparent Mask"},
+        {BlitNormal, "Normal"},
+        {BlitBlendBlackBias, "Blend Black Bias"},
+        {BlitBlendTestLight, "Blend Test Light"},
+        {BlitBlitAsShadow, "Blit As Shadow"},
+        {BlitNormalScale, "Normal Scale"},
+        {BlitAmplifyLight, "Blend Amplify Light"},
     }};
 
-    inline const std::array<std::pair<int, const char*>, 7>& GetBlitTypeSerializedValues()
+    inline const std::array<std::pair<int, const char*>, kBlitTypeCount>&
+    GetBlitTypeSerializedValues()
     {
         return kBlitTypeSerializedValues;
     }

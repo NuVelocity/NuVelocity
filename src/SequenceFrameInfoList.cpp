@@ -6,7 +6,7 @@ namespace nuvelocity
             : mHasTextBlitType(false)
             , mWasRle(false)
             , mFlags(0)
-            , mBlitType(BLIT_TRANSPARENT_MASK)
+            , mBlitType(BlitTransparentMask)
             , mFramesPerSecond(kSequenceDefaultFramesPerSecond)
     {
     }

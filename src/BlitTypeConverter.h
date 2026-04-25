@@ -39,19 +39,19 @@ namespace nuvelocity
             switch (type)
             {
             case 0:
-                return BLIT_TRANSPARENT_MASK;
+                return BlitTransparentMask;
             case 1:
-                return BLIT_NORMAL;
+                return BlitNormal;
             case 2:
-                return BLIT_BLEND_BLACK_BIAS;
+                return BlitBlendBlackBias;
             case 3:
-                return BLIT_BLEND_TEST_LIGHT;
+                return BlitBlendTestLight;
             case 4:
-                return BLIT_BLIT_AS_SHADOW;
+                return BlitBlitAsShadow;
             case 5:
-                return BLIT_NORMAL_SCALE;
+                return BlitNormalScale;
             case 6:
-                return BLIT_AMPLIFY_LIGHT;
+                return BlitAmplifyLight;
             default:
                 return std::nullopt;
             }
@@ -62,19 +62,19 @@ namespace nuvelocity
             switch (type)
             {
             case 1:
-                return BLIT_TRANSPARENT_MASK;
+                return BlitTransparentMask;
             case 0:
-                return BLIT_NORMAL;
+                return BlitNormal;
             case 2:
-                return BLIT_BLEND_BLACK_BIAS;
+                return BlitBlendBlackBias;
             case 3:
-                return BLIT_BLEND_TEST_LIGHT;
+                return BlitBlendTestLight;
             case 4:
-                return BLIT_BLIT_AS_SHADOW;
+                return BlitBlitAsShadow;
             case 5:
-                return BLIT_NORMAL_SCALE;
+                return BlitNormalScale;
             case 6:
-                return BLIT_AMPLIFY_LIGHT;
+                return BlitAmplifyLight;
             default:
                 return std::nullopt;
             }
@@ -85,18 +85,18 @@ namespace nuvelocity
             switch (type)
             {
             case 2:
-                return BLIT_TRANSPARENT_MASK;
+                return BlitTransparentMask;
             case 3:
-                return BLIT_NORMAL;
+                return BlitNormal;
             case 0:
-                return BLIT_BLEND_BLACK_BIAS;
+                return BlitBlendBlackBias;
             case 1:
-                return BLIT_BLEND_TEST_LIGHT;
+                return BlitBlendTestLight;
             case 4:
-                return BLIT_BLIT_AS_SHADOW;
+                return BlitBlitAsShadow;
             // BLIT_NORMAL_SCALE was removed for this revision.
             case 5:
-                return BLIT_AMPLIFY_LIGHT;
+                return BlitAmplifyLight;
             default:
                 return std::nullopt;
             }
@@ -107,16 +107,16 @@ namespace nuvelocity
             switch (type)
             {
             case 0:
-                return BLIT_TRANSPARENT_MASK;
+                return BlitTransparentMask;
             case 1:
-                return BLIT_NORMAL;
+                return BlitNormal;
             case 3:
-                return BLIT_BLEND_BLACK_BIAS;
+                return BlitBlendBlackBias;
             case 4:
-                return BLIT_BLEND_TEST_LIGHT;
+                return BlitBlendTestLight;
             // BLIT_BLIT_AS_SHADOW and BLIT_NORMAL_SCALE were removed for this revision.
             case 2:
-                return BLIT_AMPLIFY_LIGHT;
+                return BlitAmplifyLight;
             default:
                 return std::nullopt;
             }
@@ -127,16 +127,16 @@ namespace nuvelocity
             switch (type)
             {
             case 1:
-                return BLIT_TRANSPARENT_MASK;
+                return BlitTransparentMask;
             case 0:
-                return BLIT_NORMAL;
+                return BlitNormal;
             case 2:
-                return BLIT_BLEND_BLACK_BIAS;
+                return BlitBlendBlackBias;
             case 3:
-                return BLIT_BLEND_TEST_LIGHT;
+                return BlitBlendTestLight;
             // BLIT_BLIT_AS_SHADOW and BLIT_NORMAL_SCALE were removed for this revision.
             case 4:
-                return BLIT_AMPLIFY_LIGHT;
+                return BlitAmplifyLight;
             default:
                 return std::nullopt;
             }
@@ -165,19 +165,19 @@ namespace nuvelocity
         {
             switch (type)
             {
-            case BLIT_TRANSPARENT_MASK:
+            case BlitTransparentMask:
                 return 0;
-            case BLIT_NORMAL:
+            case BlitNormal:
                 return 1;
-            case BLIT_BLEND_BLACK_BIAS:
+            case BlitBlendBlackBias:
                 return 2;
-            case BLIT_BLEND_TEST_LIGHT:
+            case BlitBlendTestLight:
                 return 3;
-            case BLIT_BLIT_AS_SHADOW:
+            case BlitBlitAsShadow:
                 return 4;
-            case BLIT_NORMAL_SCALE:
+            case BlitNormalScale:
                 return 5;
-            case BLIT_AMPLIFY_LIGHT:
+            case BlitAmplifyLight:
                 return 6;
             default:
                 return std::nullopt;
@@ -188,19 +188,19 @@ namespace nuvelocity
         {
             switch (type)
             {
-            case BLIT_TRANSPARENT_MASK:
+            case BlitTransparentMask:
                 return 1;
-            case BLIT_NORMAL:
+            case BlitNormal:
                 return 0;
-            case BLIT_BLEND_BLACK_BIAS:
+            case BlitBlendBlackBias:
                 return 2;
-            case BLIT_BLEND_TEST_LIGHT:
+            case BlitBlendTestLight:
                 return 3;
-            case BLIT_BLIT_AS_SHADOW:
+            case BlitBlitAsShadow:
                 return 4;
-            case BLIT_NORMAL_SCALE:
+            case BlitNormalScale:
                 return 5;
-            case BLIT_AMPLIFY_LIGHT:
+            case BlitAmplifyLight:
                 return 6;
             default:
                 return std::nullopt;
@@ -211,18 +211,18 @@ namespace nuvelocity
         {
             switch (type)
             {
-            case BLIT_TRANSPARENT_MASK:
+            case BlitTransparentMask:
                 return 2;
-            case BLIT_NORMAL:
+            case BlitNormal:
                 return 3;
-            case BLIT_BLEND_BLACK_BIAS:
+            case BlitBlendBlackBias:
                 return 0;
-            case BLIT_BLEND_TEST_LIGHT:
+            case BlitBlendTestLight:
                 return 1;
-            case BLIT_BLIT_AS_SHADOW:
+            case BlitBlitAsShadow:
                 return 4;
             // BLIT_NORMAL_SCALE has no mapping for this revision.
-            case BLIT_AMPLIFY_LIGHT:
+            case BlitAmplifyLight:
                 return 5;
             default:
                 return std::nullopt;
@@ -233,16 +233,16 @@ namespace nuvelocity
         {
             switch (type)
             {
-            case BLIT_TRANSPARENT_MASK:
+            case BlitTransparentMask:
                 return 0;
-            case BLIT_NORMAL:
+            case BlitNormal:
                 return 1;
-            case BLIT_BLEND_BLACK_BIAS:
+            case BlitBlendBlackBias:
                 return 3;
-            case BLIT_BLEND_TEST_LIGHT:
+            case BlitBlendTestLight:
                 return 4;
             // BLIT_BLIT_AS_SHADOW and BLIT_NORMAL_SCALE have no mappings for this revision.
-            case BLIT_AMPLIFY_LIGHT:
+            case BlitAmplifyLight:
                 return 2;
             default:
                 return std::nullopt;
@@ -253,16 +253,16 @@ namespace nuvelocity
         {
             switch (type)
             {
-            case BLIT_TRANSPARENT_MASK:
+            case BlitTransparentMask:
                 return 1;
-            case BLIT_NORMAL:
+            case BlitNormal:
                 return 0;
-            case BLIT_BLEND_BLACK_BIAS:
+            case BlitBlendBlackBias:
                 return 2;
-            case BLIT_BLEND_TEST_LIGHT:
+            case BlitBlendTestLight:
                 return 3;
             // BLIT_BLIT_AS_SHADOW and BLIT_NORMAL_SCALE have no mappings for this revision.
-            case BLIT_AMPLIFY_LIGHT:
+            case BlitAmplifyLight:
                 return 4;
             default:
                 return std::nullopt;

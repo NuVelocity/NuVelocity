@@ -12,11 +12,11 @@
 #include "ObjectRegistration.h"
 #include "RendererSpriteBatch.h"
 
-constexpr std::uint16_t NVE_DEFAULT_WINDOW_WIDTH = 640;
-constexpr std::uint16_t NVE_DEFAULT_WINDOW_HEIGHT = 480;
-
 namespace nuvelocity
 {
+    constexpr std::uint16_t kDefaultWindowWidth = 640;
+    constexpr std::uint16_t kDefaultWindowHeight = 480;
+
     Game::Game(const char* windowTitle, int width, int height)
             : mWindowTitle(windowTitle)
             , mWindowWidth(width)
@@ -37,12 +37,12 @@ namespace nuvelocity
     {
         mArgs.add_argument("-w", "--width")
             .help("Initial window width")
-            .default_value((int)NVE_DEFAULT_WINDOW_WIDTH)
+            .default_value((int)kDefaultWindowWidth)
             .scan<'i', int>();
 
         mArgs.add_argument("-h", "--height")
             .help("Initial window height")
-            .default_value((int)NVE_DEFAULT_WINDOW_HEIGHT)
+            .default_value((int)kDefaultWindowHeight)
             .scan<'i', int>();
 
         mArgs.add_argument("-r", "--renderer")
@@ -73,7 +73,7 @@ namespace nuvelocity
     }
 
     Game::Game(const char* windowTitle)
-            : Game(windowTitle, NVE_DEFAULT_WINDOW_WIDTH, NVE_DEFAULT_WINDOW_HEIGHT)
+            : Game(windowTitle, kDefaultWindowWidth, kDefaultWindowHeight)
     {
     }
 
