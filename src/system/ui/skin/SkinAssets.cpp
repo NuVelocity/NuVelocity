@@ -209,7 +209,7 @@ namespace nuvelocity
         {
             if (frame != nullptr)
             {
-                spriteBatch->Draw(frame, x, y);
+                spriteBatch->Draw(frame, x, y, {255, 255, 255, 255}, false);
             }
         };
 
