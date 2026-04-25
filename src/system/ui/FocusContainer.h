@@ -1,8 +1,8 @@
 #ifndef NVE_UI_FOCUS_CONTAINER_H
 #define NVE_UI_FOCUS_CONTAINER_H
 
-#include <cstddef>
 #include "Widget.h"
+#include <cstddef>
 
 namespace nuvelocity
 {

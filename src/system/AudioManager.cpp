@@ -18,16 +18,16 @@ namespace nuvelocity
 
         if (!MIX_Init())
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to initialize SDL_mixer: %s",
-                         SDL_GetError());
+            SDL_LogError(
+                NVE_LOG_CATEGORY_ENGINE, "Failed to initialize SDL_mixer: %s", SDL_GetError());
             return false;
         }
 
         mMixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
         if (mMixer == nullptr)
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to create mixer device: %s",
-                         SDL_GetError());
+            SDL_LogError(
+                NVE_LOG_CATEGORY_ENGINE, "Failed to create mixer device: %s", SDL_GetError());
             return false;
         }
 
@@ -64,7 +64,8 @@ namespace nuvelocity
         MIX_SetTrackAudio(mBgmTrack, mBgmInputs[aId]);
         SDL_PropertiesID properties = SDL_CreateProperties();
         SDL_SetNumberProperty(properties, MIX_PROP_PLAY_LOOPS_NUMBER, aLoops);
-        SDL_SetNumberProperty(properties, MIX_PROP_PLAY_FADE_IN_FRAMES_NUMBER,
+        SDL_SetNumberProperty(properties,
+                              MIX_PROP_PLAY_FADE_IN_FRAMES_NUMBER,
                               MIX_TrackMSToFrames(mBgmTrack, aFadeMS));
         return MIX_PlayTrack(mBgmTrack, properties);
     }

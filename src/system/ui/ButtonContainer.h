@@ -43,6 +43,6 @@ namespace nuvelocity
         Padding mPadding;
         bool mAutoCenter = false;
     };
-}
+} // namespace nuvelocity
 
 #endif // NVE_UI_BUTTON_CONTAINER_H

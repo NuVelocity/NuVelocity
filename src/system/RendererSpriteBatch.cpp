@@ -83,8 +83,8 @@ namespace nuvelocity
         mDrawCommands.push_back(command);
     }
 
-    void RendererSpriteBatch::DrawLine(
-        int x1, int y1, int x2, int y2, SDL_Color color, int thickness)
+    void
+    RendererSpriteBatch::DrawLine(int x1, int y1, int x2, int y2, SDL_Color color, int thickness)
     {
         if (mRenderer == nullptr)
         {
@@ -192,32 +192,28 @@ namespace nuvelocity
                         continue;
                     }
 
-                    SDL_Rect centeredRect{
-                        .x = (winWidth - static_cast<int>(texWidth)) / 2,
-                        .y = (winHeight - static_cast<int>(texHeight)) / 2,
-                        .w = static_cast<int>(texWidth),
-                        .h = static_cast<int>(texHeight)};
+                    SDL_Rect centeredRect{.x = (winWidth - static_cast<int>(texWidth)) / 2,
+                                          .y = (winHeight - static_cast<int>(texHeight)) / 2,
+                                          .w = static_cast<int>(texWidth),
+                                          .h = static_cast<int>(texHeight)};
 
-                    const SDL_FRect fCenteredRect{
-                        static_cast<float>(centeredRect.x),
-                        static_cast<float>(centeredRect.y),
-                        static_cast<float>(centeredRect.w),
-                        static_cast<float>(centeredRect.h)};
+                    const SDL_FRect fCenteredRect{static_cast<float>(centeredRect.x),
+                                                  static_cast<float>(centeredRect.y),
+                                                  static_cast<float>(centeredRect.w),
+                                                  static_cast<float>(centeredRect.h)};
 
                     SDL_RenderTexture(mRenderer, texture, nullptr, &fCenteredRect);
                 }
                 else
                 {
-                    const SDL_FRect fSrc{
-                        static_cast<float>(command.srcRect.x),
-                        static_cast<float>(command.srcRect.y),
-                        static_cast<float>(command.srcRect.w),
-                        static_cast<float>(command.srcRect.h)};
-                    const SDL_FRect fDst{
-                        static_cast<float>(command.destRect.x),
-                        static_cast<float>(command.destRect.y),
-                        static_cast<float>(command.destRect.w),
-                        static_cast<float>(command.destRect.h)};
+                    const SDL_FRect fSrc{static_cast<float>(command.srcRect.x),
+                                         static_cast<float>(command.srcRect.y),
+                                         static_cast<float>(command.srcRect.w),
+                                         static_cast<float>(command.srcRect.h)};
+                    const SDL_FRect fDst{static_cast<float>(command.destRect.x),
+                                         static_cast<float>(command.destRect.y),
+                                         static_cast<float>(command.destRect.w),
+                                         static_cast<float>(command.destRect.h)};
 
                     const SDL_FRect* src = command.hasSrcRect ? &fSrc : nullptr;
                     const SDL_FRect* dst = command.hasDestRect ? &fDst : nullptr;
@@ -235,16 +231,14 @@ namespace nuvelocity
                 SDL_SetTextureAlphaMod(command.texture, command.color.a);
                 SDL_SetTextureBlendMode(command.texture, command.blendMode);
 
-                const SDL_FRect fSrc{
-                    static_cast<float>(command.srcRect.x),
-                    static_cast<float>(command.srcRect.y),
-                    static_cast<float>(command.srcRect.w),
-                    static_cast<float>(command.srcRect.h)};
-                const SDL_FRect fDst{
-                    static_cast<float>(command.destRect.x),
-                    static_cast<float>(command.destRect.y),
-                    static_cast<float>(command.destRect.w),
-                    static_cast<float>(command.destRect.h)};
+                const SDL_FRect fSrc{static_cast<float>(command.srcRect.x),
+                                     static_cast<float>(command.srcRect.y),
+                                     static_cast<float>(command.srcRect.w),
+                                     static_cast<float>(command.srcRect.h)};
+                const SDL_FRect fDst{static_cast<float>(command.destRect.x),
+                                     static_cast<float>(command.destRect.y),
+                                     static_cast<float>(command.destRect.w),
+                                     static_cast<float>(command.destRect.h)};
 
                 const SDL_FRect* src = command.hasSrcRect ? &fSrc : nullptr;
                 const SDL_FRect* dst = command.hasDestRect ? &fDst : nullptr;
@@ -264,11 +258,10 @@ namespace nuvelocity
                 SDL_SetRenderDrawBlendMode(mRenderer, SDL_BLENDMODE_BLEND);
                 SDL_SetRenderDrawColor(
                     mRenderer, command.color.r, command.color.g, command.color.b, command.color.a);
-                const SDL_FRect fDst{
-                    static_cast<float>(command.destRect.x),
-                    static_cast<float>(command.destRect.y),
-                    static_cast<float>(command.destRect.w),
-                    static_cast<float>(command.destRect.h)};
+                const SDL_FRect fDst{static_cast<float>(command.destRect.x),
+                                     static_cast<float>(command.destRect.y),
+                                     static_cast<float>(command.destRect.w),
+                                     static_cast<float>(command.destRect.h)};
                 const SDL_FRect* dst = command.hasDestRect ? &fDst : nullptr;
                 SDL_RenderFillRect(mRenderer, dst);
                 break;

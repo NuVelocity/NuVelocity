@@ -364,8 +364,7 @@ namespace nuvelocity
         SDL_ReleaseGPUBuffer(mDevice, ibuf);
     }
 
-    void GPUSpriteBatch::DrawLine(
-        int x1, int y1, int x2, int y2, SDL_Color color, int thickness)
+    void GPUSpriteBatch::DrawLine(int x1, int y1, int x2, int y2, SDL_Color color, int thickness)
     {
         if (mDevice == nullptr || mWindow == nullptr || mWhiteTexture == nullptr)
         {
@@ -435,7 +434,8 @@ namespace nuvelocity
         }
         else if (mSwapchainWidth > 0 && mSwapchainHeight > 0)
         {
-            dr = SDL_Rect{0, 0, static_cast<int>(mSwapchainWidth), static_cast<int>(mSwapchainHeight)};
+            dr = SDL_Rect{
+                0, 0, static_cast<int>(mSwapchainWidth), static_cast<int>(mSwapchainHeight)};
         }
         else if (mWindow != nullptr)
         {
@@ -481,8 +481,10 @@ namespace nuvelocity
         }
 
         DrawLine(rect->x, rect->y, rect->x + rect->w, rect->y, color, thickness);
-        DrawLine(rect->x + rect->w, rect->y, rect->x + rect->w, rect->y + rect->h, color, thickness);
-        DrawLine(rect->x + rect->w, rect->y + rect->h, rect->x, rect->y + rect->h, color, thickness);
+        DrawLine(
+            rect->x + rect->w, rect->y, rect->x + rect->w, rect->y + rect->h, color, thickness);
+        DrawLine(
+            rect->x + rect->w, rect->y + rect->h, rect->x, rect->y + rect->h, color, thickness);
         DrawLine(rect->x, rect->y + rect->h, rect->x, rect->y, color, thickness);
     }
 
@@ -740,11 +742,10 @@ namespace nuvelocity
         int winHeight = 0;
         SDL_GetWindowSizeInPixels(mWindow, &winWidth, &winHeight);
 
-        SDL_Rect destRect{
-            .x = (winWidth - surface->w) / 2,
-            .y = (winHeight - surface->h) / 2,
-            .w = surface->w,
-            .h = surface->h};
+        SDL_Rect destRect{.x = (winWidth - surface->w) / 2,
+                          .y = (winHeight - surface->h) / 2,
+                          .w = surface->w,
+                          .h = surface->h};
 
         Draw(surface, &destRect, nullptr);
     }

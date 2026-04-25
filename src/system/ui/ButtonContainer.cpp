@@ -5,9 +5,7 @@
 
 namespace nuvelocity
 {
-    ButtonContainer::ButtonContainer()
-    {
-    }
+    ButtonContainer::ButtonContainer() {}
 
     void ButtonContainer::AddButton(const std::shared_ptr<Button>& button)
     {

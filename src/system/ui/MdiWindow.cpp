@@ -74,9 +74,9 @@ namespace nuvelocity
             if (input.IsMouseButtonDown(SDL_BUTTON_LEFT))
             {
                 const SDL_Rect newRect{.x = mouse.x - mDragGrabOffset.x,
-                                        .y = mouse.y - mDragGrabOffset.y,
-                                        .w = mRect.w,
-                                        .h = mRect.h};
+                                       .y = mouse.y - mDragGrabOffset.y,
+                                       .w = mRect.w,
+                                       .h = mRect.h};
                 SetRect(newRect);
             }
             else
@@ -150,10 +150,8 @@ namespace nuvelocity
         }
 
         const SDL_Rect windowRect = GetScreenRect();
-        const SDL_Rect clipRect = {windowRect.x,
-                                   windowRect.y,
-                                   windowRect.w,
-                                   windowRect.h};
+        const SDL_Rect clipRect = {
+            .x = windowRect.x, .y = windowRect.y, .w = windowRect.w, .h = windowRect.h};
         // game->mSpriteBatch->SetClipRect(&clipRect);
 
         JWindowSkin* skin = GetSkin(game);
@@ -337,9 +335,9 @@ namespace nuvelocity
     {
         const SDL_Rect rect = GetScreenRect();
         return SDL_Rect{.x = rect.x,
-                         .y = rect.y,
-                         .w = rect.w,
-                         .h = SDL_min(rect.h, mWindowStyle.titleBarHeight)};
+                        .y = rect.y,
+                        .w = rect.w,
+                        .h = SDL_min(rect.h, mWindowStyle.titleBarHeight)};
     }
 
     SDL_Rect MdiWindow::GetCloseButtonRect() const
@@ -348,9 +346,9 @@ namespace nuvelocity
         const int margin = (titleBar.h - mWindowStyle.closeButtonSize) / 2;
 
         return SDL_Rect{.x = titleBar.x + titleBar.w - mWindowStyle.closeButtonSize - margin,
-                         .y = titleBar.y + margin,
-                         .w = mWindowStyle.closeButtonSize,
-                         .h = mWindowStyle.closeButtonSize};
+                        .y = titleBar.y + margin,
+                        .w = mWindowStyle.closeButtonSize,
+                        .h = mWindowStyle.closeButtonSize};
     }
 
     SDL_Rect MdiWindow::GetClientRect() const
@@ -366,8 +364,8 @@ namespace nuvelocity
         const int topInset = mWindowStyle.titleBarHeight;
 
         return SDL_Rect{.x = rect.x + inset,
-                         .y = rect.y + topInset,
-                         .w = SDL_max(0, rect.w - (inset * 2)),
-                         .h = SDL_max(0, rect.h - topInset - inset)};
+                        .y = rect.y + topInset,
+                        .w = SDL_max(0, rect.w - (inset * 2)),
+                        .h = SDL_max(0, rect.h - topInset - inset)};
     }
 } // namespace nuvelocity

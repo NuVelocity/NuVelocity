@@ -47,9 +47,9 @@ namespace nuvelocity
 
         // 3. Draw Text
         SDL_Rect textRect{.x = rect.x + 4,
-                           .y = rect.y + 2,
-                           .w = SDL_max(0, rect.w - 8),
-                           .h = SDL_max(0, rect.h - 4)};
+                          .y = rect.y + 2,
+                          .w = SDL_max(0, rect.w - 8),
+                          .h = SDL_max(0, rect.h - 4)};
 
         if (button->IsPressed())
         {
@@ -69,9 +69,9 @@ namespace nuvelocity
         if (buttonStyle.showFocusRing && button->IsFocused() && !button->IsHovered())
         {
             const SDL_Rect focusRect{.x = rect.x + 2,
-                                      .y = rect.y + 2,
-                                      .w = SDL_max(0, rect.w - 4),
-                                      .h = SDL_max(0, rect.h - 4)};
+                                     .y = rect.y + 2,
+                                     .w = SDL_max(0, rect.w - 4),
+                                     .h = SDL_max(0, rect.h - 4)};
             WidgetUtils::DrawRect(game->mSpriteBatch, focusRect, SDL_Color{255, 255, 255, 64});
         }
     }
@@ -106,9 +106,9 @@ namespace nuvelocity
         WidgetUtils::FillRect(game->mSpriteBatch, titleRect, titleColor);
 
         SDL_Rect titleTextRect{.x = titleRect.x + 6,
-                                .y = titleRect.y,
-                                .w = SDL_max(0, titleRect.w - 24),
-                                .h = titleRect.h};
+                               .y = titleRect.y,
+                               .w = SDL_max(0, titleRect.w - 24),
+                               .h = titleRect.h};
 
         game->mFont->DrawString(game->mSpriteBatch,
                                 window->GetTitle(),
@@ -174,9 +174,9 @@ namespace nuvelocity
                                baseStyle.borderThickness);
 
         SDL_Rect textRect{.x = rect.x + 6,
-                           .y = rect.y + 3,
-                           .w = SDL_max(0, rect.w - 12),
-                           .h = SDL_max(0, rect.h - 6)};
+                          .y = rect.y + 3,
+                          .w = SDL_max(0, rect.w - 12),
+                          .h = SDL_max(0, rect.h - 6)};
         game->mFont->DrawString(game->mSpriteBatch,
                                 textBox->GetText(),
                                 textRect,
@@ -196,9 +196,9 @@ namespace nuvelocity
             if (visibleCaret)
             {
                 SDL_Rect caretRect{.x = rect.x + 6 + textWidth,
-                                    .y = rect.y + 4,
-                                    .w = 1,
-                                    .h = SDL_max(0, rect.h - 8)};
+                                   .y = rect.y + 4,
+                                   .w = 1,
+                                   .h = SDL_max(0, rect.h - 8)};
                 WidgetUtils::FillRect(game->mSpriteBatch, caretRect, style.caretColor);
             }
         }

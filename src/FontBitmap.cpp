@@ -159,9 +159,9 @@ namespace nuvelocity
         int totalWidth = 0;
         int maxHeight = SDL_max(pointSize, kMinGlyphSize);
 
-        for (char ch : text)
+        for (char character : text)
         {
-            const uint8_t asciiCode = static_cast<uint8_t>(ch);
+            const uint8_t asciiCode = static_cast<uint8_t>(character);
             if (asciiCode == static_cast<uint8_t>(' '))
             {
                 totalWidth += spaceAdvance;
@@ -215,7 +215,7 @@ namespace nuvelocity
         switch (alignment)
         {
         case TextAlignment::Center:
-            x = bounds.x + (bounds.w - measuredWidth) / 2;
+            x = bounds.x + ((bounds.w - measuredWidth) / 2);
             break;
         case TextAlignment::Right:
             x = bounds.x + bounds.w - measuredWidth;
@@ -228,7 +228,7 @@ namespace nuvelocity
         int y = bounds.y;
         if (verticalCenter)
         {
-            y = bounds.y + (bounds.h - measuredHeight) / 2;
+            y = bounds.y + ((bounds.h - measuredHeight) / 2);
         }
 
         const float scale = ResolveBitmapScale(*this, pointSize);
@@ -258,12 +258,14 @@ namespace nuvelocity
                 continue;
             }
 
-            const int glyphWidth = SDL_max(1, static_cast<int>(std::lround(static_cast<float>(glyph->GetWidth()) * scale)));
-            const int glyphHeight = SDL_max(1, static_cast<int>(std::lround(static_cast<float>(glyph->GetHeight()) * scale)));
+            const int glyphWidth = SDL_max(
+                1, static_cast<int>(std::lround(static_cast<float>(glyph->GetWidth()) * scale)));
+            const int glyphHeight = SDL_max(
+                1, static_cast<int>(std::lround(static_cast<float>(glyph->GetHeight()) * scale)));
             SDL_Rect dstRect{.x = cursorX + glyph->mHotSpot.x,
-                              .y = y + glyph->mHotSpot.y,
-                              .w = glyphWidth,
-                              .h = glyphHeight};
+                             .y = y + glyph->mHotSpot.y,
+                             .w = glyphWidth,
+                             .h = glyphHeight};
 
             // Use SpriteBatch to draw the glyph surface with color modulation.
             // If not colorable, use white but preserve the requested alpha.

@@ -261,8 +261,7 @@ namespace nuvelocity
 
         // Clip management is now handled through the batch
         batch->SetClipRect(clipRect);
-        font->DrawStringAt(
-            batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
+        font->DrawStringAt(batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
         batch->SetClipRect(nullptr); // Reset clip after drawing
     }
 
@@ -300,8 +299,7 @@ namespace nuvelocity
         }
 
         batch->SetClipRect(clipRect);
-        font->DrawStringAt(
-            batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
+        font->DrawStringAt(batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
         batch->SetClipRect(nullptr);
     }
 } // namespace nuvelocity

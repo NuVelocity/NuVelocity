@@ -12,11 +12,23 @@ namespace nuvelocity
         Label(const std::string& text = "", const std::string& font = "OCR");
         virtual ~Label() = default;
 
-        void SetText(const std::string& text) { mText = text; }
-        const std::string& GetText() const { return mText; }
+        void SetText(const std::string& text)
+        {
+            mText = text;
+        }
+        const std::string& GetText() const
+        {
+            return mText;
+        }
 
-        void SetFont(const std::string& font) { mFont = font; }
-        const std::string& GetFont() const { return mFont; }
+        void SetFont(const std::string& font)
+        {
+            mFont = font;
+        }
+        const std::string& GetFont() const
+        {
+            return mFont;
+        }
 
         void Update(Game* aGame) override;
         void Draw(Game* aGame) override;

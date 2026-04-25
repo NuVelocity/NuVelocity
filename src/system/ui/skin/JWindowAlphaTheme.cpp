@@ -1,15 +1,11 @@
 #include "JWindowAlphaTheme.h"
 #include "AlphaSkinBorder.h"
-#include "JWindowClassicTheme.h"
 #include "system/FontManager.h"
 #include "system/Game.h"
-#include "system/SpriteBatch.h"
 #include "system/ui/Button.h"
 #include "system/ui/MdiWindow.h"
 #include "system/ui/TextBox.h"
 #include "system/ui/WidgetUtils.h"
-
-#include <unordered_map>
 
 namespace nuvelocity
 {
@@ -90,9 +86,9 @@ namespace nuvelocity
         if (button->GetButtonStyle().showFocusRing && button->IsFocused() && !button->IsHovered())
         {
             const SDL_Rect focusRect{.x = rect.x + 2,
-                                      .y = rect.y + 2,
-                                      .w = SDL_max(0, rect.w - 4),
-                                      .h = SDL_max(0, rect.h - 4)};
+                                     .y = rect.y + 2,
+                                     .w = SDL_max(0, rect.w - 4),
+                                     .h = SDL_max(0, rect.h - 4)};
             WidgetUtils::DrawRect(game->mSpriteBatch, focusRect, SDL_Color{255, 255, 255, 64});
         }
     }
@@ -170,9 +166,9 @@ namespace nuvelocity
             textBox->GetStyle().borderThickness);
 
         SDL_Rect textRect{.x = rect.x + 6,
-                           .y = rect.y + 3,
-                           .w = SDL_max(0, rect.w - 12),
-                           .h = SDL_max(0, rect.h - 6)};
+                          .y = rect.y + 3,
+                          .w = SDL_max(0, rect.w - 12),
+                          .h = SDL_max(0, rect.h - 6)};
 
         game->mFont->DrawStringWithFont(mOptions->mGeneralFont,
                                         game->mSpriteBatch,
@@ -197,9 +193,9 @@ namespace nuvelocity
             if (visibleCaret)
             {
                 SDL_Rect caretRect{.x = rect.x + 6 + textWidth,
-                                    .y = rect.y + 4,
-                                    .w = 1,
-                                    .h = SDL_max(0, rect.h - 8)};
+                                   .y = rect.y + 4,
+                                   .w = 1,
+                                   .h = SDL_max(0, rect.h - 8)};
                 WidgetUtils::FillRect(game->mSpriteBatch, caretRect, style.caretColor);
             }
         }
