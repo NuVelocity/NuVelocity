@@ -7,6 +7,8 @@
 
 namespace nuvelocity
 {
+    inline constexpr int kFontBitmapDefaultPointSize = -1;
+
     // TODO: check default values.
     class FontBitmap : public Object<FontBitmap, Font>
     {
