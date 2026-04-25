@@ -11,6 +11,7 @@ project(NuVelocity VERSION ${NVE_VERSION} LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(NVE_RESTORE_TGA "Enable re-exporting TGA files from cache" ON)
 
