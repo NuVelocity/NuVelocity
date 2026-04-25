@@ -9,6 +9,8 @@ namespace nuvelocity
             return;
         }
 
+        useHotSpot = useHotSpot && frame->GetCenterHotSpot();
+
         SDL_Surface* surface = frame->GetSurface();
         if (surface == nullptr)
         {
@@ -30,6 +32,8 @@ namespace nuvelocity
         {
             return;
         }
+
+        useHotSpot = useHotSpot && sequence->GetCenterHotSpot();
 
         Frame* frame = sequence->GetFrame(frameIndex);
         if (frame == nullptr)
