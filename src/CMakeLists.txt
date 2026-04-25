@@ -34,6 +34,7 @@ target_sources(
     NuVelocity PRIVATE
     BlitType.h
     BlitTypeConverter.h
+    Colors.h
     EngineObjectTypes.def
     ObjectRegistration.h
     ${NVE_OBJECT_REGISTRATION_CPP}
