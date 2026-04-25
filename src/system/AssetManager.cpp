@@ -405,6 +405,36 @@ namespace nuvelocity
         return text;
     }
 
+    std::vector<std::string> AssetManager::EnumerateRoundSets()
+    {
+        std::vector<std::string> roundSets;
+        std::vector<std::string> files = EnumerateFiles("Resources/Rounds");
+        for (const auto& file : files)
+        {
+            if (file.find(".RoundSet") != std::string::npos)
+            {
+                // Strip extension
+                roundSets.push_back(file.substr(0, file.find(".RoundSet")));
+            }
+        }
+        return roundSets;
+    }
+
+    std::vector<std::string> AssetManager::EnumerateFiles(const std::string& path)
+    {
+        std::vector<std::string> fileList;
+        char** files = PHYSFS_enumerateFiles(path.c_str());
+        if (files != nullptr)
+        {
+            for (char** entry = files; *entry != nullptr; ++entry)
+            {
+                fileList.push_back(*entry);
+            }
+            PHYSFS_freeList(static_cast<void*>(files));
+        }
+        return fileList;
+    }
+
     void AssetManager::DumpPropertyFile(const std::string& path)
     {
         const std::string text = LoadTextFile(path);
@@ -428,6 +458,16 @@ namespace nuvelocity
             return dest;
         }
         return nullptr;
+    }
+
+    void* AssetManager::LoadBrickInfo(const std::string& path)
+    {
+        return LoadPropertyFile(path + ".Brick");
+    }
+
+    void* AssetManager::LoadBackgroundDefinition(const std::string& path)
+    {
+        return LoadPropertyFile(path + ".Background");
     }
 
     JWindowSkin* AssetManager::LoadWindowSkin(const std::string& path)

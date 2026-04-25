@@ -36,6 +36,7 @@ namespace nuvelocity
                                std::vector<std::unique_ptr<Frame>>& frames);
         void DestroyFrameSurfaces(std::vector<std::unique_ptr<Frame>>& frames);
         Sequence* LoadSourceSequenceFrames(const std::string& path);
+        std::vector<std::string> EnumerateFiles(const std::string& path);
 
         static inline const char* GetErrorMessage()
         {
@@ -63,11 +64,15 @@ namespace nuvelocity
         NVE_API Font* LoadFont(const std::string& path);
         NVE_API FontBitmap* LoadFontBitmap(const std::string& path);
 
+        NVE_API std::vector<std::string> EnumerateRoundSets();
+
         NVE_API std::string LoadTextFile(const std::string& path);
 
         NVE_API void DumpPropertyFile(const std::string& path);
 
         NVE_API void* LoadPropertyFile(const std::string& path);
+        NVE_API void* LoadBrickInfo(const std::string& path);
+        NVE_API void* LoadBackgroundDefinition(const std::string& path);
 
         NVE_API JWindowSkin* LoadWindowSkin(const std::string& path);
 
