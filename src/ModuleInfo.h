@@ -12,13 +12,13 @@ namespace nuvelocity
         ModuleInfo();
         ~ModuleInfo();
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CModuleInfo";
-            AddProperty(aInfo, "Module ID", &ModuleInfo::mModuleId);
-            AddProperty(aInfo, "Module Display Name", &ModuleInfo::mModuleName);
-            AddProperty(aInfo, "Build Number", &ModuleInfo::mBuildNumber);
-            AddProperty(aInfo, "Display Version Number", &ModuleInfo::mModuleVersion);
+            info.mName = "CModuleInfo";
+            AddProperty(info, "Module ID", &ModuleInfo::mModuleId);
+            AddProperty(info, "Module Display Name", &ModuleInfo::mModuleName);
+            AddProperty(info, "Build Number", &ModuleInfo::mBuildNumber);
+            AddProperty(info, "Display Version Number", &ModuleInfo::mModuleVersion);
         }
 
         std::string GetModuleName() const

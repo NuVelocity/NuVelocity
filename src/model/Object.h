@@ -300,7 +300,7 @@ namespace nuvelocity
         {
             static_assert(
                 HasInitClassInfoMethod,
-                "Derived class must implement static void InitClassInfo(ClassInfo& aInfo)");
+                "Derived class must implement static void InitClassInfo(ClassInfo& info)");
             static ClassInfo classInfo = GetClassInfoInternal();
             return &classInfo;
         }

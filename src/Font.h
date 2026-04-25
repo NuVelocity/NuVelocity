@@ -59,18 +59,18 @@ namespace nuvelocity
             return mFontFamily;
         }
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CFont";
-            AddProperty(aInfo, "Font Family", &Font::mFontFamily);
+            info.mName = "CFont";
+            AddProperty(info, "Font Family", &Font::mFontFamily);
             AddEnumProperty<BlitType>(
-                aInfo, "Blit Type", &Font::mBlitType, GetBlitTypeSerializedValues());
+                info, "Blit Type", &Font::mBlitType, GetBlitTypeSerializedValues());
 
             // FIXME: colors are not handled by serialization code.
-            AddProperty(aInfo, "Generated Color", &Font::mGeneratedColor);
+            AddProperty(info, "Generated Color", &Font::mGeneratedColor);
 
-            AddProperty(aInfo, "Point Size", &Font::mPointSize);
-            AddProperty(aInfo, "Generate All Caps", &Font::mGenerateAllCaps);
+            AddProperty(info, "Point Size", &Font::mPointSize);
+            AddProperty(info, "Generate All Caps", &Font::mGenerateAllCaps);
         }
 
     protected:

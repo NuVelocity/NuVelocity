@@ -27,12 +27,12 @@ namespace nuvelocity
 
         NVE_API bool Initialize(char** argv) override;
 
-        NVE_API bool AssignBgm(const std::string& aId, SDL_IOStream* aStream);
-        NVE_API bool PlayBgm(const std::string& aId, int aFadeMS = 0, int aLoops = -1);
-        NVE_API bool StopBgm(const std::string& aId, int aFadeMS = 0);
+        NVE_API bool AssignBgm(const std::string& id, SDL_IOStream* stream);
+        NVE_API bool PlayBgm(const std::string& id, int fadeMs = 0, int loops = -1);
+        NVE_API bool StopBgm(const std::string& id, int fadeMs = 0);
 
-        NVE_API bool AssignSfx(const std::string& aId, SDL_IOStream* aStream);
-        NVE_API bool PlaySfx(const std::string& aId, int aFadeMS = 0, int aLoops = 0);
+        NVE_API bool AssignSfx(const std::string& id, SDL_IOStream* stream);
+        NVE_API bool PlaySfx(const std::string& id, int fadeMs = 0, int loops = 0);
     };
 } // namespace nuvelocity
 

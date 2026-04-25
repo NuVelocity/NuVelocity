@@ -14,11 +14,11 @@ namespace nuvelocity
     public:
         virtual ~Scene() = default;
 
-        NVE_API virtual void Update(Game* aGame) override = 0;
-        NVE_API virtual void Draw(Game* aGame) override = 0;
+        NVE_API virtual void Update(Game* game) override = 0;
+        NVE_API virtual void Draw(Game* game) override = 0;
 
-        NVE_API virtual void Load(Game* aGame) = 0;
-        NVE_API virtual void Unload(Game* aGame) = 0;
+        NVE_API virtual void Load(Game* game) = 0;
+        NVE_API virtual void Unload(Game* game) = 0;
 
         NVE_API virtual std::string GetName() const = 0;
 

@@ -24,7 +24,7 @@ namespace nuvelocity
         Button();
         explicit Button(std::string caption);
 
-        void Update(Game* aGame) override;
+        void Update(Game* game) override;
         void Draw(Game* game) override;
 
         void SetCaption(const std::string& caption);

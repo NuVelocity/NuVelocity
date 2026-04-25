@@ -17,10 +17,10 @@ constexpr std::uint16_t NVE_DEFAULT_WINDOW_HEIGHT = 480;
 
 namespace nuvelocity
 {
-    Game::Game(const char* aWindowTitle, int aWidth, int aHeight)
-            : mWindowTitle(aWindowTitle)
-            , mWindowWidth(aWidth)
-            , mWindowHeight(aHeight)
+    Game::Game(const char* windowTitle, int width, int height)
+            : mWindowTitle(windowTitle)
+            , mWindowWidth(width)
+            , mWindowHeight(height)
             , mWindow(nullptr)
             , mRenderer(nullptr)
             , mAsset(nullptr)
@@ -33,7 +33,7 @@ namespace nuvelocity
             , mSpriteBatch(nullptr)
             , mGPUDevice(nullptr)
             , mCursor(nullptr)
-            , mArgs(aWindowTitle)
+            , mArgs(windowTitle)
     {
         mArgs.add_argument("-w", "--width")
             .help("Initial window width")
@@ -72,8 +72,8 @@ namespace nuvelocity
 #endif
     }
 
-    Game::Game(const char* aWindowTitle)
-            : Game(aWindowTitle, NVE_DEFAULT_WINDOW_WIDTH, NVE_DEFAULT_WINDOW_HEIGHT)
+    Game::Game(const char* windowTitle)
+            : Game(windowTitle, NVE_DEFAULT_WINDOW_WIDTH, NVE_DEFAULT_WINDOW_HEIGHT)
     {
     }
 
@@ -361,9 +361,9 @@ namespace nuvelocity
         }
     }
 
-    void Game::SetScene(Scene* aScene)
+    void Game::SetScene(Scene* scene)
     {
-        mPendingScene = aScene;
+        mPendingScene = scene;
     }
 
     Scene* Game::GetScene()
@@ -376,9 +376,9 @@ namespace nuvelocity
         return mSpriteBatch;
     }
 
-    void Game::SetMouseCursor(std::string aSequencePath)
+    void Game::SetMouseCursor(std::string sequencePath)
     {
-        mCursorSequencePath = aSequencePath;
+        mCursorSequencePath = sequencePath;
         if (mInitialized)
         {
             UpdateMouseCursor();
@@ -437,9 +437,9 @@ namespace nuvelocity
         }
     }
 
-    void Game::SetModuleInfo(std::string aModuleInfoPath)
+    void Game::SetModuleInfo(std::string moduleInfoPath)
     {
-        mModuleInfoPath = aModuleInfoPath;
+        mModuleInfoPath = moduleInfoPath;
         if (mInitialized)
         {
             throw std::runtime_error(

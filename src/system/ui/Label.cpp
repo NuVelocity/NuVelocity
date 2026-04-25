@@ -11,20 +11,20 @@ namespace nuvelocity
     {
     }
 
-    void Label::Update(Game* aGame)
+    void Label::Update(Game* game)
     {
-        (void)aGame;
+        (void)game;
     }
 
-    void Label::Draw(Game* aGame)
+    void Label::Draw(Game* game)
     {
-        if (aGame == nullptr || aGame->mFont == nullptr || aGame->mSpriteBatch == nullptr)
+        if (game == nullptr || game->mFont == nullptr || game->mSpriteBatch == nullptr)
         {
             return;
         }
 
         SDL_Rect rect = GetRect();
-        aGame->mFont->DrawStringWithFontAt(
-            mFont, aGame->mSpriteBatch, mText, rect.x, rect.y, Colors::White, 13);
+        game->mFont->DrawStringWithFontAt(
+            mFont, game->mSpriteBatch, mText, rect.x, rect.y, Colors::White, 13);
     }
 } // namespace nuvelocity

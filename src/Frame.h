@@ -23,17 +23,17 @@ namespace nuvelocity
 
         void InitFromArgs(const std::vector<std::string>& args) override;
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CFrame";
-            aInfo.mSerializationMode = SerializationMode::ByteArray;
+            info.mName = "CFrame";
+            info.mSerializationMode = SerializationMode::ByteArray;
 
             // Add pixel data property and mark it to receive byte array data
-            AddProperty(aInfo, "Pixel Data", &Frame::mPixelData);
-            aInfo.SetByteArrayProperty(aInfo.GetProperty("Pixel Data"));
+            AddProperty(info, "Pixel Data", &Frame::mPixelData);
+            info.SetByteArrayProperty(info.GetProperty("Pixel Data"));
 
             // Register byte array info function for serialization
-            aInfo.mByteArrayInfoFunction = [](const void* obj) -> ByteArrayInfo
+            info.mByteArrayInfoFunction = [](const void* obj) -> ByteArrayInfo
             {
                 const Frame* frame = static_cast<const Frame*>(obj);
                 return ByteArrayInfo{frame->mWidth, frame->mHeight, frame->mBitsPerPixel};
@@ -41,7 +41,7 @@ namespace nuvelocity
 
             // Register byte array init function to initialize from cols, rows, bits during
             // deserialization
-            aInfo.mByteArrayInitFunction = [](void* obj, const ByteArrayInfo& info)
+            info.mByteArrayInitFunction = [](void* obj, const ByteArrayInfo& info)
             {
                 Frame* frame = static_cast<Frame*>(obj);
                 frame->Initialize(info.cols, info.rows, info.bits);

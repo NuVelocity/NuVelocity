@@ -25,9 +25,9 @@ namespace nuvelocity
         Widget::SetStyle(mWindowStyle.baseStyle);
     }
 
-    void MdiWindow::Update(Game* aGame)
+    void MdiWindow::Update(Game* game)
     {
-        if (aGame == nullptr || aGame->mInput == nullptr)
+        if (game == nullptr || game->mInput == nullptr)
         {
             return;
         }
@@ -37,9 +37,9 @@ namespace nuvelocity
             return;
         }
 
-        InputManager& input = *aGame->mInput;
+        InputManager& input = *game->mInput;
         const SDL_Point mouse = input.GetMousePosition();
-        JWindowSkin* skin = GetSkin(aGame);
+        JWindowSkin* skin = GetSkin(game);
 
         SDL_Rect titleBar = skin == nullptr ? GetTitleBarRect() : skin->GetInnerRect(this);
         SDL_Rect closeButton =
@@ -89,7 +89,7 @@ namespace nuvelocity
         {
             if (child != nullptr)
             {
-                child->Update(aGame);
+                child->Update(game);
             }
         }
 
@@ -120,10 +120,10 @@ namespace nuvelocity
             }
         }
 
-        if (mAutoCenter && aGame != nullptr)
+        if (mAutoCenter && game != nullptr)
         {
-            const int centerX = (aGame->mWindowWidth - mRect.w) / 2;
-            const int centerY = (aGame->mWindowHeight - mRect.h) / 2;
+            const int centerX = (game->mWindowWidth - mRect.w) / 2;
+            const int centerY = (game->mWindowHeight - mRect.h) / 2;
 
             if (mRect.x != centerX || mRect.y != centerY)
             {
@@ -131,12 +131,12 @@ namespace nuvelocity
             }
         }
 
-        if (mFullScreen && aGame != nullptr)
+        if (mFullScreen && game != nullptr)
         {
-            if (mRect.x != 0 || mRect.y != 0 || mRect.w != aGame->mWindowWidth ||
-                mRect.h != aGame->mWindowHeight)
+            if (mRect.x != 0 || mRect.y != 0 || mRect.w != game->mWindowWidth ||
+                mRect.h != game->mWindowHeight)
             {
-                SetRect({.x = 0, .y = 0, .w = aGame->mWindowWidth, .h = aGame->mWindowHeight});
+                SetRect({.x = 0, .y = 0, .w = game->mWindowWidth, .h = game->mWindowHeight});
             }
             mDragging = false;
         }

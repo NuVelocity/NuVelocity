@@ -12,11 +12,11 @@ namespace nuvelocity
         ParticleType();
         ~ParticleType();
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CParticleType";
-            AddProperty(aInfo, "Particle Type", &ParticleType::mParticleType);
-            AddProperty(aInfo, "Weight", &ParticleType::mWeight);
+            info.mName = "CParticleType";
+            AddProperty(info, "Particle Type", &ParticleType::mParticleType);
+            AddProperty(info, "Weight", &ParticleType::mWeight);
         }
 
         std::string GetParticleType() const

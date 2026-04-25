@@ -16,21 +16,19 @@ namespace nuvelocity
         SequenceFrameInfoList();
         ~SequenceFrameInfoList();
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CSequenceFrameInfoList";
-            AddProperty(aInfo, "Frame Infos", &SequenceFrameInfoList::mValues, "Frame Info");
-            AddProperty(aInfo, "WasRLE", &SequenceFrameInfoList::mWasRle);
-            AddProperty(aInfo, "Flags", &SequenceFrameInfoList::mFlags);
-            AddEnumProperty(aInfo,
-                            "BlitType",
-                            &SequenceFrameInfoList::mBlitType,
-                            GetBlitTypeSerializedValues());
-            AddEnumProperty(aInfo,
+            info.mName = "CSequenceFrameInfoList";
+            AddProperty(info, "Frame Infos", &SequenceFrameInfoList::mValues, "Frame Info");
+            AddProperty(info, "WasRLE", &SequenceFrameInfoList::mWasRle);
+            AddProperty(info, "Flags", &SequenceFrameInfoList::mFlags);
+            AddEnumProperty(
+                info, "BlitType", &SequenceFrameInfoList::mBlitType, GetBlitTypeSerializedValues());
+            AddEnumProperty(info,
                             "Blit Type",
                             &SequenceFrameInfoList::mBlitType,
                             GetBlitTypeSerializedValues());
-            AddProperty(aInfo, "FPS", &SequenceFrameInfoList::mFramesPerSecond);
+            AddProperty(info, "FPS", &SequenceFrameInfoList::mFramesPerSecond);
         }
 
         void CopyTo(Sequence& sequence, BlitTypeRevision revision) const;

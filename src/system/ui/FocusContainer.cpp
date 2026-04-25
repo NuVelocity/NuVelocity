@@ -49,16 +49,16 @@ namespace nuvelocity
         }
     }
 
-    void FocusContainer::Update(Game* aGame)
+    void FocusContainer::Update(Game* game)
     {
-        if (aGame == nullptr || aGame->mInput == nullptr)
+        if (game == nullptr || game->mInput == nullptr)
         {
             return;
         }
 
-        UpdateFocusNavigation(aGame->mInput);
+        UpdateFocusNavigation(game->mInput);
 
-        const SDL_Point mousePosition = aGame->mInput->GetMousePosition();
+        const SDL_Point mousePosition = game->mInput->GetMousePosition();
         bool clickedOnItem = false;
 
         for (std::size_t i = 0; i < mItemCount; ++i)
@@ -66,7 +66,7 @@ namespace nuvelocity
             const SDL_Rect rect = mItems[i]->GetScreenRect();
             if (SDL_PointInRect(&mousePosition, &rect))
             {
-                if (aGame->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
+                if (game->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
                 {
                     SetFocused(i, true);
                     clickedOnItem = true;
@@ -75,7 +75,7 @@ namespace nuvelocity
             }
         }
 
-        if (aGame->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
+        if (game->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
         {
             SetFocusFromMouseClickCheck(clickedOnItem);
         }
@@ -83,20 +83,20 @@ namespace nuvelocity
         for (std::size_t i = 0; i < mItemCount; ++i)
         {
             mItems[i]->SetFocused(mHasFocus && i == mFocusedIndex);
-            mItems[i]->Update(aGame);
+            mItems[i]->Update(game);
         }
     }
 
-    void FocusContainer::Draw(Game* aGame)
+    void FocusContainer::Draw(Game* game)
     {
-        if (aGame == nullptr)
+        if (game == nullptr)
         {
             return;
         }
 
         for (std::size_t i = 0; i < mItemCount; ++i)
         {
-            mItems[i]->Draw(aGame);
+            mItems[i]->Draw(game);
         }
     }
 

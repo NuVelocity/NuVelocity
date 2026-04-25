@@ -13,9 +13,9 @@ namespace nuvelocity
         PaletteHolder();
         ~PaletteHolder();
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CPaletteHolder";
+            info.mName = "CPaletteHolder";
             // This class has no known properties yet.
         }
     };

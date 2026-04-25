@@ -12,8 +12,8 @@ namespace nuvelocity
     public:
         virtual ~GameComponent() = default;
 
-        NVE_API virtual void Update(Game* aGame) = 0;
-        NVE_API virtual void Draw(Game* aGame) = 0;
+        NVE_API virtual void Update(Game* game) = 0;
+        NVE_API virtual void Draw(Game* game) = 0;
 
     protected:
         GameComponent() = default;

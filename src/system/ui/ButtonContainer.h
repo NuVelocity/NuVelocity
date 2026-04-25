@@ -15,8 +15,8 @@ namespace nuvelocity
         ButtonContainer();
 
         void AddButton(const std::shared_ptr<Button>& button);
-        void Update(Game* aGame) override;
-        void Draw(Game* aGame) override;
+        void Update(Game* game) override;
+        void Draw(Game* game) override;
 
         void SetSpacing(int spacing);
         int GetSpacing() const;

@@ -57,56 +57,56 @@ namespace nuvelocity
         SDL_Surface* GetSpriteAtlas() const;
 #endif
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CSequence";
+            info.mName = "CSequence";
 
-            AddProperty(aInfo, "Frames Per Second", &Sequence::mFramesPerSecond);
+            AddProperty(info, "Frames Per Second", &Sequence::mFramesPerSecond);
             AddEnumProperty<BlitType>(
-                aInfo, "Blit Type", &Sequence::mBlitType, GetBlitTypeSerializedValues());
-            AddProperty(aInfo, "X Offset", &Sequence::mXOffset);
-            AddProperty(aInfo, "Y Offset", &Sequence::mYOffset);
-            AddProperty(aInfo, "Center Hot Spot", &Sequence::mCenterHotSpot);
-            AddProperty(aInfo, "Blended With Black", &Sequence::mBlendedWithBlack);
-            AddProperty(aInfo, "Crop Clor 0", &Sequence::mCropAlphaChannel);
-            AddProperty(aInfo, "Use 8 Bit Alpha", &Sequence::mUse8BitAlpha);
-            AddProperty(aInfo, "Do Dither", &Sequence::mDoDither);
-            AddProperty(aInfo, "Loss Less", &Sequence::mIsLossless);
-            AddProperty(aInfo, "Quality", &Sequence::mJpegQuality);
+                info, "Blit Type", &Sequence::mBlitType, GetBlitTypeSerializedValues());
+            AddProperty(info, "X Offset", &Sequence::mXOffset);
+            AddProperty(info, "Y Offset", &Sequence::mYOffset);
+            AddProperty(info, "Center Hot Spot", &Sequence::mCenterHotSpot);
+            AddProperty(info, "Blended With Black", &Sequence::mBlendedWithBlack);
+            AddProperty(info, "Crop Clor 0", &Sequence::mCropAlphaChannel);
+            AddProperty(info, "Use 8 Bit Alpha", &Sequence::mUse8BitAlpha);
+            AddProperty(info, "Do Dither", &Sequence::mDoDither);
+            AddProperty(info, "Loss Less", &Sequence::mIsLossless);
+            AddProperty(info, "Quality", &Sequence::mJpegQuality);
 
 #if 0
             // TN: Exclusive to Lionheart.
-            AddProperty(aInfo, "Menu Position", &Sequence::mMenuPosition);
+            AddProperty(info, "Menu Position", &Sequence::mMenuPosition);
 
             // TN: Exclusive to Ricochet Lost Worlds and Ricochet Infinity.
-            AddProperty(aInfo, "Sequence of Coordinates", &Sequence::mSequenceOfCoordinates);
+            AddProperty(info, "Sequence of Coordinates", &Sequence::mSequenceOfCoordinates);
 
             // TN: Exclusive to Build In Time and Costume Chaos.
-            AddProperty(aInfo, "Y-Sort", &Sequence::mYSort);
+            AddProperty(info, "Y-Sort", &Sequence::mYSort);
 
             // TN: Exclusive to Build In Time.
-            AddProperty(aInfo, "Poke Audio", &Sequence::mPokeAudio);
+            AddProperty(info, "Poke Audio", &Sequence::mPokeAudio);
 
             // TN: Exclusive to Costume Chaos.
-            AddProperty(aInfo, "Editor Only", &Sequence::mEditorOnly);
+            AddProperty(info, "Editor Only", &Sequence::mEditorOnly);
 
-            AddProperty(aInfo, "Use Every", &Sequence::mUseEvery);
-            AddProperty(aInfo, "Always Include Last Frame", &Sequence::mAlwaysIncludeLastFrame);
-            AddProperty(aInfo, "Crop Color 0", &Sequence::mCropAlphaChannel);
-            AddProperty(aInfo, "Run Length Encode", &Sequence::mIsRle);
+            AddProperty(info, "Use Every", &Sequence::mUseEvery);
+            AddProperty(info, "Always Include Last Frame", &Sequence::mAlwaysIncludeLastFrame);
+            AddProperty(info, "Crop Color 0", &Sequence::mCropAlphaChannel);
+            AddProperty(info, "Run Length Encode", &Sequence::mIsRle);
 
             // TN: Present in Star Trek Away Team sequence files.
-            AddProperty(aInfo, "Dither", &Sequence::mDoDither);
+            AddProperty(info, "Dither", &Sequence::mDoDither);
 
-            AddProperty(aInfo, "Loss Less 2", &Sequence::mIsLossless);
-            AddProperty(aInfo, "Quality2", &Sequence::mJpegQuality);
-            AddProperty(aInfo, "JPEG Quality", &Sequence::mJpegQuality);
-            AddProperty(aInfo, "JPEG Quality 2", &Sequence::mJpegQuality);
-            AddProperty(aInfo, "DDS", &Sequence::mIsDds);
-            AddProperty(aInfo, "Needs Buffer", &Sequence::mNeedsBuffer);
+            AddProperty(info, "Loss Less 2", &Sequence::mIsLossless);
+            AddProperty(info, "Quality2", &Sequence::mJpegQuality);
+            AddProperty(info, "JPEG Quality", &Sequence::mJpegQuality);
+            AddProperty(info, "JPEG Quality 2", &Sequence::mJpegQuality);
+            AddProperty(info, "DDS", &Sequence::mIsDds);
+            AddProperty(info, "Needs Buffer", &Sequence::mNeedsBuffer);
             // TN: Present in Swarm Gold, Ricochet Infinity HD, Big Kahuna Reef 3,
             // Build In Time, and Costume Chaos.
-            AddProperty(aInfo, "Mipmap For Native Version", &Sequence::mMipmapForNativeVersion);
+            AddProperty(info, "Mipmap For Native Version", &Sequence::mMipmapForNativeVersion);
 #endif
         }
 

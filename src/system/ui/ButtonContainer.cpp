@@ -16,7 +16,7 @@ namespace nuvelocity
         }
     }
 
-    void ButtonContainer::Update(Game* aGame)
+    void ButtonContainer::Update(Game* game)
     {
         if (!mVisible || !mEnabled)
         {
@@ -61,13 +61,13 @@ namespace nuvelocity
             btn->SetRect(btnRect);
 
             currentY += btnRect.h + mSpacing;
-            btn->Update(aGame);
+            btn->Update(game);
         }
 
         mRect.h = SDL_max(0, currentY - (mButtons.empty() ? 0 : mSpacing) + mPadding.bottom);
     }
 
-    void ButtonContainer::Draw(Game* aGame)
+    void ButtonContainer::Draw(Game* game)
     {
         if (!mVisible)
         {
@@ -76,7 +76,7 @@ namespace nuvelocity
 
         for (auto& btn : mButtons)
         {
-            btn->Draw(aGame);
+            btn->Draw(game);
         }
     }
 

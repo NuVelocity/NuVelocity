@@ -80,16 +80,16 @@ namespace nuvelocity
             mCenterHotSpot = value;
         }
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CStandAloneFrame";
-            AddProperty(aInfo, "Run Length Encode", &StandAloneFrame::mRle);
-            AddProperty(aInfo, "RLE All Copy", &StandAloneFrame::mRleAllCopy);
-            AddProperty(aInfo, "Crop Color 0", &StandAloneFrame::mCropColor0);
-            AddProperty(aInfo, "Do Dither", &StandAloneFrame::mDoDither);
-            AddProperty(aInfo, "Loss Less", &StandAloneFrame::mLossless);
-            AddProperty(aInfo, "Quality", &StandAloneFrame::mQuality);
-            AddProperty(aInfo, "Center Hot Spot", &StandAloneFrame::mCenterHotSpot);
+            info.mName = "CStandAloneFrame";
+            AddProperty(info, "Run Length Encode", &StandAloneFrame::mRle);
+            AddProperty(info, "RLE All Copy", &StandAloneFrame::mRleAllCopy);
+            AddProperty(info, "Crop Color 0", &StandAloneFrame::mCropColor0);
+            AddProperty(info, "Do Dither", &StandAloneFrame::mDoDither);
+            AddProperty(info, "Loss Less", &StandAloneFrame::mLossless);
+            AddProperty(info, "Quality", &StandAloneFrame::mQuality);
+            AddProperty(info, "Center Hot Spot", &StandAloneFrame::mCenterHotSpot);
         }
 
     private:

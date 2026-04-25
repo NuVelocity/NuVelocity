@@ -36,7 +36,7 @@ namespace nuvelocity
         MdiWindow();
         explicit MdiWindow(std::string title);
 
-        void Update(Game* aGame) override;
+        void Update(Game* game) override;
         void Draw(Game* game) override;
 
         void SetRect(const SDL_Rect& rect) override;

@@ -18,15 +18,15 @@ namespace nuvelocity
         int GetUpperLeftXOffset() const;
         int GetUpperLeftYOffset() const;
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CFrameInfo";
-            AddProperty(aInfo, "Left", &FrameInfo::mLeft);
-            AddProperty(aInfo, "Top", &FrameInfo::mTop);
-            AddProperty(aInfo, "Right", &FrameInfo::mRight);
-            AddProperty(aInfo, "Bottom", &FrameInfo::mBottom);
-            AddProperty(aInfo, "UpperLeftXOffset", &FrameInfo::mUpperLeftXOffset);
-            AddProperty(aInfo, "UpperLeftYOffset", &FrameInfo::mUpperLeftYOffset);
+            info.mName = "CFrameInfo";
+            AddProperty(info, "Left", &FrameInfo::mLeft);
+            AddProperty(info, "Top", &FrameInfo::mTop);
+            AddProperty(info, "Right", &FrameInfo::mRight);
+            AddProperty(info, "Bottom", &FrameInfo::mBottom);
+            AddProperty(info, "UpperLeftXOffset", &FrameInfo::mUpperLeftXOffset);
+            AddProperty(info, "UpperLeftYOffset", &FrameInfo::mUpperLeftYOffset);
         }
 
     private:

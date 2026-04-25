@@ -30,8 +30,8 @@ namespace nuvelocity
             return mFont;
         }
 
-        void Update(Game* aGame) override;
-        void Draw(Game* aGame) override;
+        void Update(Game* game) override;
+        void Draw(Game* game) override;
 
     private:
         std::string mText;

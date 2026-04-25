@@ -16,8 +16,8 @@ namespace nuvelocity
         FocusContainer(Button* items[], std::size_t itemCount);
 
         void UpdateFocusNavigation(InputManager* input);
-        void Update(Game* aGame) override;
-        void Draw(Game* aGame) override;
+        void Update(Game* game) override;
+        void Draw(Game* game) override;
         bool HasFocus() const;
         void ClearFocus();
         std::size_t GetFocusedIndex() const;

@@ -41,8 +41,8 @@ namespace nuvelocity
 
         argparse::ArgumentParser mArgs;
 
-        NVE_API Game(const char* aWindowTitle, int aWidth, int aHeight);
-        NVE_API Game(const char* aWindowTitle);
+        NVE_API Game(const char* windowTitle, int width, int height);
+        NVE_API Game(const char* windowTitle);
         NVE_API ~Game();
 
         NVE_API bool Initialize(int argc, char** argv);
@@ -57,12 +57,12 @@ namespace nuvelocity
         NVE_API void HandleEvent(const SDL_Event& event) const;
         NVE_API void EndFrame() const;
 
-        NVE_API void SetScene(Scene* aScene);
+        NVE_API void SetScene(Scene* scene);
         NVE_API Scene* GetScene();
         NVE_API SpriteBatch* GetSpriteBatch() const;
 
-        NVE_API void SetMouseCursor(std::string aSequencePath);
-        NVE_API void SetModuleInfo(std::string aModuleInfoPath);
+        NVE_API void SetMouseCursor(std::string sequencePath);
+        NVE_API void SetModuleInfo(std::string moduleInfoPath);
 
         NVE_API float GetDeltaTime() const
         {

@@ -53,15 +53,15 @@ namespace nuvelocity
                           bool verticalCenter = false,
                           int underlineIndex = -1) const override;
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CFontBitmap";
-            AddProperty(aInfo, "First ASCII", &FontBitmap::mFirstAscii);
-            AddProperty(aInfo, "Last ASCII", &FontBitmap::mLastAscii);
-            AddProperty(aInfo, "Fixed Width", &FontBitmap::mIsFixedWidth);
-            AddProperty(aInfo, "Height Without Decenders", &FontBitmap::mXHeight);
+            info.mName = "CFontBitmap";
+            AddProperty(info, "First ASCII", &FontBitmap::mFirstAscii);
+            AddProperty(info, "Last ASCII", &FontBitmap::mLastAscii);
+            AddProperty(info, "Fixed Width", &FontBitmap::mIsFixedWidth);
+            AddProperty(info, "Height Without Decenders", &FontBitmap::mXHeight);
             // Extension: allow disabling color modulation for bitmap fonts.
-            AddProperty(aInfo, "Colorable", &FontBitmap::mColorable);
+            AddProperty(info, "Colorable", &FontBitmap::mColorable);
         }
 
     private:

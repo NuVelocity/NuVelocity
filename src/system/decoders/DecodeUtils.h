@@ -23,27 +23,27 @@ namespace nuvelocity
         static constexpr int kFontOffsetFromDeflateHeader =
             -(kFontOffsetToDeflateHeader + kDeflateHeaderLength);
 
-        static inline bool FontFrameHasDeflateHeader(SDL_IOStream* aStream)
+        static inline bool FontFrameHasDeflateHeader(SDL_IOStream* stream)
         {
-            SDL_SeekIO(aStream, kFontOffsetToDeflateHeader, SDL_IO_SEEK_CUR);
+            SDL_SeekIO(stream, kFontOffsetToDeflateHeader, SDL_IO_SEEK_CUR);
             uint16_t header;
-            SDL_ReadU16BE(aStream, &header);
-            SDL_SeekIO(aStream, kFontOffsetFromDeflateHeader, SDL_IO_SEEK_CUR);
+            SDL_ReadU16BE(stream, &header);
+            SDL_SeekIO(stream, kFontOffsetFromDeflateHeader, SDL_IO_SEEK_CUR);
             return IsDeflateHeader(header);
         }
 
-        static inline bool FrameHasDeflateHeader(SDL_IOStream* aStream)
+        static inline bool FrameHasDeflateHeader(SDL_IOStream* stream)
         {
-            SDL_SeekIO(aStream, kOffsetToDeflateHeader, SDL_IO_SEEK_CUR);
+            SDL_SeekIO(stream, kOffsetToDeflateHeader, SDL_IO_SEEK_CUR);
             uint16_t header;
-            SDL_ReadU16BE(aStream, &header);
-            SDL_SeekIO(aStream, kOffsetFromDeflateHeader, SDL_IO_SEEK_CUR);
+            SDL_ReadU16BE(stream, &header);
+            SDL_SeekIO(stream, kOffsetFromDeflateHeader, SDL_IO_SEEK_CUR);
             return IsDeflateHeader(header);
         }
 
-        static inline bool IsDeflateHeader(uint16_t aHeader)
+        static inline bool IsDeflateHeader(uint16_t header)
         {
-            return aHeader % 0x1F == 0 && (aHeader & 0x0f00) == (8 << 8);
+            return header % 0x1F == 0 && (header & 0x0f00) == (8 << 8);
         }
 
         static inline int

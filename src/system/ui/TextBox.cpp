@@ -17,9 +17,9 @@ namespace nuvelocity
         Widget::SetStyle(mTextBoxStyle.baseStyle);
     }
 
-    void TextBox::Update(Game* aGame)
+    void TextBox::Update(Game* game)
     {
-        if (aGame == nullptr || aGame->mInput == nullptr)
+        if (game == nullptr || game->mInput == nullptr)
         {
             return;
         }
@@ -29,7 +29,7 @@ namespace nuvelocity
             return;
         }
 
-        InputManager& input = *aGame->mInput;
+        InputManager& input = *game->mInput;
 
         const SDL_Point mouse = input.GetMousePosition();
         if (input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
@@ -38,11 +38,11 @@ namespace nuvelocity
             mFocused = ContainsPoint(mouse);
             if (mFocused && !wasFocused)
             {
-                SDL_StartTextInput(aGame->mWindow);
+                SDL_StartTextInput(game->mWindow);
             }
             else if (!mFocused && wasFocused)
             {
-                SDL_StopTextInput(aGame->mWindow);
+                SDL_StopTextInput(game->mWindow);
             }
         }
 
@@ -52,9 +52,9 @@ namespace nuvelocity
         }
 
         // Ensure text input is active if we are focused (e.g., set via SetFocused)
-        if (!SDL_TextInputActive(aGame->mWindow))
+        if (!SDL_TextInputActive(game->mWindow))
         {
-            SDL_StartTextInput(aGame->mWindow);
+            SDL_StartTextInput(game->mWindow);
         }
 
         bool changed = false;

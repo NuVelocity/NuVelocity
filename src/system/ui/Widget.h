@@ -28,8 +28,8 @@ namespace nuvelocity
         Widget();
         virtual ~Widget() = default;
 
-        void Update(Game* aGame) override = 0;
-        void Draw(Game* aGame) override = 0;
+        void Update(Game* game) override = 0;
+        void Draw(Game* game) override = 0;
 
         virtual void SetRect(const SDL_Rect& rect);
         SDL_Rect GetRect() const;

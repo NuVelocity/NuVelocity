@@ -64,14 +64,14 @@ namespace nuvelocity
         mWindows.clear();
     }
 
-    void MdiManager::Update(Game* aGame)
+    void MdiManager::Update(Game* game)
     {
-        if (aGame == nullptr || aGame->mInput == nullptr)
+        if (game == nullptr || game->mInput == nullptr)
         {
             return;
         }
 
-        InputManager& input = *aGame->mInput;
+        InputManager& input = *game->mInput;
         const SDL_Point mousePosition = input.GetMousePosition();
 
         if (input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
@@ -98,7 +98,7 @@ namespace nuvelocity
             }
 
             window->SetActive(index == mWindows.size() - 1);
-            window->Update(aGame);
+            window->Update(game);
         }
 
         if (input.IsKeyPressed(SDL_SCANCODE_ESCAPE))

@@ -24,7 +24,7 @@ namespace nuvelocity
 
         TextBox();
 
-        void Update(Game* aGame) override;
+        void Update(Game* game) override;
         void Draw(Game* game) override;
 
         void SetText(const std::string& text);
