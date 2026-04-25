@@ -39,7 +39,7 @@ namespace nuvelocity
         Sequence* LoadSourceSequenceFrames(const std::string& path);
         std::vector<std::string> EnumerateFiles(const std::string& path);
 
-        static inline const char* GetErrorMessage()
+        static const char* GetErrorMessage()
         {
             return PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
         }
@@ -64,11 +64,14 @@ namespace nuvelocity
         NVE_API Sequence* LoadSequence(const std::string& path);
         NVE_API Font* LoadFont(const std::string& path);
         NVE_API FontBitmap* LoadFontBitmap(const std::string& path);
+        NVE_API FontBitmap* LoadFontBitmapFromFrame(const std::string& path);
 
         NVE_API StandAloneFrame* TryLoadStandAloneFrame(const std::string& path);
         NVE_API Sequence* TryLoadSequence(const std::string& path);
 
-        NVE_API std::vector<std::string> EnumerateRoundSets();
+        NVE_API std::vector<std::pair<std::string, std::string>> EnumerateRoundSets();
+        NVE_API std::vector<std::pair<std::string, std::string>> EnumerateRawFontBitmaps();
+        NVE_API std::vector<std::pair<std::string, std::string>> EnumerateFonts();
 
         NVE_API std::string LoadTextFile(const std::string& path);
 

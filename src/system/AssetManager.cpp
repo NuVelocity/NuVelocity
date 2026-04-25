@@ -7,13 +7,14 @@
 #include <format>
 #include <physfs.h>
 #include <physfssdl3.h>
-#include <string_view>
 #include <vector>
 
 #include "AssetExporter.h"
 #include "Font.h"
 #include "FontBitmap.h"
+#include "Sequence.h"
 #include "SequenceFrameInfoList.h"
+#include "StandAloneFrame.h"
 #include "Utils.h"
 #include "decoders/DecodeUtils.h"
 #include "decoders/FrameLoaderMode3.h"
@@ -25,11 +26,15 @@ namespace nuvelocity
 {
     constexpr const char* kPropertiesFileName = "Properties.txt";
     constexpr const char* kTgaExtension = ".tga";
+    constexpr const char* kFontsPath = "Fonts";
+    constexpr const char* kResourcesFontsPath = "Resources/Fonts";
+    constexpr const char* kResourcesRoundsPath = "Resources/Rounds";
 
 #ifdef NVE_RESTORE_TGA
     AssetManager::AssetManager()
-            : Manager()
-            , mRestoreMode(false) {};
+            : mRestoreMode(false)
+    {
+    }
 #else
     AssetManager::AssetManager() = default;
 #endif
@@ -308,7 +313,7 @@ namespace nuvelocity
 
     Font* AssetManager::LoadFont(const std::string& path)
     {
-        Font* font = static_cast<Font*>(LoadPropertyFile(path));
+        Font* font = static_cast<Font*>(LoadPropertyFile(path + ".font.txt"));
         if (font == nullptr)
         {
             SDL_LogError(NVE_LOG_CATEGORY_ASSETS, "Failed to load font '%s'.", path.c_str());
@@ -461,19 +466,56 @@ namespace nuvelocity
         return nullptr;
     }
 
-    std::vector<std::string> AssetManager::EnumerateRoundSets()
+    std::vector<std::pair<std::string, std::string>> nuvelocity::AssetManager::EnumerateRoundSets()
     {
-        std::vector<std::string> roundSets;
-        std::vector<std::string> files = EnumerateFiles("Resources/Rounds");
+        std::vector<std::pair<std::string, std::string>> roundSets;
+        std::vector<std::string> files = EnumerateFiles(kResourcesRoundsPath);
         for (const auto& file : files)
         {
-            if (file.find(".RoundSet") != std::string::npos)
+            auto pos = file.find(".RoundSet");
+            if (pos != std::string::npos)
             {
-                // Strip extension
-                roundSets.push_back(file.substr(0, file.find(".RoundSet")));
+                std::string name = file.substr(0, pos);
+                std::string fullPath = std::string(kResourcesRoundsPath) + "/" + file;
+                roundSets.emplace_back(fullPath, name);
             }
         }
         return roundSets;
+    }
+
+    std::vector<std::pair<std::string, std::string>>
+    nuvelocity::AssetManager::EnumerateRawFontBitmaps()
+    {
+        std::vector<std::pair<std::string, std::string>> rawFontBitmaps;
+        std::vector<std::string> files = EnumerateFiles(std::string("Cache/") + kFontsPath);
+        for (const auto& file : files)
+        {
+            auto pos = file.find(".Sequence");
+            if (pos != std::string::npos)
+            {
+                std::string name = file.substr(0, pos);
+                std::string fullPath = std::string(kFontsPath) + "/" + name;
+                rawFontBitmaps.emplace_back(fullPath, name);
+            }
+        }
+        return rawFontBitmaps;
+    }
+
+    std::vector<std::pair<std::string, std::string>> nuvelocity::AssetManager::EnumerateFonts()
+    {
+        std::vector<std::pair<std::string, std::string>> fonts;
+        std::vector<std::string> files = EnumerateFiles(kResourcesFontsPath);
+        for (const auto& file : files)
+        {
+            auto pos = file.find(".font.txt");
+            if (pos != std::string::npos)
+            {
+                std::string name = file.substr(0, pos);
+                std::string fullPath = std::string(kResourcesFontsPath) + "/" + file;
+                fonts.emplace_back(fullPath, name);
+            }
+        }
+        return fonts;
     }
 
     std::vector<std::string> AssetManager::EnumerateFiles(const std::string& path)
@@ -484,7 +526,7 @@ namespace nuvelocity
         {
             for (char** entry = files; *entry != nullptr; ++entry)
             {
-                fileList.push_back(*entry);
+                fileList.emplace_back(*entry);
             }
             PHYSFS_freeList(static_cast<void*>(files));
         }
