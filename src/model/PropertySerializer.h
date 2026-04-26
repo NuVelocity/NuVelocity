@@ -610,6 +610,21 @@ namespace nuvelocity
             EnumProperty* enumProp = static_cast<EnumProperty*>(prop);
             return enumProp->GetSerializedValue(const_cast<void*>(object));
         }
+        case PropertyType::Polygon:
+        {
+            PolygonProperty* polyProp = static_cast<PolygonProperty*>(prop);
+            const std::vector<SDL_FPoint>& points = polyProp->GetPoints(const_cast<void*>(object));
+            std::ostringstream oss;
+            for (size_t i = 0; i < points.size(); ++i)
+            {
+                oss << points[i].x << "," << points[i].y;
+                if (i + 1 < points.size())
+                {
+                    oss << ",";
+                }
+            }
+            return oss.str();
+        }
         default:
             return "";
         }

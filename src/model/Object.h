@@ -272,6 +272,16 @@ namespace nuvelocity
             AddPropertyImpl(info, name, memberPtr, arrayItemKey);
         }
 
+        static void AddPolygonProperty(ClassInfo& info,
+                                       const char* name,
+                                       std::vector<SDL_FPoint> Derived::* memberPtr)
+        {
+            size_t offset = reinterpret_cast<size_t>(&(reinterpret_cast<Derived*>(0)->*memberPtr));
+            size_t size = sizeof(std::vector<SDL_FPoint>);
+            Property* prop = new PolygonProperty(name, offset, size);
+            info.AddProperty(prop);
+        }
+
         // Helper to register an enum/int property with custom serialized value text.
         template <typename MemberType, typename MappingContainer>
         static void AddEnumProperty(ClassInfo& info,

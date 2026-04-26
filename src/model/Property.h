@@ -15,6 +15,31 @@
 namespace nuvelocity
 {
     class ClassInfo;
+    class Property;
+
+    inline void ParseCSVToPoints(const std::string& csv, std::vector<SDL_FPoint>& points)
+    {
+        points.clear();
+        std::stringstream stream(csv);
+        std::string segment;
+        std::vector<float> coords;
+
+        while (std::getline(stream, segment, ','))
+        {
+            try
+            {
+                coords.push_back(std::stof(segment));
+            }
+            catch (...)
+            {
+            }
+        }
+
+        for (size_t i = 0; i + 1 < coords.size(); i += 2)
+        {
+            points.push_back(SDL_FPoint{.x = coords[i], .y = coords[i + 1]});
+        }
+    }
 
     enum class PropertyType : uint8_t
     {
@@ -30,7 +55,8 @@ namespace nuvelocity
         Array,
         Map,
         UnorderedMap,
-        Color
+        Color,
+        Polygon
     };
 
     class Property
@@ -744,6 +770,36 @@ namespace nuvelocity
         PropertyType GetType() const override
         {
             return PropertyType::Object;
+        }
+    };
+
+    class PolygonProperty : public Property
+    {
+    public:
+        PolygonProperty(const std::string& name, size_t offset, size_t size)
+                : Property(name, offset, size)
+        {
+        }
+
+        std::vector<SDL_FPoint>& GetPoints(void* obj) const
+        {
+            return *(std::vector<SDL_FPoint>*)GetValuePtr(obj);
+        }
+
+        void SetValue(void* obj, const std::string& value) override
+        {
+            ParseCSVToPoints(value, GetPoints(obj));
+        }
+
+        void DumpValue(void* obj) const override
+        {
+            size_t size = GetPoints(obj).size();
+            SDL_Log("  %s: [polygon with %zu points]", mName.c_str(), size);
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::Polygon;
         }
     };
 
