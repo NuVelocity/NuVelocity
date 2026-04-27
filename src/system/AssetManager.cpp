@@ -442,6 +442,15 @@ namespace nuvelocity
         }
 
         SDL_IOStream* stream = Load("Music/" + path);
+        if (stream == nullptr)
+        {
+            auto aliasIt = mMusicSubstitutions.find(path);
+            if (aliasIt != mMusicSubstitutions.end())
+            {
+                stream = Load("Music/" + aliasIt->second);
+            }
+        }
+
         if (stream != nullptr)
         {
             mMusicStreams[path] = stream;
@@ -463,6 +472,12 @@ namespace nuvelocity
             mSoundStreams[path] = stream;
         }
         return stream;
+    }
+
+    void AssetManager::AddMusicSubstitution(const std::string& substitutionPath,
+                                            const std::string& path)
+    {
+        mMusicSubstitutions[substitutionPath] = path;
     }
 
     std::string AssetManager::LoadTextFile(const std::string& path)
