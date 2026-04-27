@@ -47,6 +47,14 @@ namespace nuvelocity
         mSequences.clear();
         mFonts.clear();
         mFontBitmaps.clear();
+        for (auto& [path, stream] : mMusicStreams)
+        {
+            SDL_CloseIO(stream);
+        }
+        for (auto& [path, stream] : mSoundStreams)
+        {
+            SDL_CloseIO(stream);
+        }
         PHYSFS_deinit();
     }
 
@@ -423,6 +431,38 @@ namespace nuvelocity
             mFontBitmaps[path] = std::unique_ptr<FontBitmap>(fontBitmap);
         }
         return fontBitmap;
+    }
+
+    SDL_IOStream* AssetManager::LoadMusic(const std::string& path)
+    {
+        auto it = mMusicStreams.find(path);
+        if (it != mMusicStreams.end())
+        {
+            return it->second;
+        }
+
+        SDL_IOStream* stream = Load("Music/" + path);
+        if (stream != nullptr)
+        {
+            mMusicStreams[path] = stream;
+        }
+        return stream;
+    }
+
+    SDL_IOStream* AssetManager::LoadSound(const std::string& path)
+    {
+        auto it = mSoundStreams.find(path);
+        if (it != mSoundStreams.end())
+        {
+            return it->second;
+        }
+
+        SDL_IOStream* stream = Load("Sounds/" + path);
+        if (stream != nullptr)
+        {
+            mSoundStreams[path] = stream;
+        }
+        return stream;
     }
 
     std::string AssetManager::LoadTextFile(const std::string& path)

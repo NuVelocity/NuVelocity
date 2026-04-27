@@ -49,6 +49,9 @@ namespace nuvelocity
         std::unordered_map<std::string, std::unique_ptr<Sequence>> mSequences;
         std::unordered_map<std::string, std::unique_ptr<Font>> mFonts;
         std::unordered_map<std::string, std::unique_ptr<FontBitmap>> mFontBitmaps;
+        std::unordered_map<std::string, SDL_IOStream*> mMusicStreams;
+        std::unordered_map<std::string, SDL_IOStream*> mSoundStreams;
+
 #ifdef NVE_RESTORE_TGA
         bool mRestoreMode;
 #endif
@@ -70,6 +73,8 @@ namespace nuvelocity
         NVE_API Font* LoadFont(const std::string& path);
         NVE_API FontBitmap* LoadFontBitmap(const std::string& path);
         NVE_API FontBitmap* LoadFontBitmapFromFrame(const std::string& path);
+        NVE_API SDL_IOStream* LoadMusic(const std::string& path);
+        NVE_API SDL_IOStream* LoadSound(const std::string& path);
 
         NVE_API StandAloneFrame* TryLoadStandAloneFrame(const std::string& path);
         NVE_API Sequence* TryLoadSequence(const std::string& path);
