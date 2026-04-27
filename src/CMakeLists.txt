@@ -35,6 +35,7 @@ target_sources(
     BlitType.h
     BlitTypeConverter.h
     Colors.h
+    Collidable2D.h
     EngineObjectTypes.def
     ObjectRegistration.h
     ${NVE_OBJECT_REGISTRATION_CPP}
