@@ -17,8 +17,8 @@ namespace nuvelocity
             return;
         }
 
-        SDL_Rect destRect{.x = x + (useHotSpot ? frame->mHotSpot.x + (surface->w / 2) : 0),
-                          .y = y + (useHotSpot ? frame->mHotSpot.y + (surface->h / 2) : 0),
+        SDL_Rect destRect{.x = x + (useHotSpot ? frame->GetHotSpot().x + (surface->w / 2) : 0),
+                          .y = y + (useHotSpot ? frame->GetHotSpot().y + (surface->h / 2) : 0),
                           .w = surface->w,
                           .h = surface->h};
 
@@ -47,8 +47,8 @@ namespace nuvelocity
             return;
         }
 
-        SDL_Rect destRect{.x = x + (useHotSpot ? frame->mHotSpot.x : 0),
-                          .y = y + (useHotSpot ? frame->mHotSpot.y : 0),
+        SDL_Rect destRect{.x = x + (useHotSpot ? frame->GetHotSpot().x : 0),
+                          .y = y + (useHotSpot ? frame->GetHotSpot().y : 0),
                           .w = surface->w,
                           .h = surface->h};
         Draw(surface, &destRect, nullptr, color);

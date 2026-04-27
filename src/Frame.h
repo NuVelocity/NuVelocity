@@ -56,14 +56,15 @@ namespace nuvelocity
         NVE_API void SetSurface(SDL_Surface* surface);
         NVE_API SDL_Texture* GetTexture(SDL_Renderer* renderer);
 
+        NVE_API SDL_Point GetHotSpot() const;
+        NVE_API void SetHotSpot(int x, int y);
+
         iterator begin();
         iterator end();
         const_iterator begin() const;
         const_iterator end() const;
         const_iterator cbegin() const;
         const_iterator cend() const;
-
-        SDL_Point mHotSpot;
 
     private:
         void Initialize(int width, int height, int bpp);
@@ -75,6 +76,8 @@ namespace nuvelocity
         SDL_Surface* mSurface;
         SDL_Texture* mTexture;
         SDL_Renderer* mTextureRenderer;
+
+        SDL_Point mHotSpot;
 
         friend class DecodeUtils;
     };

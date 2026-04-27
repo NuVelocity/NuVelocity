@@ -246,6 +246,17 @@ namespace nuvelocity
         return mTexture;
     }
 
+    SDL_Point Frame::GetHotSpot() const
+    {
+        return mHotSpot;
+    }
+
+    void Frame::SetHotSpot(int x, int y)
+    {
+        mHotSpot.x = x;
+        mHotSpot.y = y;
+    }
+
     Frame::iterator Frame::begin()
     {
         if (mSurface == nullptr || mSurface->pixels == nullptr)

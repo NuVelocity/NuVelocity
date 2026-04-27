@@ -93,7 +93,7 @@ namespace nuvelocity
                 SDL_SetSurfaceBlendMode(transparent, SDL_BLENDMODE_BLEND);
                 frames[i] = std::make_unique<Frame>();
                 frames[i]->SetSurface(transparent);
-                frames[i]->mHotSpot = {0, 0};
+                frames[i]->SetHotSpot(0, 0);
                 continue;
             }
 
@@ -109,7 +109,7 @@ namespace nuvelocity
             SDL_SetSurfaceBlendMode(frameSurface, SDL_BLENDMODE_BLEND);
             frames[i] = std::make_unique<Frame>();
             frames[i]->SetSurface(frameSurface);
-            frames[i]->mHotSpot = {offsetX, offsetY};
+            frames[i]->SetHotSpot(offsetX, offsetY);
         }
 
         return true;

@@ -262,8 +262,8 @@ namespace nuvelocity
                 1, static_cast<int>(std::lround(static_cast<float>(glyph->GetWidth()) * scale)));
             const int glyphHeight = SDL_max(
                 1, static_cast<int>(std::lround(static_cast<float>(glyph->GetHeight()) * scale)));
-            SDL_Rect dstRect{.x = cursorX + glyph->mHotSpot.x,
-                             .y = y + glyph->mHotSpot.y,
+            SDL_Rect dstRect{.x = cursorX + glyph->GetHotSpot().x,
+                             .y = y + glyph->GetHotSpot().y,
                              .w = glyphWidth,
                              .h = glyphHeight};
 

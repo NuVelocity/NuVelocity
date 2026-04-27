@@ -183,7 +183,7 @@ namespace nuvelocity
             SaveSurfaceAsUncompressedTga(frame.GetSurface(), path + kTgaExtension);
 
         // Dump hotspot to file (path + ".hotspot.txt")
-        const auto& hotspot = frame.mHotSpot;
+        const auto& hotspot = frame.GetHotSpot();
         std::ostringstream hotspotStream;
         hotspotStream << "// StandAloneFrame::mHotSpot\n";
         hotspotStream << "x: " << hotspot.x << "\n";
