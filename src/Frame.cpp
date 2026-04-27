@@ -257,6 +257,23 @@ namespace nuvelocity
         mHotSpot.y = y;
     }
 
+    std::vector<SDL_FPoint> Frame::GetCollisionPolygon() const
+    {
+        if (mSurface == nullptr)
+        {
+            return {};
+        }
+
+        float width = static_cast<float>(mWidth);
+        float height = static_cast<float>(mHeight);
+        float hotSpotX = static_cast<float>(mHotSpot.x);
+        float hotSpotY = static_cast<float>(mHotSpot.y);
+        return {{.x = hotSpotX, .y = hotSpotY},
+                {.x = hotSpotX + width, .y = hotSpotY},
+                {.x = hotSpotX + width, .y = hotSpotY + height},
+                {.x = hotSpotX, .y = hotSpotY + height}};
+    }
+
     Frame::iterator Frame::begin()
     {
         if (mSurface == nullptr || mSurface->pixels == nullptr)

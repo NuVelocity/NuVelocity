@@ -59,6 +59,8 @@ namespace nuvelocity
         NVE_API SDL_Point GetHotSpot() const;
         NVE_API void SetHotSpot(int x, int y);
 
+        NVE_API std::vector<SDL_FPoint> GetCollisionPolygon() const;
+
         iterator begin();
         iterator end();
         const_iterator begin() const;
