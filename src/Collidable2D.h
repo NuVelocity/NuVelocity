@@ -42,14 +42,15 @@ namespace nuvelocity
                 return;
             }
 
-            for (size_t i = 0; i < GetCollisionPolygon().size(); ++i)
+            const auto& poly = GetCollisionPolygon();
+            for (size_t i = 0; i < poly.size(); ++i)
             {
-                const size_t next = (i + 1) % GetCollisionPolygon().size();
+                const size_t next = (i + 1) % poly.size();
                 game->mSpriteBatch->DrawLine(
-                    static_cast<int>(std::lround(mPosition.x + GetCollisionPolygon()[i].x)),
-                    static_cast<int>(std::lround(mPosition.y + GetCollisionPolygon()[i].y)),
-                    static_cast<int>(std::lround(mPosition.x + GetCollisionPolygon()[next].x)),
-                    static_cast<int>(std::lround(mPosition.y + GetCollisionPolygon()[next].y)),
+                    static_cast<int>(std::lround(mPosition.x + poly[i].x)),
+                    static_cast<int>(std::lround(mPosition.y + poly[i].y)),
+                    static_cast<int>(std::lround(mPosition.x + poly[next].x)),
+                    static_cast<int>(std::lround(mPosition.y + poly[next].y)),
                     Colors::Green);
             }
         }
