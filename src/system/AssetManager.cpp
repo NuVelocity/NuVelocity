@@ -47,14 +47,8 @@ namespace nuvelocity
         mSequences.clear();
         mFonts.clear();
         mFontBitmaps.clear();
-        for (auto& [path, stream] : mMusicStreams)
-        {
-            SDL_CloseIO(stream);
-        }
-        for (auto& [path, stream] : mSoundStreams)
-        {
-            SDL_CloseIO(stream);
-        }
+        mMusicStreams.clear();
+        mSoundStreams.clear();
         PHYSFS_deinit();
     }
 
@@ -433,12 +427,12 @@ namespace nuvelocity
         return fontBitmap;
     }
 
-    SDL_IOStream* AssetManager::LoadMusic(const std::string& path)
+    AudioData* AssetManager::LoadMusic(const std::string& path)
     {
         auto it = mMusicStreams.find(path);
         if (it != mMusicStreams.end())
         {
-            return it->second;
+            return it->second.get();
         }
 
         SDL_IOStream* stream = Load("Music/" + path);
@@ -453,25 +447,35 @@ namespace nuvelocity
 
         if (stream != nullptr)
         {
-            mMusicStreams[path] = stream;
+            auto data = std::make_unique<AudioData>();
+            data->path = path;
+            data->stream = stream;
+            AudioData* result = data.get();
+            mMusicStreams[path] = std::move(data);
+            return result;
         }
-        return stream;
+        return nullptr;
     }
 
-    SDL_IOStream* AssetManager::LoadSound(const std::string& path)
+    AudioData* AssetManager::LoadSound(const std::string& path)
     {
         auto it = mSoundStreams.find(path);
         if (it != mSoundStreams.end())
         {
-            return it->second;
+            return it->second.get();
         }
 
         SDL_IOStream* stream = Load("Sounds/" + path);
         if (stream != nullptr)
         {
-            mSoundStreams[path] = stream;
+            auto data = std::make_unique<AudioData>();
+            data->path = path;
+            data->stream = stream;
+            AudioData* result = data.get();
+            mSoundStreams[path] = std::move(data);
+            return result;
         }
-        return stream;
+        return nullptr;
     }
 
     void AssetManager::AddMusicSubstitution(const std::string& substitutionPath,

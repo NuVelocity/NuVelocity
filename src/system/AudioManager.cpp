@@ -42,15 +42,15 @@ namespace nuvelocity
         return true;
     }
 
-    bool AudioManager::AssignBgm(const std::string& id, SDL_IOStream* stream)
+    bool AudioManager::RegisterBgm(AudioData* data)
     {
-        auto* music = MIX_LoadAudio_IO(mMixer, stream, false, true);
+        auto* music = MIX_LoadAudio_IO(mMixer, data->stream, false, true);
         if (music == nullptr)
         {
             SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to load BGM track: %s", SDL_GetError());
             return false;
         }
-        mBgmInputs[id] = music;
+        mBgmInputs[data->path] = music;
         return true;
     }
 
@@ -75,16 +75,16 @@ namespace nuvelocity
         return MIX_StopTrack(mBgmTrack, MIX_TrackMSToFrames(mBgmTrack, fadeMs));
     }
 
-    bool AudioManager::AssignSfx(const std::string& id, SDL_IOStream* stream)
+    bool AudioManager::RegisterSfx(AudioData* data)
     {
         auto* track = MIX_CreateTrack(mMixer);
-        auto* sfx = MIX_LoadAudio_IO(mMixer, stream, false, true);
+        auto* sfx = MIX_LoadAudio_IO(mMixer, data->stream, false, true);
         if (sfx == nullptr)
         {
             SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to load SFX track: %s", SDL_GetError());
             return false;
         }
-        mSfxInputs[id] = sfx;
+        mSfxInputs[data->path] = sfx;
         return true;
     }
 
