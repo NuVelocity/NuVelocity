@@ -625,6 +625,14 @@ namespace nuvelocity
             }
             return oss.str();
         }
+        case PropertyType::Point:
+        {
+            PointProperty* pointProp = static_cast<PointProperty*>(prop);
+            SDL_FPoint point = pointProp->GetPointValue(const_cast<void*>(object));
+            std::ostringstream oss;
+            oss << point.x << "," << point.y;
+            return oss.str();
+        }
         default:
             return "";
         }

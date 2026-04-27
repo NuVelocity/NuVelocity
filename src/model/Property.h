@@ -56,7 +56,8 @@ namespace nuvelocity
         Map,
         UnorderedMap,
         Color,
-        Polygon
+        Polygon,
+        Point
     };
 
     class Property
@@ -800,6 +801,57 @@ namespace nuvelocity
         PropertyType GetType() const override
         {
             return PropertyType::Polygon;
+        }
+    };
+ 
+    class PointProperty : public Property
+    {
+    public:
+        PointProperty(const std::string& name, size_t offset, size_t size)
+                : Property(name, offset, size)
+        {
+        }
+ 
+        SDL_FPoint GetPointValue(void* obj) const
+        {
+            return *(SDL_FPoint*)GetValuePtr(obj);
+        }
+ 
+        void SetPointValue(void* obj, SDL_FPoint value)
+        {
+            *(SDL_FPoint*)GetValuePtr(obj) = value;
+        }
+ 
+        void SetValue(void* obj, const void* valuePtr) override
+        {
+            *(SDL_FPoint*)GetValuePtr(obj) = *(const SDL_FPoint*)valuePtr;
+        }
+ 
+        void SetValue(void* obj, const std::string& value) override
+        {
+            float x, y;
+            if (sscanf(value.c_str(), "%f,%f", &x, &y) == 2)
+            {
+                SetPointValue(obj, SDL_FPoint{.x = x, .y = y});
+            }
+            else
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "Failed to convert '%s' to point for property '%s': expected 'X,Y'",
+                            value.c_str(),
+                            mName.c_str());
+            }
+        }
+ 
+        void DumpValue(void* obj) const override
+        {
+            SDL_FPoint point = GetPointValue(obj);
+            SDL_Log("  %s: %f,%f", mName.c_str(), point.x, point.y);
+        }
+ 
+        PropertyType GetType() const override
+        {
+            return PropertyType::Point;
         }
     };
 

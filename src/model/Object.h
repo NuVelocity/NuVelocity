@@ -220,6 +220,10 @@ namespace nuvelocity
             {
                 prop = new ColorProperty(name, offset, size);
             }
+            else if constexpr (std::is_same_v<MemberType, SDL_FPoint>)
+            {
+                prop = new PointProperty(name, offset, size);
+            }
             else if constexpr (is_vector<MemberType>::value)
             {
                 using ElementType = typename is_vector<MemberType>::element_type;
