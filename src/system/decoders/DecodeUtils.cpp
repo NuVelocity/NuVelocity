@@ -303,6 +303,12 @@ namespace nuvelocity
         // CSequence and CSequenceFrameInfoList.
         for (int i = 0; i < 2; ++i)
         {
+            listStream >> std::ws;
+            if (listStream.eof())
+            {
+                return sawKnownRoot;
+            }
+
             ObjectBase* root = nullptr;
             ClassInfo* info = nullptr;
             if (!PropertySerializer::Deserialize(listStream, root, info) || root == nullptr ||
