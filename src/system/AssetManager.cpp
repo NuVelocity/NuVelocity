@@ -618,6 +618,25 @@ namespace nuvelocity
         return fonts;
     }
 
+    std::vector<std::pair<std::string, std::string>>
+    nuvelocity::AssetManager::EnumerateAdvertisements()
+    {
+        std::vector<std::pair<std::string, std::string>> ads;
+        const std::string adPath = "Resources/Arena/Advertisements";
+        std::vector<std::string> files = EnumerateFiles(std::string("Cache/") + adPath);
+        for (const auto& file : files)
+        {
+            auto pos = file.find(".Frame");
+            if (pos != std::string::npos)
+            {
+                std::string name = file.substr(0, pos);
+                std::string fullPath = adPath + "/" + name;
+                ads.emplace_back(fullPath, name);
+            }
+        }
+        return ads;
+    }
+
     std::vector<std::string> AssetManager::EnumerateFiles(const std::string& path)
     {
         std::vector<std::string> fileList;

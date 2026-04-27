@@ -85,6 +85,7 @@ namespace nuvelocity
         NVE_API std::vector<std::pair<std::string, std::string>> EnumerateRoundSets();
         NVE_API std::vector<std::pair<std::string, std::string>> EnumerateRawFontBitmaps();
         NVE_API std::vector<std::pair<std::string, std::string>> EnumerateFonts();
+        NVE_API std::vector<std::pair<std::string, std::string>> EnumerateAdvertisements();
 
         NVE_API std::string LoadTextFile(const std::string& path);
 
