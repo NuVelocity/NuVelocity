@@ -44,6 +44,10 @@ namespace nuvelocity
 
     bool AudioManager::RegisterBgm(AudioData* data)
     {
+        if (mBgmInputs[data->path] != nullptr)
+        {
+            return true;
+        }
         auto* music = MIX_LoadAudio_IO(mMixer, data->stream, false, true);
         if (music == nullptr)
         {
@@ -77,6 +81,10 @@ namespace nuvelocity
 
     bool AudioManager::RegisterSfx(AudioData* data)
     {
+        if (mSfxInputs[data->path] != nullptr)
+        {
+            return true;
+        }
         auto* track = MIX_CreateTrack(mMixer);
         auto* sfx = MIX_LoadAudio_IO(mMixer, data->stream, false, true);
         if (sfx == nullptr)
