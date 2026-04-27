@@ -26,7 +26,7 @@ namespace nuvelocity
             return mPosition;
         }
 
-        virtual std::vector<SDL_FPoint> GetCollisionPolygon() const;
+        virtual std::vector<SDL_FPoint> GetCollisionPolygon() const = 0;
 
         virtual void OnHit() {}
 
@@ -35,7 +35,7 @@ namespace nuvelocity
             return false;
         }
 
-        void Draw(const Game* game) const
+        void Draw(Game* game) override
         {
             if (!game->mSpriteBatch->IsDrawBoundsEnabled())
             {
