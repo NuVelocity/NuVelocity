@@ -7,6 +7,8 @@
 #include <format>
 #include <physfs.h>
 #include <physfssdl3.h>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "AssetExporter.h"
@@ -41,6 +43,10 @@ namespace nuvelocity
 
     AssetManager::~AssetManager()
     {
+        mStandAloneFrames.clear();
+        mSequences.clear();
+        mFonts.clear();
+        mFontBitmaps.clear();
         PHYSFS_deinit();
     }
 
@@ -180,6 +186,12 @@ namespace nuvelocity
 
     StandAloneFrame* AssetManager::LoadStandAloneFrame(const std::string& path)
     {
+        auto it = mStandAloneFrames.find(path);
+        if (it != mStandAloneFrames.end())
+        {
+            return it->second.get();
+        }
+
         StandAloneFrame* frame = nullptr;
         bool loadedFromCache = false;
 
@@ -236,15 +248,23 @@ namespace nuvelocity
                             path.c_str());
             }
 #endif
+            mStandAloneFrames[path] = std::unique_ptr<StandAloneFrame>(frame);
         }
         return frame;
     }
 
     Sequence* AssetManager::LoadSequence(const std::string& path)
     {
+        auto it = mSequences.find(path);
+        if (it != mSequences.end())
+        {
+            return it->second.get();
+        }
+
         Sequence* sourceSequence = LoadSourceSequenceFrames(path);
         if (sourceSequence != nullptr)
         {
+            mSequences[path] = std::unique_ptr<Sequence>(sourceSequence);
             return sourceSequence;
         }
 
@@ -308,11 +328,18 @@ namespace nuvelocity
 #endif
         }
 
+        mSequences[path] = std::unique_ptr<Sequence>(sequence);
         return sequence;
     }
 
     Font* AssetManager::LoadFont(const std::string& path)
     {
+        auto it = mFonts.find(path);
+        if (it != mFonts.end())
+        {
+            return it->second.get();
+        }
+
         Font* font = static_cast<Font*>(LoadPropertyFile(path + ".font.txt"));
         if (font == nullptr)
         {
@@ -325,15 +352,24 @@ namespace nuvelocity
             return nullptr;
         }
         font->AttachFontStream(stream);
+
+        mFonts[path] = std::unique_ptr<Font>(font);
         return font;
     }
 
     FontBitmap* AssetManager::LoadFontBitmap(const std::string& path)
     {
+        auto it = mFontBitmaps.find(path);
+        if (it != mFontBitmaps.end())
+        {
+            return it->second.get();
+        }
+
+        FontBitmap* fontBitmap = nullptr;
         Sequence* sourceSequence = LoadSourceSequenceFrames(path);
         if (sourceSequence != nullptr)
         {
-            auto* fontBitmap = new FontBitmap();
+            fontBitmap = new FontBitmap();
             fontBitmap->SetSequence(std::unique_ptr<Sequence>(sourceSequence));
 
             // Source TGA folders do not carry the binary font pre-header.
@@ -345,42 +381,47 @@ namespace nuvelocity
 
             Frame* firstFrame = sourceSequence->GetFrame(0);
             fontBitmap->SetXHeight(firstFrame != nullptr ? firstFrame->GetHeight() : 0);
-            return fontBitmap;
         }
-
-        bool loadedFromCache = false;
-        SDL_IOStream* stream = LoadFromCache(path, CacheKind::Sequence, loadedFromCache);
-        if (stream == nullptr)
+        else
         {
-            SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
-                         "Failed to load font bitmap '%s': %s",
-                         path.c_str(),
-                         PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-            return nullptr;
-        }
+            bool loadedFromCache = false;
+            SDL_IOStream* stream = LoadFromCache(path, CacheKind::Sequence, loadedFromCache);
+            if (stream == nullptr)
+            {
+                SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
+                             "Failed to load font bitmap '%s': %s",
+                             path.c_str(),
+                             PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+                return nullptr;
+            }
 
-        FontBitmap* fontBitmap = SequenceLoaderMode3::LoadFontBitmap(stream);
-        SDL_CloseIO(stream);
+            fontBitmap = SequenceLoaderMode3::LoadFontBitmap(stream);
+            SDL_CloseIO(stream);
 
-        if (fontBitmap == nullptr)
-        {
-            return nullptr;
-        }
+            if (fontBitmap == nullptr)
+            {
+                return nullptr;
+            }
 
 #ifdef NVE_RESTORE_TGA
-        if (loadedFromCache)
-        {
-            const Sequence* sequence = fontBitmap->GetSequence();
-            if (sequence != nullptr && mRestoreMode &&
-                !AssetExporter::ExportSequenceToTga(path, *sequence))
+            if (loadedFromCache)
             {
-                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
-                            "Failed to export font bitmap '%s' to source TGA frames",
-                            path.c_str());
+                const Sequence* sequence = fontBitmap->GetSequence();
+                if (sequence != nullptr && mRestoreMode &&
+                    !AssetExporter::ExportSequenceToTga(path, *sequence))
+                {
+                    SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                                "Failed to export font bitmap '%s' to source TGA frames",
+                                path.c_str());
+                }
             }
-        }
 #endif
+        }
 
+        if (fontBitmap != nullptr)
+        {
+            mFontBitmaps[path] = std::unique_ptr<FontBitmap>(fontBitmap);
+        }
         return fontBitmap;
     }
 

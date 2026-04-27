@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <physfs.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "Font.h"
@@ -44,6 +45,10 @@ namespace nuvelocity
             return PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
         }
 
+        std::unordered_map<std::string, std::unique_ptr<StandAloneFrame>> mStandAloneFrames;
+        std::unordered_map<std::string, std::unique_ptr<Sequence>> mSequences;
+        std::unordered_map<std::string, std::unique_ptr<Font>> mFonts;
+        std::unordered_map<std::string, std::unique_ptr<FontBitmap>> mFontBitmaps;
 #ifdef NVE_RESTORE_TGA
         bool mRestoreMode;
 #endif
