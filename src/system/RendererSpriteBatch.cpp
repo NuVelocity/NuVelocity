@@ -1,4 +1,5 @@
 #include "RendererSpriteBatch.h"
+#include "Colors.h"
 #include <SDL3/SDL_render.h>
 
 namespace nuvelocity
@@ -51,10 +52,10 @@ namespace nuvelocity
 
         if (mDrawBounds)
         {
-            OutlineRect(destRect, {255, 0, 255, 255}); // Magenta: Actual
+            OutlineRect(destRect, Colors::Magenta);
             if (srcRect != nullptr)
             {
-                OutlineRect(srcRect, {0, 255, 255, 255}); // Cyan: Source
+                OutlineRect(srcRect, Colors::Cyan);
             }
         }
     }
@@ -74,7 +75,7 @@ namespace nuvelocity
                             .destRect = SDL_Rect{},
                             .hasSrcRect = false,
                             .srcRect = SDL_Rect{},
-                            .color = {255, 255, 255, 255},
+                            .color = Colors::White,
                             .blendMode = SDL_BLENDMODE_BLEND};
         if (surface != nullptr)
         {

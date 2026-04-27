@@ -1,4 +1,5 @@
 #include "Font.h"
+#include "Colors.h"
 
 namespace nuvelocity
 {
@@ -79,7 +80,7 @@ namespace nuvelocity
         switch (alignment)
         {
         case TextAlignment::Center:
-            x = bounds.x + (bounds.w - textureWidth) / 2;
+            x = bounds.x + ((bounds.w - textureWidth) / 2);
             break;
         case TextAlignment::Right:
             x = bounds.x + bounds.w - textureWidth;
@@ -92,14 +93,14 @@ namespace nuvelocity
         int y = bounds.y;
         if (verticalCenter)
         {
-            y = bounds.y + (bounds.h - textureHeight) / 2;
+            y = bounds.y + ((bounds.h - textureHeight) / 2);
         }
 
         SDL_Rect target{.x = x, .y = y, .w = textureWidth, .h = textureHeight};
 
         // Use SpriteBatch to draw the surface. It will handle texture creation internally.
         // Surface already has color applied by TTF_RenderText_Blended.
-        batch->Draw(surface, &target, nullptr, SDL_Color{255, 255, 255, 255});
+        batch->Draw(surface, &target, nullptr, Colors::White);
 
         if (underlineIndex >= 0 && underlineIndex < static_cast<int>(text.size()))
         {

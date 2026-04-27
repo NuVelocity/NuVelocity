@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "Colors.h"
 #include "shaders/sprite_frag_spv.h"
 #include "shaders/sprite_vert_spv.h"
 
@@ -723,10 +724,10 @@ namespace nuvelocity
 
         if (mDrawBounds)
         {
-            OutlineRect(&dr, {255, 0, 255, 255}); // Magenta: Actual
+            OutlineRect(&dr, Colors::Magenta);
             if (srcRect != nullptr)
             {
-                OutlineRect(&sr, {0, 255, 255, 255}); // Cyan: Source
+                OutlineRect(&sr, Colors::Cyan);
             }
         }
     }

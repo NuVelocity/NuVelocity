@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Colors.h"
 #include "SpriteBatch.h"
 
 namespace nuvelocity
@@ -30,7 +31,7 @@ namespace nuvelocity
         void Draw(SDL_Surface* surface,
                   const SDL_Rect* destRect = nullptr,
                   const SDL_Rect* srcRect = nullptr,
-                  SDL_Color color = {255, 255, 255, 255}) override;
+                  SDL_Color color = Colors::White) override;
 
         void DrawCentered(SDL_Surface* surface) override;
 

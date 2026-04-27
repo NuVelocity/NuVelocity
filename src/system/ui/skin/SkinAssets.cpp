@@ -1,6 +1,7 @@
 #include "AlphaSkinBorder.h"
 #include "AlphaSkinData.h"
 #include "ClassicSkinBorder.h"
+#include "Colors.h"
 #include "JWindowAlphaTheme.h"
 #include <StandAloneFrame.h>
 #include <system/AssetManager.h>
@@ -209,7 +210,7 @@ namespace nuvelocity
         {
             if (frame != nullptr)
             {
-                spriteBatch->Draw(frame, x, y, {255, 255, 255, 255}, false);
+                spriteBatch->Draw(frame, x, y, Colors::White, false);
             }
         };
 

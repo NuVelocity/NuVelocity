@@ -269,7 +269,8 @@ namespace nuvelocity
 
             // Use SpriteBatch to draw the glyph surface with color modulation.
             // If not colorable, use white but preserve the requested alpha.
-            const SDL_Color drawColor = mColorable ? color : SDL_Color{255, 255, 255, color.a};
+            const SDL_Color drawColor =
+                mColorable ? color : SDL_Color{.r = 255, .g = 255, .b = 255, .a = color.a};
             batch->Draw(glyphSurface, &dstRect, nullptr, drawColor);
 
             cursorX += glyphWidth;

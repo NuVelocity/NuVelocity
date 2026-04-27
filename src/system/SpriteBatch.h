@@ -3,6 +3,7 @@
 
 #include <SDL3/SDL.h>
 
+#include "Colors.h"
 #include "Sequence.h"
 #include "StandAloneFrame.h"
 
@@ -24,19 +25,19 @@ namespace nuvelocity
         virtual void Draw(SDL_Surface* surface,
                           const SDL_Rect* destRect = nullptr,
                           const SDL_Rect* srcRect = nullptr,
-                          SDL_Color color = {255, 255, 255, 255}) = 0;
+                          SDL_Color color = Colors::White) = 0;
 
         virtual void Draw(StandAloneFrame* frame,
                           int x,
                           int y,
-                          SDL_Color color = {255, 255, 255, 255},
+                          SDL_Color color = Colors::White,
                           bool useHotSpot = true);
 
         virtual void Draw(Sequence* sequence,
                           std::size_t frameIndex,
                           int x,
                           int y,
-                          SDL_Color color = {255, 255, 255, 255},
+                          SDL_Color color = Colors::White,
                           bool useHotSpot = true);
 
         virtual void DrawCentered(SDL_Surface* surface) = 0;
