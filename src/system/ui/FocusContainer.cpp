@@ -9,8 +9,7 @@
 namespace nuvelocity
 {
     FocusContainer::FocusContainer(Button* items[], std::size_t itemCount)
-            : Widget()
-            , mItems(items)
+            : mItems(items)
             , mItemCount(itemCount)
             , mFocusedIndex(0)
             , mHasFocus(false)

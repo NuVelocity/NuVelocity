@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string_view>
+#include <utility>
 
 #include "model/PropertySerializer.h"
 
@@ -30,7 +31,7 @@ namespace nuvelocity
 
         const PHYSFS_sint64 written =
             PHYSFS_writeBytes(file, data, static_cast<PHYSFS_uint64>(dataSize));
-        return written == static_cast<PHYSFS_sint64>(dataSize);
+        return std::cmp_equal(written, dataSize);
     }
 
     bool AssetExporter::EnsureDirectoryTree(const std::string& directoryPath)
@@ -154,7 +155,7 @@ namespace nuvelocity
         const size_t rowBytes = static_cast<size_t>(rgbaSurface->w) * 4U;
         std::vector<uint8_t> fileData;
         fileData.resize(header.size() + (rowBytes * static_cast<size_t>(rgbaSurface->h)));
-        std::copy(header.begin(), header.end(), fileData.begin());
+        std::ranges::copy(header, fileData.begin());
 
         const uint8_t* pixels = static_cast<const uint8_t*>(rgbaSurface->pixels);
         size_t writeOffset = header.size();

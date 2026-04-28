@@ -9,7 +9,7 @@ namespace nuvelocity
     class Label : public Widget
     {
     public:
-        Label(const std::string& text = "", const std::string& font = "OCR");
+        Label(std::string text = "", std::string font = "OCR");
         virtual ~Label() = default;
 
         void SetText(const std::string& text)

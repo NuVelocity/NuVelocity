@@ -32,14 +32,14 @@ namespace nuvelocity
     {
     }
 
-    Button::Button(std::string caption)
+    Button::Button(const std::string& caption)
             : mHovered(false)
             , mPressed(false)
             , mFocused(false)
             , mSuppressFocusAfterClick(false)
             , mMnemonicScancode(SDL_SCANCODE_UNKNOWN)
             , mMnemonicIndex(-1)
-            , mCaption("")
+
     {
         Widget::SetStyle(mButtonStyle.baseStyle);
         SetCaption(caption);

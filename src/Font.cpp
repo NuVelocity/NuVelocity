@@ -1,5 +1,7 @@
 #include "Font.h"
+
 #include "Colors.h"
+#include <utility>
 
 namespace nuvelocity
 {
@@ -102,7 +104,7 @@ namespace nuvelocity
         // Surface already has color applied by TTF_RenderText_Blended.
         batch->Draw(surface, &target, nullptr, Colors::White);
 
-        if (underlineIndex >= 0 && underlineIndex < static_cast<int>(text.size()))
+        if (underlineIndex >= 0 && std::cmp_less(underlineIndex, text.size()))
         {
             const std::string prefix = text.substr(0, static_cast<std::size_t>(underlineIndex));
             const std::string underlinedCharacter =

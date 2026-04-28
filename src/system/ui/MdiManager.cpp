@@ -50,13 +50,13 @@ namespace nuvelocity
         const int newX = (game->mWindowWidth - windowRect.w) / 2;
         const int newY = (game->mWindowHeight - windowRect.h) / 2;
 
-        window->SetRect({newX, newY, windowRect.w, windowRect.h});
+        window->SetRect({.x = newX, .y = newY, .w = windowRect.w, .h = windowRect.h});
         AddWindow(window);
     }
 
     void MdiManager::RemoveWindow(const std::shared_ptr<MdiWindow>& window)
     {
-        mWindows.erase(std::remove(mWindows.begin(), mWindows.end(), window), mWindows.end());
+        mWindows.erase(std::ranges::remove(mWindows, window), mWindows.end());
     }
 
     void MdiManager::Clear()
@@ -109,11 +109,12 @@ namespace nuvelocity
             }
         }
 
-        mWindows.erase(std::remove_if(mWindows.begin(),
-                                      mWindows.end(),
-                                      [](const std::shared_ptr<MdiWindow>& window)
-                                      { return window == nullptr || window->ShouldClose(); }),
-                       mWindows.end());
+        mWindows.erase(
+            std::ranges::remove_if(mWindows,
+
+                                   [](const std::shared_ptr<MdiWindow>& window)
+                                   { return window == nullptr || window->ShouldClose(); }),
+            mWindows.end());
     }
 
     void MdiManager::Draw(Game* game)

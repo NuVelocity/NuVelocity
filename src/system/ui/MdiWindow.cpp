@@ -127,7 +127,7 @@ namespace nuvelocity
 
             if (mRect.x != centerX || mRect.y != centerY)
             {
-                SetRect({centerX, centerY, mRect.w, mRect.h});
+                SetRect({.x = centerX, .y = centerY, .w = mRect.w, .h = mRect.h});
             }
         }
 
@@ -170,7 +170,8 @@ namespace nuvelocity
 
         if (game->mSpriteBatch->IsDrawBoundsEnabled())
         {
-            game->mSpriteBatch->OutlineRect(&windowRect, SDL_Color{255, 0, 0, 255}, 1);
+            game->mSpriteBatch->OutlineRect(
+                &windowRect, SDL_Color{.r = 255, .g = 0, .b = 0, .a = 255}, 1);
         }
 
         game->mSpriteBatch->SetClipRect(nullptr);

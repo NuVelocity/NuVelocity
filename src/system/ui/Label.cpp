@@ -1,13 +1,15 @@
 #include "Label.h"
+
 #include "Colors.h"
 #include "Game.h"
 #include "system/FontManager.h"
+#include <utility>
 
 namespace nuvelocity
 {
-    Label::Label(const std::string& text, const std::string& font)
-            : mText(text)
-            , mFont(font)
+    Label::Label(std::string text, std::string font)
+            : mText(std::move(text))
+            , mFont(std::move(font))
     {
     }
 

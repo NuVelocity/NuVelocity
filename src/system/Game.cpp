@@ -1,6 +1,8 @@
 #include <SDL3/SDL_log.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "Font.h"
 #include "FontBitmap.h"
@@ -37,12 +39,12 @@ namespace nuvelocity
     {
         mArgs.add_argument("-w", "--width")
             .help("Initial window width")
-            .default_value((int)kDefaultWindowWidth)
+            .default_value(static_cast<int>(kDefaultWindowWidth))
             .scan<'i', int>();
 
         mArgs.add_argument("-h", "--height")
             .help("Initial window height")
-            .default_value((int)kDefaultWindowHeight)
+            .default_value(static_cast<int>(kDefaultWindowHeight))
             .scan<'i', int>();
 
         mArgs.add_argument("-r", "--renderer")
@@ -52,7 +54,7 @@ namespace nuvelocity
                 [](const std::string& value)
                 {
                     static const std::vector<std::string> choices = {"gpu", "renderer"};
-                    if (std::find(choices.begin(), choices.end(), value) != choices.end())
+                    if (std::ranges::find(choices, value) != choices.end())
                     {
                         return value;
                     }
@@ -134,7 +136,7 @@ namespace nuvelocity
         }
         catch (const std::exception& err)
         {
-            std::cerr << err.what() << std::endl;
+            std::cerr << err.what() << '\n';
             std::cerr << mArgs;
             return false;
         }
@@ -247,7 +249,7 @@ namespace nuvelocity
             }
         }
 
-        if (mRenderer)
+        if (mRenderer != nullptr)
         {
             SDL_SetRenderVSync(mRenderer, -1);
         }
@@ -296,7 +298,7 @@ namespace nuvelocity
     {
         const uint64_t now = SDL_GetTicks();
         mDeltaTime =
-            (mLastUpdateTick == 0) ? 0.0f : static_cast<float>(now - mLastUpdateTick) / 1000.0f;
+            (mLastUpdateTick == 0) ? 0.0F : static_cast<float>(now - mLastUpdateTick) / 1000.0F;
         mTotalTime += static_cast<double>(mDeltaTime);
         mLastUpdateTick = now;
 
@@ -372,7 +374,7 @@ namespace nuvelocity
 
     void Game::SetMouseCursor(std::string sequencePath)
     {
-        mCursorSequencePath = sequencePath;
+        mCursorSequencePath = std::move(sequencePath);
         if (mInitialized)
         {
             UpdateMouseCursor();
@@ -381,7 +383,8 @@ namespace nuvelocity
 
     void Game::UpdateMouseCursor()
     {
-        Sequence* cursorSequence = mAsset ? mAsset->LoadSequence(mCursorSequencePath) : nullptr;
+        Sequence* cursorSequence =
+            (mAsset != nullptr) ? mAsset->LoadSequence(mCursorSequencePath) : nullptr;
         if (cursorSequence == nullptr || cursorSequence->GetFrameCount() == 0)
         {
             SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
@@ -418,7 +421,7 @@ namespace nuvelocity
         SDL_SetCursor(mCursor);
     }
 
-    void Game::HandleDebugHotkeys()
+    void Game::HandleDebugHotkeys() const
     {
         if (mInput == nullptr)
         {
@@ -433,7 +436,7 @@ namespace nuvelocity
 
     void Game::SetModuleInfo(std::string moduleInfoPath)
     {
-        mModuleInfoPath = moduleInfoPath;
+        mModuleInfoPath = std::move(moduleInfoPath);
         if (mInitialized)
         {
             throw std::runtime_error(

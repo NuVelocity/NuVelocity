@@ -380,15 +380,15 @@ namespace nuvelocity
 
         float dx = fx2 - fx1;
         float dy = fy2 - fy1;
-        float len = std::sqrt(dx * dx + dy * dy);
-        if (len < 0.001f)
+        float len = std::sqrt((dx * dx) + (dy * dy));
+        if (len < 0.001F)
         {
             return;
         }
 
         // Thickness offset (half of total thickness)
-        float wx = -dy / len * (fThickness * 0.5f);
-        float wy = dx / len * (fThickness * 0.5f);
+        float wx = -dy / len * (fThickness * 0.5F);
+        float wy = dx / len * (fThickness * 0.5F);
 
         if (mWhiteTexture != mCurrentTexture)
         {
@@ -396,16 +396,20 @@ namespace nuvelocity
             mCurrentTexture = mWhiteTexture;
         }
 
-        float r = color.r / 255.0f;
-        float g = color.g / 255.0f;
-        float b = color.b / 255.0f;
-        float a = color.a / 255.0f;
+        float r = color.r / 255.0F;
+        float g = color.g / 255.0F;
+        float b = color.b / 255.0F;
+        float a = color.a / 255.0F;
 
-        Uint16 baseIdx = (Uint16)mVertexData.size();
-        mVertexData.push_back({fx1 + wx, fy1 + wy, 0.0f, 0.0f, r, g, b, a});
-        mVertexData.push_back({fx1 - wx, fy1 - wy, 1.0f, 0.0f, r, g, b, a});
-        mVertexData.push_back({fx2 - wx, fy2 - wy, 1.0f, 1.0f, r, g, b, a});
-        mVertexData.push_back({fx2 + wx, fy2 + wy, 0.0f, 1.0f, r, g, b, a});
+        Uint16 baseIdx = static_cast<Uint16>(mVertexData.size());
+        mVertexData.push_back(
+            {.x = fx1 + wx, .y = fy1 + wy, .u = 0.0F, .v = 0.0F, .r = r, .g = g, .b = b, .a = a});
+        mVertexData.push_back(
+            {.x = fx1 - wx, .y = fy1 - wy, .u = 1.0F, .v = 0.0F, .r = r, .g = g, .b = b, .a = a});
+        mVertexData.push_back(
+            {.x = fx2 - wx, .y = fy2 - wy, .u = 1.0F, .v = 1.0F, .r = r, .g = g, .b = b, .a = a});
+        mVertexData.push_back(
+            {.x = fx2 + wx, .y = fy2 + wy, .u = 0.0F, .v = 1.0F, .r = r, .g = g, .b = b, .a = a});
 
         mIndexData.push_back(baseIdx + 0);
         mIndexData.push_back(baseIdx + 1);
@@ -435,36 +439,41 @@ namespace nuvelocity
         }
         else if (mSwapchainWidth > 0 && mSwapchainHeight > 0)
         {
-            dr = SDL_Rect{
-                0, 0, static_cast<int>(mSwapchainWidth), static_cast<int>(mSwapchainHeight)};
+            dr = SDL_Rect{.x = 0,
+                          .y = 0,
+                          .w = static_cast<int>(mSwapchainWidth),
+                          .h = static_cast<int>(mSwapchainHeight)};
         }
         else if (mWindow != nullptr)
         {
             int w = 0;
             int h = 0;
             SDL_GetWindowSizeInPixels(mWindow, &w, &h);
-            dr = SDL_Rect{0, 0, w, h};
+            dr = SDL_Rect{.x = 0, .y = 0, .w = w, .h = h};
         }
         else
         {
             return;
         }
 
-        float r = color.r / 255.0f;
-        float g = color.g / 255.0f;
-        float b = color.b / 255.0f;
-        float a = color.a / 255.0f;
+        float r = color.r / 255.0F;
+        float g = color.g / 255.0F;
+        float b = color.b / 255.0F;
+        float a = color.a / 255.0F;
 
         float fx = static_cast<float>(dr.x);
         float fy = static_cast<float>(dr.y);
         float fw = static_cast<float>(dr.w);
         float fh = static_cast<float>(dr.h);
 
-        Uint16 baseIdx = (Uint16)mVertexData.size();
-        mVertexData.push_back({fx, fy, 0, 0, r, g, b, a});
-        mVertexData.push_back({fx + fw, fy, 1, 0, r, g, b, a});
-        mVertexData.push_back({fx + fw, fy + fh, 1, 1, r, g, b, a});
-        mVertexData.push_back({fx, fy + fh, 0, 1, r, g, b, a});
+        Uint16 baseIdx = static_cast<Uint16>(mVertexData.size());
+        mVertexData.push_back({.x = fx, .y = fy, .u = 0, .v = 0, .r = r, .g = g, .b = b, .a = a});
+        mVertexData.push_back(
+            {.x = fx + fw, .y = fy, .u = 1, .v = 0, .r = r, .g = g, .b = b, .a = a});
+        mVertexData.push_back(
+            {.x = fx + fw, .y = fy + fh, .u = 1, .v = 1, .r = r, .g = g, .b = b, .a = a});
+        mVertexData.push_back(
+            {.x = fx, .y = fy + fh, .u = 0, .v = 1, .r = r, .g = g, .b = b, .a = a});
 
         mIndexData.push_back(baseIdx + 0);
         mIndexData.push_back(baseIdx + 1);
@@ -515,10 +524,10 @@ namespace nuvelocity
 
     void GPUSpriteBatch::Clear(SDL_Color color)
     {
-        mClearColor = SDL_FColor{static_cast<float>(color.r) / 255.0F,
-                                 static_cast<float>(color.g) / 255.0F,
-                                 static_cast<float>(color.b) / 255.0F,
-                                 static_cast<float>(color.a) / 255.0F};
+        mClearColor = SDL_FColor{.r = static_cast<float>(color.r) / 255.0F,
+                                 .g = static_cast<float>(color.g) / 255.0F,
+                                 .b = static_cast<float>(color.b) / 255.0F,
+                                 .a = static_cast<float>(color.a) / 255.0F};
         mNeedsClear = true;
     }
 
@@ -687,29 +696,37 @@ namespace nuvelocity
             mCurrentBlendMode = surfaceMode;
         }
 
-        SDL_Rect dr = destRect ? *destRect : SDL_Rect{0, 0, surface->w, surface->h};
-        SDL_Rect sr = srcRect ? *srcRect : SDL_Rect{0, 0, surface->w, surface->h};
+        SDL_Rect dr = (destRect != nullptr)
+                          ? *destRect
+                          : SDL_Rect{.x = 0, .y = 0, .w = surface->w, .h = surface->h};
+        SDL_Rect sr = (srcRect != nullptr)
+                          ? *srcRect
+                          : SDL_Rect{.x = 0, .y = 0, .w = surface->w, .h = surface->h};
 
         float u1 = static_cast<float>(sr.x) / static_cast<float>(surface->w);
         float v1 = static_cast<float>(sr.y) / static_cast<float>(surface->h);
         float u2 = static_cast<float>(sr.x + sr.w) / static_cast<float>(surface->w);
         float v2 = static_cast<float>(sr.y + sr.h) / static_cast<float>(surface->h);
 
-        float r = color.r / 255.0f;
-        float g = color.g / 255.0f;
-        float b = color.b / 255.0f;
-        float a = color.a / 255.0f;
+        float r = color.r / 255.0F;
+        float g = color.g / 255.0F;
+        float b = color.b / 255.0F;
+        float a = color.a / 255.0F;
 
         float fdx = static_cast<float>(dr.x);
         float fdy = static_cast<float>(dr.y);
         float fdw = static_cast<float>(dr.w);
         float fdh = static_cast<float>(dr.h);
 
-        Uint16 baseIdx = (Uint16)mVertexData.size();
-        mVertexData.push_back({fdx, fdy, u1, v1, r, g, b, a});
-        mVertexData.push_back({fdx + fdw, fdy, u2, v1, r, g, b, a});
-        mVertexData.push_back({fdx + fdw, fdy + fdh, u2, v2, r, g, b, a});
-        mVertexData.push_back({fdx, fdy + fdh, u1, v2, r, g, b, a});
+        Uint16 baseIdx = static_cast<Uint16>(mVertexData.size());
+        mVertexData.push_back(
+            {.x = fdx, .y = fdy, .u = u1, .v = v1, .r = r, .g = g, .b = b, .a = a});
+        mVertexData.push_back(
+            {.x = fdx + fdw, .y = fdy, .u = u2, .v = v1, .r = r, .g = g, .b = b, .a = a});
+        mVertexData.push_back(
+            {.x = fdx + fdw, .y = fdy + fdh, .u = u2, .v = v2, .r = r, .g = g, .b = b, .a = a});
+        mVertexData.push_back(
+            {.x = fdx, .y = fdy + fdh, .u = u1, .v = v2, .r = r, .g = g, .b = b, .a = a});
 
         mIndexData.push_back(baseIdx + 0);
         mIndexData.push_back(baseIdx + 1);

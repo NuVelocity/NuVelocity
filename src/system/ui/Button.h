@@ -22,7 +22,7 @@ namespace nuvelocity
         };
 
         Button();
-        explicit Button(std::string caption);
+        explicit Button(const std::string& caption);
 
         void Update(Game* game) override;
         void Draw(Game* game) override;

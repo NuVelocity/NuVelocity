@@ -27,7 +27,7 @@ namespace nuvelocity
         ClassicSkinBorder* mPressedButtonBorder = nullptr;
         ClassicSkinBorder* mHoverButtonBorder = nullptr;
 
-        void Load(AssetManager* assets);
+        void Load(AssetManager* assets) const;
 
         static void InitClassInfo(ClassInfo& info)
         {

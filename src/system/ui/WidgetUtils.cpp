@@ -40,7 +40,7 @@ namespace nuvelocity
             return;
         }
 
-        SDL_Rect srcRect{0, 0, surface->w, surface->h};
+        SDL_Rect srcRect{.x = 0, .y = 0, .w = surface->w, .h = surface->h};
         DrawTiledFramePart(batch, frame, area, srcRect);
     }
 
@@ -57,7 +57,7 @@ namespace nuvelocity
             return;
         }
 
-        SDL_Rect srcRect{0, 0, surface->w, surface->h};
+        SDL_Rect srcRect{.x = 0, .y = 0, .w = surface->w, .h = surface->h};
         DrawTiledFramePartH(batch, frame, area, srcRect);
     }
 
@@ -74,7 +74,7 @@ namespace nuvelocity
             return;
         }
 
-        SDL_Rect srcRect{0, 0, surface->w, surface->h};
+        SDL_Rect srcRect{.x = 0, .y = 0, .w = surface->w, .h = surface->h};
         DrawTiledFramePartV(batch, frame, area, srcRect);
     }
 

@@ -62,7 +62,8 @@ namespace nuvelocity
             }
 
             WidgetUtils::FillRect(game->mSpriteBatch, rect, color);
-            WidgetUtils::DrawRect(game->mSpriteBatch, rect, SDL_Color{100, 100, 100, 255});
+            WidgetUtils::DrawRect(
+                game->mSpriteBatch, rect, SDL_Color{.r = 100, .g = 100, .b = 100, .a = 255});
         }
 
         SDL_Rect textRect = rect;
@@ -89,7 +90,8 @@ namespace nuvelocity
                                      .y = rect.y + 2,
                                      .w = SDL_max(0, rect.w - 4),
                                      .h = SDL_max(0, rect.h - 4)};
-            WidgetUtils::DrawRect(game->mSpriteBatch, focusRect, SDL_Color{255, 255, 255, 64});
+            WidgetUtils::DrawRect(
+                game->mSpriteBatch, focusRect, SDL_Color{.r = 255, .g = 255, .b = 255, .a = 64});
         }
     }
 
@@ -112,7 +114,8 @@ namespace nuvelocity
         else
         {
             WidgetUtils::FillRect(game->mSpriteBatch, windowRect, mOptions->mBackgroundColor);
-            WidgetUtils::DrawRect(game->mSpriteBatch, windowRect, SDL_Color{100, 100, 100, 255});
+            WidgetUtils::DrawRect(
+                game->mSpriteBatch, windowRect, SDL_Color{.r = 100, .g = 100, .b = 100, .a = 255});
         }
 
         // 2. Draw Title
@@ -205,7 +208,10 @@ namespace nuvelocity
     {
         // FIXME: hardcoded for now.
         SDL_Rect titleBarRect = window->GetScreenRect();
-        return {titleBarRect.x + 20, titleBarRect.y + 30, titleBarRect.w - 40, titleBarRect.h - 50};
+        return {.x = titleBarRect.x + 20,
+                .y = titleBarRect.y + 30,
+                .w = titleBarRect.w - 40,
+                .h = titleBarRect.h - 50};
     }
 
     SDL_Rect JWindowAlphaTheme::GetCloseButtonRect(const MdiWindow* window) const

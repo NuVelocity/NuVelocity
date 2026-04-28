@@ -814,7 +814,7 @@ namespace nuvelocity
             return PropertyType::Polygon;
         }
     };
- 
+
     class PointProperty : public Property
     {
     public:
@@ -822,22 +822,22 @@ namespace nuvelocity
                 : Property(name, offset, size)
         {
         }
- 
+
         SDL_FPoint GetPointValue(void* obj) const
         {
             return *(SDL_FPoint*)GetValuePtr(obj);
         }
- 
+
         void SetPointValue(void* obj, SDL_FPoint value)
         {
             *(SDL_FPoint*)GetValuePtr(obj) = value;
         }
- 
+
         void SetValue(void* obj, const void* valuePtr) override
         {
             *(SDL_FPoint*)GetValuePtr(obj) = *(const SDL_FPoint*)valuePtr;
         }
- 
+
         void SetValue(void* obj, const std::string& value) override
         {
             float x, y;
@@ -853,13 +853,13 @@ namespace nuvelocity
                             mName.c_str());
             }
         }
- 
+
         void DumpValue(void* obj) const override
         {
             SDL_FPoint point = GetPointValue(obj);
             SDL_Log("  %s: %f,%f", mName.c_str(), point.x, point.y);
         }
- 
+
         PropertyType GetType() const override
         {
             return PropertyType::Point;

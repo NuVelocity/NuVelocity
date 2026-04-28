@@ -72,7 +72,8 @@ namespace nuvelocity
                                      .y = rect.y + 2,
                                      .w = SDL_max(0, rect.w - 4),
                                      .h = SDL_max(0, rect.h - 4)};
-            WidgetUtils::DrawRect(game->mSpriteBatch, focusRect, SDL_Color{255, 255, 255, 64});
+            WidgetUtils::DrawRect(
+                game->mSpriteBatch, focusRect, SDL_Color{.r = 255, .g = 255, .b = 255, .a = 64});
         }
     }
 

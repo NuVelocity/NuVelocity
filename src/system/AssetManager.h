@@ -77,7 +77,8 @@ namespace nuvelocity
         NVE_API FontBitmap* LoadFontBitmapFromFrame(const std::string& path);
         NVE_API AudioData* LoadMusic(const std::string& path);
         NVE_API AudioData* LoadSound(const std::string& path);
-        NVE_API void AddMusicSubstitution(const std::string& substitutionPath, const std::string& path);
+        NVE_API void AddMusicSubstitution(const std::string& substitutionPath,
+                                          const std::string& path);
 
         NVE_API StandAloneFrame* TryLoadStandAloneFrame(const std::string& path);
         NVE_API Sequence* TryLoadSequence(const std::string& path);

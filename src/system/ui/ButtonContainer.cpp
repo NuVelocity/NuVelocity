@@ -5,7 +5,7 @@
 
 namespace nuvelocity
 {
-    ButtonContainer::ButtonContainer() {}
+    ButtonContainer::ButtonContainer() = default;
 
     void ButtonContainer::AddButton(const std::shared_ptr<Button>& button)
     {
@@ -35,7 +35,7 @@ namespace nuvelocity
                 parentRect = mParent->GetScreenRect();
             }
 
-            const int centerX = parentRect.x + (parentRect.w - mRect.w) / 2;
+            const int centerX = parentRect.x + ((parentRect.w - mRect.w) / 2);
             if (mRect.x != centerX)
             {
                 mRect.x = centerX;
@@ -50,7 +50,7 @@ namespace nuvelocity
             SDL_Rect btnRect = btn->GetRect();
             if (btnRect.w > 0 && btnRect.w < availableWidth)
             {
-                btnRect.x = mRect.x + mPadding.left + (availableWidth - btnRect.w) / 2;
+                btnRect.x = mRect.x + mPadding.left + ((availableWidth - btnRect.w) / 2);
             }
             else
             {
@@ -92,17 +92,17 @@ namespace nuvelocity
 
     void ButtonContainer::SetPadding(int padding)
     {
-        mPadding = {padding, padding, padding, padding};
+        mPadding = {.top = padding, .right = padding, .bottom = padding, .left = padding};
     }
 
     void ButtonContainer::SetPadding(int horizontal, int vertical)
     {
-        mPadding = {vertical, horizontal, vertical, horizontal};
+        mPadding = {.top = vertical, .right = horizontal, .bottom = vertical, .left = horizontal};
     }
 
     void ButtonContainer::SetPadding(int top, int right, int bottom, int left)
     {
-        mPadding = {top, right, bottom, left};
+        mPadding = {.top = top, .right = right, .bottom = bottom, .left = left};
     }
 
     const ButtonContainer::Padding& ButtonContainer::GetPadding() const
