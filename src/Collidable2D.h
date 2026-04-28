@@ -43,6 +43,11 @@ namespace nuvelocity
             }
 
             const auto& poly = GetCollisionPolygon();
+            if (poly.size() < 2)
+            {
+                return;
+            }
+
             for (size_t i = 0; i < poly.size(); ++i)
             {
                 const size_t next = (i + 1) % poly.size();
