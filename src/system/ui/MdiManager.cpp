@@ -56,7 +56,8 @@ namespace nuvelocity
 
     void MdiManager::RemoveWindow(const std::shared_ptr<MdiWindow>& window)
     {
-        mWindows.erase(std::ranges::remove(mWindows, window), mWindows.end());
+        auto [first, last] = std::ranges::remove(mWindows, window);
+        mWindows.erase(first, last);
     }
 
     void MdiManager::Clear()
@@ -109,12 +110,11 @@ namespace nuvelocity
             }
         }
 
-        mWindows.erase(
+        auto [rmFirst, rmLast] =
             std::ranges::remove_if(mWindows,
-
                                    [](const std::shared_ptr<MdiWindow>& window)
-                                   { return window == nullptr || window->ShouldClose(); }),
-            mWindows.end());
+                                   { return window == nullptr || window->ShouldClose(); });
+        mWindows.erase(rmFirst, rmLast);
     }
 
     void MdiManager::Draw(Game* game)

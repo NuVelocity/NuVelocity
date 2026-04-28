@@ -4,11 +4,12 @@
 #include <SDL3/SDL.h>
 
 #include "Colors.h"
-#include "Sequence.h"
-#include "StandAloneFrame.h"
+#include <cstddef>
 
 namespace nuvelocity
 {
+    class Sequence;
+    class StandAloneFrame;
 
     // Common sprite batch interface implemented by a graphics backend.
     class SpriteBatch

@@ -6,17 +6,19 @@
 #include <SDL3/SDL_render.h>
 
 #include "API.h"
-#include "AssetManager.h"
-#include "AudioManager.h"
-#include "FontManager.h"
-#include "InputManager.h"
-#include "ModuleInfo.h"
-#include "Scene.h"
-#include "ui/MdiManager.h"
 #include <argparse/argparse.hpp>
+#include <cstdint>
+#include <string>
 
 namespace nuvelocity
 {
+    class AssetManager;
+    class AudioManager;
+    class FontManager;
+    class InputManager;
+    class MdiManager;
+    class ModuleInfo;
+    class Scene;
     class SpriteBatch;
 
     class Game

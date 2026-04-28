@@ -4,6 +4,7 @@
 #include "BlitType.h"
 #include "Object.h"
 #include "SpriteBatch.h"
+#include "TextAlignment.h"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <string>
@@ -11,13 +12,6 @@
 
 namespace nuvelocity
 {
-    enum class TextAlignment : uint8_t
-    {
-        Left,
-        Center,
-        Right
-    };
-
     inline constexpr const char* kFontDefaultFamily = "Resources/Fonts/TRUE TYPES/!default.ttf";
     inline constexpr int kFontDefaultPointSize = 12;
 

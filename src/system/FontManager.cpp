@@ -1,4 +1,6 @@
 #include "FontManager.h"
+#include "Font.h"
+#include "SpriteBatch.h"
 #include "Utils.h"
 
 #include <SDL3_ttf/SDL_ttf.h>

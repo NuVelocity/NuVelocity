@@ -1,4 +1,6 @@
 #include "AssetManager.h"
+#include "AudioData.h"
+#include "system/ui/skin/JWindowSkin.h"
 
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_log.h>

@@ -10,9 +10,17 @@
 #include "GPUSpriteBatch.h"
 #endif
 #include "AssetExporter.h"
+#include "AssetManager.h"
+#include "AudioManager.h"
+#include "FontManager.h"
 #include "Game.h"
+#include "InputManager.h"
+#include "ModuleInfo.h"
 #include "ObjectRegistration.h"
 #include "RendererSpriteBatch.h"
+#include "Scene.h"
+#include "SpriteBatch.h"
+#include "ui/MdiManager.h"
 
 namespace nuvelocity
 {

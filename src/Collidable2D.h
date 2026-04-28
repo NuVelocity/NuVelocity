@@ -5,6 +5,7 @@
 #include "Frame.h"
 #include "Game.h"
 #include "GameComponent.h"
+#include "SpriteBatch.h"
 
 #include <SDL3/SDL.h>
 #include <cmath>

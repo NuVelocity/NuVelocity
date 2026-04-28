@@ -1,4 +1,6 @@
 #include "SpriteBatch.h"
+#include "Sequence.h"
+#include "StandAloneFrame.h"
 
 namespace nuvelocity
 {

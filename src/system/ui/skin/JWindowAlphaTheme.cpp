@@ -1,5 +1,6 @@
 #include "JWindowAlphaTheme.h"
 #include "AlphaSkinBorder.h"
+#include "StandAloneFrame.h"
 #include "system/FontManager.h"
 #include "system/Game.h"
 #include "system/ui/Button.h"

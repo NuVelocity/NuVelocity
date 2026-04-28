@@ -2,26 +2,28 @@
 #define NVE_ASSETMANAGER_H
 
 #include "API.h"
+#include "Manager.h"
 #include <SDL3/SDL.h>
-#include <SDL3_mixer/SDL_mixer.h>
 #include <cstdint>
 #include <filesystem>
+#include <memory>
 #include <physfs.h>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
-
-#include "AudioData.h"
-#include "Font.h"
-#include "FontBitmap.h"
-#include "Manager.h"
-#include "Sequence.h"
-#include "SequenceFrameInfoList.h"
-#include "StandAloneFrame.h"
-#include "system/ui/skin/JWindowSkin.h"
 
 namespace nuvelocity
 {
+    class AudioData;
+    class Font;
+    class FontBitmap;
+    class Frame;
+    class JWindowSkin;
+    class Sequence;
+    class SequenceFrameInfoList;
+    class StandAloneFrame;
+
     class AssetManager : public Manager
     {
     private:

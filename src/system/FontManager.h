@@ -2,9 +2,8 @@
 #define NVE_FONT_MANAGER_H
 
 #include "API.h"
-#include "Font.h"
 #include "Manager.h"
-#include "SpriteBatch.h"
+#include "TextAlignment.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -15,6 +14,9 @@
 
 namespace nuvelocity
 {
+    class Font;
+    class SpriteBatch;
+
     class FontManager : public Manager
     {
     public:
