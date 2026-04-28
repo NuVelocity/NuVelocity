@@ -43,6 +43,8 @@ target_sources(
     Font.h
     ParticleType.cpp
     ParticleType.h
+    ParticleGeneratorInfo.cpp
+    ParticleGeneratorInfo.h
     FontBitmap.cpp
     FontBitmap.h
     FrameInfo.cpp
@@ -58,6 +60,10 @@ target_sources(
     SequenceFrameInfoList.h
     StandAloneFrame.cpp
     StandAloneFrame.h
+    Particle.cpp
+    Particle.h
+    ParticleGenerator.cpp
+    ParticleGenerator.h
     PaletteHolder.cpp
     PaletteHolder.h
     ModuleInfo.cpp

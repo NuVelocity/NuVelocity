@@ -23,6 +23,7 @@ namespace nuvelocity
     class Sequence;
     class SequenceFrameInfoList;
     class StandAloneFrame;
+    class ParticleGeneratorInfo;
 
     class AssetManager : public Manager
     {
@@ -54,6 +55,8 @@ namespace nuvelocity
         std::unordered_map<std::string, std::unique_ptr<FontBitmap>> mFontBitmaps;
         std::unordered_map<std::string, std::unique_ptr<AudioData>> mMusicStreams;
         std::unordered_map<std::string, std::unique_ptr<AudioData>> mSoundStreams;
+        std::unordered_map<std::string, std::unique_ptr<ParticleGeneratorInfo>>
+            mParticleGeneratorInfos;
         std::unordered_map<std::string, std::string> mMusicSubstitutions;
 
 #ifdef NVE_RESTORE_TGA
@@ -97,6 +100,8 @@ namespace nuvelocity
         NVE_API void* LoadPropertyFile(const std::string& path);
         NVE_API void* LoadBrickInfo(const std::string& path);
         NVE_API void* LoadBackgroundDefinition(const std::string& path);
+        NVE_API ParticleGeneratorInfo* LoadParticleGeneratorInfo(const std::string& path);
+        NVE_API Sequence* ResolveParticleSequence(const std::string& path);
 
         NVE_API JWindowSkin* LoadWindowSkin(const std::string& path);
 

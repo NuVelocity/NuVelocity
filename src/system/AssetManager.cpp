@@ -2,6 +2,9 @@
 #include "AudioData.h"
 #include "system/ui/skin/JWindowSkin.h"
 
+#include "ParticleGeneratorInfo.h"
+#include "Sequence.h"
+#include <API.h>
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_log.h>
 #include <SDL3_image/SDL_image.h>
@@ -16,7 +19,6 @@
 #include "AssetExporter.h"
 #include "Font.h"
 #include "FontBitmap.h"
-#include "Sequence.h"
 #include "SequenceFrameInfoList.h"
 #include "StandAloneFrame.h"
 #include "Utils.h"
@@ -687,6 +689,44 @@ namespace nuvelocity
     void* AssetManager::LoadBackgroundDefinition(const std::string& path)
     {
         return LoadPropertyFile(path + ".Background");
+    }
+
+    ParticleGeneratorInfo* AssetManager::LoadParticleGeneratorInfo(const std::string& path)
+    {
+        auto it = mParticleGeneratorInfos.find(path);
+        if (it != mParticleGeneratorInfos.end())
+        {
+            return it->second.get();
+        }
+
+        ParticleGeneratorInfo* info =
+            static_cast<ParticleGeneratorInfo*>(LoadPropertyFile(path + ".PGen"));
+        if (info != nullptr)
+        {
+            for (auto* pt : info->GetParticleTypes())
+            {
+                pt->SetSequence(ResolveParticleSequence(pt->GetParticleType()));
+            }
+            mParticleGeneratorInfos[path] = std::unique_ptr<ParticleGeneratorInfo>(info);
+            return info;
+        }
+        return nullptr;
+    }
+
+    Sequence* AssetManager::ResolveParticleSequence(const std::string& path)
+    {
+        if (path == "!None" || path.empty())
+        {
+            return nullptr;
+        }
+
+        std::string effectsPath = "Resources/Effects/" + path;
+        Sequence* sequence = LoadSequence(effectsPath);
+        if (sequence != nullptr)
+        {
+            return sequence;
+        }
+        return LoadSequence("Resources/" + path);
     }
 
     JWindowSkin* AssetManager::LoadWindowSkin(const std::string& path)

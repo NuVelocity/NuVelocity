@@ -6,6 +6,8 @@
 
 namespace nuvelocity
 {
+    class Sequence;
+
     class ParticleType : public Object<ParticleType>
     {
     public:
@@ -29,9 +31,20 @@ namespace nuvelocity
             return mWeight;
         }
 
+        Sequence* GetSequence() const
+        {
+            return mSequence;
+        }
+
+        void SetSequence(Sequence* sequence)
+        {
+            mSequence = sequence;
+        }
+
     private:
         std::string mParticleType;
         int mWeight;
+        Sequence* mSequence = nullptr;
     };
 } // namespace nuvelocity
 
