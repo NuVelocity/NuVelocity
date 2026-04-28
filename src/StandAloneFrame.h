@@ -86,6 +86,7 @@ namespace nuvelocity
             AddProperty(info, "RLE All Copy", &StandAloneFrame::mRleAllCopy);
             AddProperty(info, "Crop Color 0", &StandAloneFrame::mCropColor0);
             AddProperty(info, "Do Dither", &StandAloneFrame::mDoDither);
+            AddDeprecatedProperty(info, "Dither", &StandAloneFrame::mDoDither);
             AddProperty(info, "Loss Less", &StandAloneFrame::mLossless);
             AddProperty(info, "Quality", &StandAloneFrame::mQuality);
             AddProperty(info, "Center Hot Spot", &StandAloneFrame::mCenterHotSpot);
