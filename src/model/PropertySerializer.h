@@ -316,7 +316,24 @@ namespace nuvelocity
 
             if (hasObjectElements)
             {
-                auto [className, byteArrayInfo] = ParseObjectValue(value);
+                std::string className;
+                ByteArrayInfo byteArrayInfo;
+
+                if (value.empty())
+                {
+                    ClassInfo* defaultInfo = prop->GetChildClassInfo();
+                    if (defaultInfo != nullptr)
+                    {
+                        className = defaultInfo->mName;
+                    }
+                }
+                else
+                {
+                    auto parsed = ParseObjectValue(value);
+                    className = parsed.first;
+                    byteArrayInfo = parsed.second;
+                }
+
                 auto [childInfo, childObject] = InstantiateObject(className, byteArrayInfo);
 
                 if (childInfo == nullptr || childObject == nullptr)
@@ -441,7 +458,24 @@ namespace nuvelocity
                 break;
             case PropertyType::Object:
             {
-                auto [className, byteArrayInfo] = ParseObjectValue(value);
+                std::string className;
+                ByteArrayInfo byteArrayInfo;
+
+                if (value.empty())
+                {
+                    ClassInfo* defaultInfo = prop->GetChildClassInfo();
+                    if (defaultInfo != nullptr)
+                    {
+                        className = defaultInfo->mName;
+                    }
+                }
+                else
+                {
+                    auto parsed = ParseObjectValue(value);
+                    className = parsed.first;
+                    byteArrayInfo = parsed.second;
+                }
+
                 auto [childInfo, childObject] = InstantiateObject(className, byteArrayInfo);
                 if (childInfo == nullptr)
                 {

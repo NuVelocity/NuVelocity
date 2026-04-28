@@ -227,21 +227,36 @@ namespace nuvelocity
             else if constexpr (is_vector<MemberType>::value)
             {
                 using ElementType = typename is_vector<MemberType>::element_type;
+                ClassInfo* elementInfo = nullptr;
+                if constexpr (is_object_ptr<ElementType>::value)
+                {
+                    elementInfo = is_object_ptr<ElementType>::element_type::GetClassInfo();
+                }
                 auto* vectorProp =
-                    new VectorProperty<ElementType>(name, offset, size, arrayItemKey);
+                    new VectorProperty<ElementType>(name, offset, size, arrayItemKey, elementInfo);
                 prop = vectorProp;
             }
             else if constexpr (is_map<MemberType>::value)
             {
                 using KeyType = typename is_map<MemberType>::key_type;
                 using ValueType = typename is_map<MemberType>::value_type;
-                prop = new MapProperty<KeyType, ValueType>(name, offset, size);
+                ClassInfo* valueInfo = nullptr;
+                if constexpr (is_object_ptr<ValueType>::value)
+                {
+                    valueInfo = is_object_ptr<ValueType>::element_type::GetClassInfo();
+                }
+                prop = new MapProperty<KeyType, ValueType>(name, offset, size, valueInfo);
             }
             else if constexpr (is_unordered_map<MemberType>::value)
             {
                 using KeyType = typename is_unordered_map<MemberType>::key_type;
                 using ValueType = typename is_unordered_map<MemberType>::value_type;
-                prop = new UnorderedMapProperty<KeyType, ValueType>(name, offset, size);
+                ClassInfo* valueInfo = nullptr;
+                if constexpr (is_object_ptr<ValueType>::value)
+                {
+                    valueInfo = is_object_ptr<ValueType>::element_type::GetClassInfo();
+                }
+                prop = new UnorderedMapProperty<KeyType, ValueType>(name, offset, size, valueInfo);
             }
             else if constexpr (is_object_ptr<MemberType>::value)
             {

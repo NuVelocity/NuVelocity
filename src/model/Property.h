@@ -871,6 +871,7 @@ namespace nuvelocity
     {
     private:
         std::string mItemKey; // Custom key name for array items (e.g., "Round")
+        ClassInfo* mChildClassInfo = nullptr;
 
         // SFINAE to detect if T is a pointer
         template <typename U>
@@ -880,9 +881,11 @@ namespace nuvelocity
         VectorProperty(const std::string& name,
                        size_t offset,
                        size_t size,
-                       const std::string& itemKey = "")
+                       const std::string& itemKey = "",
+                       ClassInfo* childClassInfo = nullptr)
                 : Property(name, offset, size)
                 , mItemKey(itemKey)
+                , mChildClassInfo(childClassInfo)
         {
         }
 
@@ -1011,15 +1014,27 @@ namespace nuvelocity
         {
             mItemKey = itemKey;
         }
+
+        ClassInfo* GetChildClassInfo() const override
+        {
+            return mChildClassInfo;
+        }
     };
 
     // Base template for shared map/unordered_map logic
     template <typename K, typename V, typename ContainerType>
     class BaseMapPropertyTemplate : public Property
     {
+    protected:
+        ClassInfo* mChildClassInfo = nullptr;
+
     public:
-        BaseMapPropertyTemplate(const std::string& name, size_t offset, size_t size)
+        BaseMapPropertyTemplate(const std::string& name,
+                                size_t offset,
+                                size_t size,
+                                ClassInfo* childClassInfo = nullptr)
                 : Property(name, offset, size)
+                , mChildClassInfo(childClassInfo)
         {
         }
 
@@ -1147,6 +1162,11 @@ namespace nuvelocity
                             mName.c_str());
             }
         }
+
+        ClassInfo* GetChildClassInfo() const override
+        {
+            return mChildClassInfo;
+        }
     };
 
     template <typename K, typename V>
@@ -1158,8 +1178,11 @@ namespace nuvelocity
         using Base::GetValuePtr;
         using Base::mName;
 
-        MapProperty(const std::string& name, size_t offset, size_t size)
-                : BaseMapPropertyTemplate<K, V, std::map<K, V>>(name, offset, size)
+        MapProperty(const std::string& name,
+                    size_t offset,
+                    size_t size,
+                    ClassInfo* childClassInfo = nullptr)
+                : BaseMapPropertyTemplate<K, V, std::map<K, V>>(name, offset, size, childClassInfo)
         {
         }
 
@@ -1199,8 +1222,12 @@ namespace nuvelocity
         using Base::GetValuePtr;
         using Base::mName;
 
-        UnorderedMapProperty(const std::string& name, size_t offset, size_t size)
-                : BaseMapPropertyTemplate<K, V, std::unordered_map<K, V>>(name, offset, size)
+        UnorderedMapProperty(const std::string& name,
+                             size_t offset,
+                             size_t size,
+                             ClassInfo* childClassInfo = nullptr)
+                : BaseMapPropertyTemplate<K, V, std::unordered_map<K, V>>(
+                      name, offset, size, childClassInfo)
         {
         }
 
