@@ -98,8 +98,13 @@ namespace nuvelocity
                 continue;
             }
 
-            window->SetActive(index == mWindows.size() - 1);
-            window->Update(game);
+            bool isActive = (index == mWindows.size() - 1);
+            window->SetActive(isActive);
+
+            if (isActive)
+            {
+                window->Update(game);
+            }
         }
 
         if (input.IsKeyPressed(SDL_SCANCODE_ESCAPE))
