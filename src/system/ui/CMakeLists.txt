@@ -18,6 +18,8 @@ target_sources(
     ButtonContainer.h
     Label.cpp
     Label.h
+    JListBox.cpp
+    JListBox.h
 )
 
 add_subdirectory(skin)

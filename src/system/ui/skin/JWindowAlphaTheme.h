@@ -15,6 +15,7 @@ namespace nuvelocity
         void Load(AssetManager* assets) override;
 
         void DrawButton(Game* game, Button* button) override;
+        void DrawListBox(Game* game, JListBox* listBox) override;
         void DrawMdiWindow(Game* game, MdiWindow* window) override;
         void DrawTextBox(Game* game, TextBox* textBox) override;
 

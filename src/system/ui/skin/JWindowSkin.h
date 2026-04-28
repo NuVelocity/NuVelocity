@@ -8,6 +8,7 @@ namespace nuvelocity
     class AssetManager;
     class Game;
     class Button;
+    class JListBox;
     class MdiWindow;
     class TextBox;
     class SpriteBatch;
@@ -20,6 +21,7 @@ namespace nuvelocity
         virtual void Load(AssetManager* assets) {}
 
         virtual void DrawButton(Game* game, Button* button) = 0;
+        virtual void DrawListBox(Game* game, JListBox* listBox) = 0;
         virtual void DrawMdiWindow(Game* game, MdiWindow* window) = 0;
         virtual void DrawTextBox(Game* game, TextBox* textBox) = 0;
 

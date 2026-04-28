@@ -201,6 +201,21 @@ namespace nuvelocity
         spriteBatch->Draw(mCachedSurface, &compositeDest, nullptr);
     }
 
+    void AlphaSkinBorder::DrawTiledBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect)
+    {
+        if (mBackgroundFrame == nullptr)
+        {
+            return;
+        }
+        SDL_Surface* surface = mBackgroundFrame->GetSurface();
+        if (surface == nullptr)
+        {
+            return;
+        }
+        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
+        WidgetUtils::DrawTiledFrame(spriteBatch, mBackgroundFrame, rect);
+    }
+
     void AlphaSkinBorder::DrawHighlights(SpriteBatch* spriteBatch, const SDL_Rect& rect) const
     {
         // Step 4: Draw highlights on top
@@ -310,14 +325,33 @@ namespace nuvelocity
         }
     }
 
-    void ClassicSkinBorder::Draw(SpriteBatch* spriteBatch, const SDL_Rect& rect, bool sunken)
+    void ClassicSkinBorder::DrawBorder(SpriteBatch* spriteBatch, const SDL_Rect& rect, bool sunken)
     {
         if (spriteBatch == nullptr)
         {
             return;
         }
 
-        // 1. Draw Background (Tiled)
+        auto borderColors = sunken
+                                ? WidgetUtils::BorderColors{.topLeftOuter = mTopOuterColor,
+                                                            .topLeftInner = mTopInnerColor,
+                                                            .bottomRightInner = mBottomInnerColor,
+                                                            .bottomRightOuter = mBottomOuterColor}
+                                : WidgetUtils::BorderColors{.topLeftOuter = mBottomInnerColor,
+                                                            .topLeftInner = mBottomOuterColor,
+                                                            .bottomRightInner = mTopOuterColor,
+                                                            .bottomRightOuter = mTopInnerColor};
+
+        WidgetUtils::DrawBorder(spriteBatch, rect, borderColors, mTextureMargin);
+    }
+
+    void ClassicSkinBorder::DrawBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect)
+    {
+        if (spriteBatch == nullptr)
+        {
+            return;
+        }
+
         SDL_Rect bgRect = {.x = rect.x + mTextureMargin,
                            .y = rect.y + mTextureMargin,
                            .w = SDL_max(0, rect.w - (mTextureMargin * 2)),
@@ -326,15 +360,6 @@ namespace nuvelocity
         {
             WidgetUtils::DrawTiledFrame(spriteBatch, mBackgroundFrame, bgRect);
         }
-
-        // 2. Draw Border
-        WidgetUtils::DrawBorder(spriteBatch,
-                                rect,
-                                WidgetUtils::BorderColors{.topLeftOuter = mTopOuterColor,
-                                                          .topLeftInner = mTopInnerColor,
-                                                          .bottomRightInner = mBottomInnerColor,
-                                                          .bottomRightOuter = mBottomOuterColor},
-                                mTextureMargin);
     }
 
     void AlphaSkinData::Load(AssetManager* assets) const

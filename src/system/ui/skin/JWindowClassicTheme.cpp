@@ -1,9 +1,11 @@
 #include "JWindowClassicTheme.h"
 #include "ClassicSkinBorder.h"
+#include <Colors.h>
 #include <system/FontManager.h>
 #include <system/Game.h>
 #include <system/SpriteBatch.h>
 #include <system/ui/Button.h>
+#include <system/ui/JListBox.h>
 #include <system/ui/MdiWindow.h>
 #include <system/ui/TextBox.h>
 #include <system/ui/WidgetUtils.h>
@@ -201,6 +203,63 @@ namespace nuvelocity
                                    .w = 1,
                                    .h = SDL_max(0, rect.h - 8)};
                 WidgetUtils::FillRect(game->mSpriteBatch, caretRect, style.caretColor);
+            }
+        }
+    }
+
+    void JWindowClassicTheme::DrawListBox(Game* game, JListBox* listBox)
+    {
+        // if (game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr || listBox
+        // == nullptr)
+        {
+            return;
+        }
+
+        const SDL_Rect rect = listBox->GetScreenRect();
+        const auto& style = listBox->GetStyle();
+        SpriteBatch* batch = game->mSpriteBatch;
+
+        // Draw background
+        WidgetUtils::FillRect(batch, rect, Colors::Black);
+        WidgetUtils::DrawBevel(
+            batch, rect, {style.borderLightColor, style.borderDarkColor}, true, 1);
+
+        // Draw Rows
+        const auto& rows = listBox->GetRows();
+        const auto& columns = listBox->GetColumns();
+        int headerHeight = listBox->GetHeaderHeight();
+        int rowHeight = listBox->GetRowHeight();
+        int scrollOffset = listBox->GetScrollOffset();
+        int selectedIndex = listBox->GetSelectedIndex();
+
+        int maxVisibleRows = (rect.h - headerHeight) / rowHeight;
+        for (int i = 0; i < maxVisibleRows; ++i)
+        {
+            int rowIndex = i + (scrollOffset / rowHeight);
+            if (rowIndex >= static_cast<int>(rows.size()))
+                break;
+
+            int ry = rect.y + headerHeight + (i * rowHeight);
+
+            if (rowIndex == selectedIndex)
+            {
+                WidgetUtils::FillRect(
+                    batch, {rect.x + 1, ry, rect.w - 2, rowHeight}, {0, 0, 128, 255});
+            }
+
+            int curX = rect.x;
+            const auto& row = rows[rowIndex];
+            for (size_t c = 0; c < columns.size(); ++c)
+            {
+                if (c < row.size())
+                {
+                    game->mFont->DrawString(batch,
+                                            row[c],
+                                            {curX + 4, ry + 2, columns[c].width - 8, rowHeight - 4},
+                                            Colors::White,
+                                            8);
+                }
+                curX += columns[c].width;
             }
         }
     }

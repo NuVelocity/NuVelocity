@@ -48,6 +48,7 @@ namespace nuvelocity
 
         void Load(AssetManager* assets);
         void Draw(SpriteBatch* spriteBatch, const SDL_Rect& windowRect, const SDL_Rect& innerRect);
+        void DrawTiledBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect);
 
         static void InitClassInfo(ClassInfo& info)
         {
