@@ -180,10 +180,10 @@ namespace nuvelocity
         };
 
         template <typename MemberType>
-        static void AddPropertyImpl(ClassInfo& info,
-                                    const char* name,
-                                    MemberType Derived::* memberPtr,
-                                    const std::string& arrayItemKey)
+        static Property* AddPropertyImpl(ClassInfo& info,
+                                         const char* name,
+                                         MemberType Derived::* memberPtr,
+                                         const std::string& arrayItemKey)
         {
             size_t offset = reinterpret_cast<size_t>(&(reinterpret_cast<Derived*>(0)->*memberPtr));
             size_t size = sizeof(MemberType);
@@ -255,6 +255,7 @@ namespace nuvelocity
             }
 
             info.AddProperty(prop);
+            return prop;
         }
 
         // Helper to automatically register properties using member pointers
@@ -262,6 +263,17 @@ namespace nuvelocity
         static void AddProperty(ClassInfo& info, const char* name, MemberType Derived::* memberPtr)
         {
             AddPropertyImpl(info, name, memberPtr, "");
+        }
+
+        template <typename MemberType>
+        static void
+        AddDeprecatedProperty(ClassInfo& info, const char* name, MemberType Derived::* memberPtr)
+        {
+            Property* prop = AddPropertyImpl(info, name, memberPtr, "");
+            if (prop != nullptr)
+            {
+                prop->SetDeprecated(true);
+            }
         }
 
         // arrayItemKey is only valid for vector properties

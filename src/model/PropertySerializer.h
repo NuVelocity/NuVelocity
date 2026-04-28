@@ -707,6 +707,12 @@ namespace nuvelocity
         Property* prop = classInfo->GetFirstProperty();
         while (prop != nullptr)
         {
+            if (prop->IsDeprecated())
+            {
+                prop = prop->mNext;
+                continue;
+            }
+
             PropertyType type = prop->GetType();
             std::string propName = prop->GetName();
 

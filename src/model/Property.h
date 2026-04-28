@@ -68,6 +68,7 @@ namespace nuvelocity
 
         size_t mOffset;
         size_t mSize;
+        bool mIsDeprecated = false;
 
     public:
         Property(const std::string& name,
@@ -98,6 +99,16 @@ namespace nuvelocity
         void SetDescription(const std::string& description)
         {
             mDescription = description;
+        }
+
+        bool IsDeprecated() const
+        {
+            return mIsDeprecated;
+        }
+
+        void SetDeprecated(bool deprecated)
+        {
+            mIsDeprecated = deprecated;
         }
 
     protected:
