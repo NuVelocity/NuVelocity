@@ -9,6 +9,7 @@ Checks: >
     -readability-convert-member-functions-to-static,
     -readability-function-cognitive-complexity,
     -readability-identifier-length,
+    -readability-magic-numbers,
     -modernize-use-trailing-return-type,
     -modernize-use-nodiscard,
     -modernize-use-auto,
