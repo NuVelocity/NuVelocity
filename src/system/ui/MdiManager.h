@@ -34,6 +34,8 @@ namespace nuvelocity
         void Draw(Game* game);
 
         const std::vector<std::shared_ptr<MdiWindow>>& GetWindows() const;
+        std::shared_ptr<MdiWindow> GetActiveWindow() const;
+        void SetActiveWindow(const std::shared_ptr<MdiWindow>& window);
 
         void RegisterSkin(const std::string& name, JWindowSkin* skin);
         JWindowSkin* GetSkin(const std::string& name) const;

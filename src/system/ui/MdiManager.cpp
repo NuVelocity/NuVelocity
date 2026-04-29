@@ -36,6 +36,7 @@ namespace nuvelocity
         if (window != nullptr)
         {
             mWindows.push_back(window);
+            SetActiveWindow(window);
         }
     }
 
@@ -82,23 +83,21 @@ namespace nuvelocity
                 std::shared_ptr<MdiWindow>& window = mWindows[index - 1];
                 if (window != nullptr && window->IsVisible() && window->Intersects(mousePosition))
                 {
-                    std::shared_ptr<MdiWindow> focusedWindow = window;
-                    mWindows.erase(mWindows.begin() + static_cast<long>(index - 1));
-                    mWindows.push_back(focusedWindow);
+                    SetActiveWindow(window);
                     break;
                 }
             }
         }
 
-        for (std::size_t index = 0; index < mWindows.size(); ++index)
+        std::shared_ptr<MdiWindow> activeWindow = GetActiveWindow();
+        for (auto& window : mWindows)
         {
-            std::shared_ptr<MdiWindow>& window = mWindows[index];
             if (window == nullptr)
             {
                 continue;
             }
 
-            bool isActive = (index == mWindows.size() - 1);
+            const bool isActive = (window == activeWindow);
             window->SetActive(isActive);
 
             if (isActive)
@@ -109,9 +108,9 @@ namespace nuvelocity
 
         if (input.IsKeyPressed(SDL_SCANCODE_ESCAPE))
         {
-            if (!mWindows.empty())
+            if (activeWindow != nullptr)
             {
-                mWindows.back()->Close();
+                activeWindow->Close();
             }
         }
 
@@ -136,6 +135,27 @@ namespace nuvelocity
     const std::vector<std::shared_ptr<MdiWindow>>& MdiManager::GetWindows() const
     {
         return mWindows;
+    }
+
+    std::shared_ptr<MdiWindow> MdiManager::GetActiveWindow() const
+    {
+        return mWindows.empty() ? nullptr : mWindows.back();
+    }
+
+    void MdiManager::SetActiveWindow(const std::shared_ptr<MdiWindow>& window)
+    {
+        if (window == nullptr)
+        {
+            return;
+        }
+
+        auto it = std::ranges::find(mWindows, window);
+        if (it != mWindows.end())
+        {
+            std::shared_ptr<MdiWindow> active = *it;
+            mWindows.erase(it);
+            mWindows.push_back(active);
+        }
     }
 
     void MdiManager::RegisterSkin(const std::string& name, JWindowSkin* skin)
