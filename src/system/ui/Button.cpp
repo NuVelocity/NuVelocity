@@ -47,6 +47,8 @@ namespace nuvelocity
 
     void Button::Update(Game* aGame)
     {
+        Widget::Update(aGame);
+
         if (aGame == nullptr || aGame->mInput == nullptr)
         {
             return;
@@ -107,8 +109,6 @@ namespace nuvelocity
         {
             return;
         }
-
-        const SDL_Rect rect = GetScreenRect();
 
         JWindowSkin* skin = GetSkin(game);
         if (skin != nullptr)

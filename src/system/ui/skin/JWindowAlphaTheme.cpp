@@ -21,7 +21,12 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_Rect rect = button->GetScreenRect();
+        const SDL_Rect screenRect = button->GetScreenRect();
+        const Insets margin = button->GetStyle().margin;
+        SDL_Rect rect = {.x = screenRect.x + margin.left,
+                         .y = screenRect.y + margin.top,
+                         .w = screenRect.w,
+                         .h = screenRect.h};
         SDL_Color textColor = button->GetButtonStyle().textColor;
 
         // 1. Determine which border to use
@@ -162,7 +167,12 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_Rect rect = textBox->GetScreenRect();
+        const SDL_Rect screenRect = textBox->GetScreenRect();
+        const Insets margin = textBox->GetStyle().margin;
+        SDL_Rect rect = {.x = screenRect.x + margin.left,
+                         .y = screenRect.y + margin.top,
+                         .w = screenRect.w,
+                         .h = screenRect.h};
         const auto& style = textBox->GetTextBoxStyle();
 
         const SDL_Color fillColor =
@@ -223,7 +233,12 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_Rect rect = listBox->GetScreenRect();
+        const SDL_Rect screenRect = listBox->GetScreenRect();
+        const Insets margin = listBox->GetStyle().margin;
+        SDL_Rect rect = {.x = screenRect.x + margin.left,
+                         .y = screenRect.y + margin.top,
+                         .w = screenRect.w,
+                         .h = screenRect.h};
         SpriteBatch* batch = game->mSpriteBatch;
 
         // Use colors from skin data

@@ -20,7 +20,12 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_Rect rect = button->GetScreenRect();
+        const SDL_Rect screenRect = button->GetScreenRect();
+        const Insets margin = button->GetStyle().margin;
+        SDL_Rect rect = {.x = screenRect.x + margin.left,
+                         .y = screenRect.y + margin.top,
+                         .w = screenRect.w,
+                         .h = screenRect.h};
         const auto& style = button->GetStyle();
         const auto& buttonStyle = button->GetButtonStyle();
 
@@ -161,7 +166,12 @@ namespace nuvelocity
             return;
         }
 
-        const SDL_Rect rect = textBox->GetScreenRect();
+        const SDL_Rect screenRect = textBox->GetScreenRect();
+        const Insets margin = textBox->GetStyle().margin;
+        SDL_Rect rect = {.x = screenRect.x + margin.left,
+                         .y = screenRect.y + margin.top,
+                         .w = screenRect.w,
+                         .h = screenRect.h};
         const auto& style = textBox->GetTextBoxStyle();
         const auto& baseStyle = textBox->GetStyle();
 
@@ -209,13 +219,18 @@ namespace nuvelocity
 
     void JWindowClassicTheme::DrawListBox(Game* game, JListBox* listBox)
     {
-        // if (game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr || listBox
-        // == nullptr)
+        if (game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr ||
+            listBox == nullptr)
         {
             return;
         }
 
-        const SDL_Rect rect = listBox->GetScreenRect();
+        const SDL_Rect screenRect = listBox->GetScreenRect();
+        const Insets margin = listBox->GetStyle().margin;
+        SDL_Rect rect = {.x = screenRect.x + margin.left,
+                         .y = screenRect.y + margin.top,
+                         .w = screenRect.w,
+                         .h = screenRect.h};
         const auto& style = listBox->GetStyle();
         SpriteBatch* batch = game->mSpriteBatch;
 

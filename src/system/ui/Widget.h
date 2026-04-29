@@ -1,6 +1,7 @@
 #ifndef NVE_UI_WIDGET_H
 #define NVE_UI_WIDGET_H
 
+#include "Insets.h"
 #include <SDL3/SDL.h>
 #include <system/GameComponent.h>
 
@@ -20,6 +21,7 @@ namespace nuvelocity
         SDL_Color accentColor = SDL_Color{.r = 0, .g = 120, .b = 215, .a = 255};
         SDL_Color disabledColor = SDL_Color{.r = 128, .g = 128, .b = 128, .a = 255};
         int borderThickness = 1;
+        Insets margin = {};
     };
 
     class Widget : public GameComponent
@@ -28,11 +30,12 @@ namespace nuvelocity
         Widget();
         virtual ~Widget() = default;
 
-        void Update(Game* game) override = 0;
-        void Draw(Game* game) override = 0;
+        virtual void Update(Game* game) override;
+        virtual void Draw(Game* game) override;
 
         virtual void SetRect(const SDL_Rect& rect);
         SDL_Rect GetRect() const;
+        SDL_Rect& GetActualRect();
         SDL_Rect GetScreenRect() const;
 
         void SetVisible(bool visible);
@@ -55,12 +58,17 @@ namespace nuvelocity
     protected:
         bool ContainsPoint(const SDL_Point& point) const;
 
+        virtual void InvalidateLayout();
+        virtual void DoLayout();
+
         SDL_Rect mRect;
+        SDL_Rect mActualRect;
         WidgetStyle mStyle;
         bool mVisible;
         bool mEnabled;
         JWindowSkin* mSkin;
         Widget* mParent = nullptr;
+        bool mNeedsLayout;
     };
 } // namespace nuvelocity
 

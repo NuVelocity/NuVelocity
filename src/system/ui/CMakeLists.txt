@@ -4,6 +4,7 @@ target_sources(
     WidgetUtils.h
     Widget.cpp
     Widget.h
+    Insets.h
     Button.cpp
     Button.h
     FocusContainer.cpp

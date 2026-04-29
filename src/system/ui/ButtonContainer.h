@@ -1,6 +1,7 @@
 #ifndef NVE_UI_BUTTON_CONTAINER_H
 #define NVE_UI_BUTTON_CONTAINER_H
 
+#include "Insets.h"
 #include "Widget.h"
 #include <memory>
 #include <vector>
@@ -20,34 +21,24 @@ namespace nuvelocity
 
         void SetRect(const SDL_Rect& rect) override;
 
-        void SetSpacing(int spacing);
-        int GetSpacing() const;
+        void SetGap(int gap);
+        int GetGap() const;
 
-        struct Padding
-        {
-            int top = 0;
-            int right = 0;
-            int bottom = 0;
-            int left = 0;
-        };
-
-        void SetPadding(int padding);
-        void SetPadding(int horizontal, int vertical);
-        void SetPadding(int top, int right, int bottom, int left);
-        const Padding& GetPadding() const;
+        void SetMargin(int margin);
+        void SetMargin(int horizontal, int vertical);
+        void SetMargin(int top, int right, int bottom, int left);
+        const Insets& GetMargin() const;
 
         void SetAutoCenter(bool autoCenter);
         bool IsAutoCenter() const;
 
-    private:
-        void InvalidateLayout();
-        void DoLayout();
+    protected:
+        void DoLayout() override;
 
+    private:
         std::vector<std::shared_ptr<Button>> mButtons;
-        int mSpacing = 8;
-        Padding mPadding;
+        int mGap = 8;
         bool mAutoCenter = false;
-        bool mNeedsLayout = true;
     };
 } // namespace nuvelocity
 

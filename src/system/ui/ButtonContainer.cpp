@@ -24,11 +24,7 @@ namespace nuvelocity
             return;
         }
 
-        if (mNeedsLayout)
-        {
-            DoLayout();
-            mNeedsLayout = false;
-        }
+        Widget::Update(game);
 
         for (auto& btn : mButtons)
         {
@@ -43,11 +39,6 @@ namespace nuvelocity
             InvalidateLayout();
         }
         Widget::SetRect(rect);
-    }
-
-    void ButtonContainer::InvalidateLayout()
-    {
-        mNeedsLayout = true;
     }
 
     void ButtonContainer::DoLayout()
@@ -71,28 +62,31 @@ namespace nuvelocity
             }
         }
 
-        int currentY = mPadding.top;
-        int availableWidth = mRect.w - mPadding.left - mPadding.right;
+        int currentY = mStyle.margin.top;
+        int availableWidth = mRect.w - mStyle.margin.left - mStyle.margin.right;
 
         for (auto& btn : mButtons)
         {
             SDL_Rect btnRect = btn->GetRect();
             if (btnRect.w > 0 && btnRect.w < availableWidth)
             {
-                btnRect.x = mPadding.left + ((availableWidth - btnRect.w) / 2);
+                btnRect.x = mStyle.margin.left + ((availableWidth - btnRect.w) / 2);
             }
             else
             {
-                btnRect.x = mPadding.left;
+                btnRect.x = mStyle.margin.left;
                 btnRect.w = SDL_max(0, availableWidth);
             }
             btnRect.y = currentY;
             btn->SetRect(btnRect);
 
-            currentY += btnRect.h + mSpacing;
+            currentY += btn->GetActualRect().h + mGap;
         }
 
-        mRect.h = SDL_max(0, currentY - (mButtons.empty() ? 0 : mSpacing) + mPadding.bottom);
+        mRect.h = SDL_max(0, currentY - (mButtons.empty() ? 0 : mGap) + mStyle.margin.bottom);
+
+        Widget::DoLayout();
+        mNeedsLayout = false;
     }
 
     void ButtonContainer::Draw(Game* game)
@@ -108,38 +102,39 @@ namespace nuvelocity
         }
     }
 
-    void ButtonContainer::SetSpacing(int spacing)
+    void ButtonContainer::SetGap(int gap)
     {
-        mSpacing = spacing;
+        mGap = gap;
         InvalidateLayout();
     }
 
-    int ButtonContainer::GetSpacing() const
+    int ButtonContainer::GetGap() const
     {
-        return mSpacing;
+        return mGap;
     }
 
-    void ButtonContainer::SetPadding(int padding)
+    void ButtonContainer::SetMargin(int margin)
     {
-        mPadding = {.top = padding, .right = padding, .bottom = padding, .left = padding};
+        mStyle.margin = {.left = margin, .top = margin, .right = margin, .bottom = margin};
         InvalidateLayout();
     }
 
-    void ButtonContainer::SetPadding(int horizontal, int vertical)
+    void ButtonContainer::SetMargin(int horizontal, int vertical)
     {
-        mPadding = {.top = vertical, .right = horizontal, .bottom = vertical, .left = horizontal};
+        mStyle.margin = {
+            .left = horizontal, .top = vertical, .right = horizontal, .bottom = vertical};
         InvalidateLayout();
     }
 
-    void ButtonContainer::SetPadding(int top, int right, int bottom, int left)
+    void ButtonContainer::SetMargin(int top, int right, int bottom, int left)
     {
-        mPadding = {.top = top, .right = right, .bottom = bottom, .left = left};
+        mStyle.margin = {.left = left, .top = top, .right = right, .bottom = bottom};
         InvalidateLayout();
     }
 
-    const ButtonContainer::Padding& ButtonContainer::GetPadding() const
+    const Insets& ButtonContainer::GetMargin() const
     {
-        return mPadding;
+        return mStyle.margin;
     }
 
     void ButtonContainer::SetAutoCenter(bool autoCenter)

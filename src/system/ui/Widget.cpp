@@ -9,20 +9,47 @@ namespace nuvelocity
 {
     Widget::Widget()
             : mRect({.x = 0, .y = 0, .w = 0, .h = 0})
+            , mActualRect({.x = 0, .y = 0, .w = 0, .h = 0})
             , mVisible(true)
             , mEnabled(true)
             , mSkin(nullptr)
+            , mNeedsLayout(true)
     {
+    }
+
+    void Widget::Update(Game* game)
+    {
+        if (mNeedsLayout)
+        {
+            DoLayout();
+            mNeedsLayout = false;
+        }
+    }
+
+    void Widget::Draw(Game* game)
+    {
+        (void)game;
     }
 
     void Widget::SetRect(const SDL_Rect& rect)
     {
         mRect = rect;
+        InvalidateLayout();
     }
 
     SDL_Rect Widget::GetRect() const
     {
         return mRect;
+    }
+
+    SDL_Rect& Widget::GetActualRect()
+    {
+        if (mNeedsLayout)
+        {
+            DoLayout();
+            mNeedsLayout = false;
+        }
+        return mActualRect;
     }
 
     SDL_Rect Widget::GetScreenRect() const
@@ -41,6 +68,23 @@ namespace nuvelocity
     {
         const SDL_Rect rect = GetScreenRect();
         return SDL_Point{.x = rect.x, .y = rect.y};
+    }
+
+    void Widget::InvalidateLayout()
+    {
+        mNeedsLayout = true;
+        if (mParent != nullptr)
+        {
+            mParent->InvalidateLayout();
+        }
+    }
+
+    void Widget::DoLayout()
+    {
+        mActualRect = SDL_Rect{.x = mRect.x + mStyle.margin.left,
+                               .y = mRect.y + mStyle.margin.top,
+                               .w = mRect.w,
+                               .h = mRect.h};
     }
 
     void Widget::SetVisible(bool visible)
@@ -66,6 +110,7 @@ namespace nuvelocity
     void Widget::SetStyle(const WidgetStyle& style)
     {
         mStyle = style;
+        InvalidateLayout();
     }
 
     const WidgetStyle& Widget::GetStyle() const
@@ -75,7 +120,11 @@ namespace nuvelocity
 
     bool Widget::ContainsPoint(const SDL_Point& point) const
     {
-        const SDL_Rect rect = GetScreenRect();
+        SDL_Rect baseRect = GetScreenRect();
+        SDL_Rect rect = SDL_Rect{.x = baseRect.x + mStyle.margin.left,
+                                 .y = baseRect.y + mStyle.margin.top,
+                                 .w = baseRect.w,
+                                 .h = baseRect.h};
         return point.x >= rect.x && point.y >= rect.y && point.x <= rect.x + rect.w &&
                point.y <= rect.y + rect.h;
     }
