@@ -26,14 +26,6 @@ namespace nuvelocity
         return scale > 0.0F ? scale : 1.0F;
     }
 
-    static int GetFallbackSpaceAdvance(const FontBitmap& fontBitmap, float scale)
-    {
-        const int xHeight = fontBitmap.GetXHeight();
-        const int base = xHeight > 0 ? (xHeight / 2) : 6;
-        return SDL_max(kMinGlyphSize,
-                       static_cast<int>(std::lround(static_cast<float>(base) * scale)));
-    }
-
     static std::size_t ResolveGlyphIndex(const FontBitmap& fontBitmap, uint8_t asciiCode)
     {
         return static_cast<std::size_t>(static_cast<int>(asciiCode) - fontBitmap.GetFirstAscii());
@@ -154,7 +146,6 @@ namespace nuvelocity
         }
 
         const float scale = ResolveBitmapScale(*this, pointSize);
-        const int spaceAdvance = GetFallbackSpaceAdvance(*this, scale);
 
         int totalWidth = 0;
         int maxHeight = SDL_max(pointSize, kMinGlyphSize);
@@ -162,16 +153,9 @@ namespace nuvelocity
         for (char character : text)
         {
             const uint8_t asciiCode = static_cast<uint8_t>(character);
-            if (asciiCode == static_cast<uint8_t>(' '))
-            {
-                totalWidth += spaceAdvance;
-                continue;
-            }
-
             Frame* glyph = nullptr;
             if (!TryGetBitmapGlyphFrame(*this, asciiCode, glyph))
             {
-                totalWidth += spaceAdvance;
                 continue;
             }
 
@@ -232,29 +216,20 @@ namespace nuvelocity
         }
 
         const float scale = ResolveBitmapScale(*this, pointSize);
-        const int spaceAdvance = GetFallbackSpaceAdvance(*this, scale);
 
         int cursorX = x;
         for (char ch : text)
         {
             const uint8_t asciiCode = static_cast<uint8_t>(ch);
-            if (asciiCode == static_cast<uint8_t>(' '))
-            {
-                cursorX += spaceAdvance;
-                continue;
-            }
-
             Frame* glyph = nullptr;
             if (!TryGetBitmapGlyphFrame(*this, asciiCode, glyph))
             {
-                cursorX += spaceAdvance;
                 continue;
             }
 
             SDL_Surface* glyphSurface = glyph->GetSurface();
             if (glyphSurface == nullptr)
             {
-                cursorX += spaceAdvance;
                 continue;
             }
 
