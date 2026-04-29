@@ -93,7 +93,8 @@ namespace nuvelocity
                                         TextAlignment::Center,
                                         true,
                                         button->GetMnemonicIndex(),
-                                        textColor);
+                                        // FIXME: we don't respect text color for now.
+                                        mOptions->mShortcutKeyHighlightColor);
 
         if (button->GetButtonStyle().showFocusRing && button->IsFocused() && !button->IsHovered())
         {
