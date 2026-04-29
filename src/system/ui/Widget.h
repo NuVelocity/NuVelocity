@@ -50,6 +50,8 @@ namespace nuvelocity
         void SetParent(Widget* parent);
         Widget* GetParent() const;
 
+        virtual SDL_Point GetContentOrigin() const;
+
     protected:
         bool ContainsPoint(const SDL_Point& point) const;
 

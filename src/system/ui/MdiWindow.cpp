@@ -93,44 +93,6 @@ namespace nuvelocity
             }
         }
 
-        if (mAutoResize && !mChildren.empty())
-        {
-            int maxBottom = 0;
-            for (const auto& child : mChildren)
-            {
-                if (child->IsVisible())
-                {
-                    const SDL_Rect r = child->GetRect();
-                    maxBottom = SDL_max(maxBottom, r.y + r.h);
-                }
-            }
-
-            if (maxBottom > 0)
-            {
-                const SDL_Rect clientRect = GetClientRect();
-                const int bottomChrome = mRect.y + mRect.h - (clientRect.y + clientRect.h);
-                const int newHeight = (maxBottom - mRect.y) + bottomChrome;
-
-                if (mRect.h != newHeight)
-                {
-                    SDL_Rect newRect = mRect;
-                    newRect.h = newHeight;
-                    SetRect(newRect);
-                }
-            }
-        }
-
-        if (mAutoCenter && game != nullptr)
-        {
-            const int centerX = (game->mWindowWidth - mRect.w) / 2;
-            const int centerY = (game->mWindowHeight - mRect.h) / 2;
-
-            if (mRect.x != centerX || mRect.y != centerY)
-            {
-                SetRect({.x = centerX, .y = centerY, .w = mRect.w, .h = mRect.h});
-            }
-        }
-
         if (mFullScreen && game != nullptr)
         {
             if (mRect.x != 0 || mRect.y != 0 || mRect.w != game->mWindowWidth ||
@@ -242,34 +204,20 @@ namespace nuvelocity
     {
         if (widget != nullptr)
         {
-            const SDL_Rect clientRect = GetClientRect();
-            SDL_Rect childRect = widget->GetRect();
-            childRect.x += clientRect.x;
-            childRect.y += clientRect.y;
-            widget->SetRect(childRect);
             widget->SetParent(this);
-
             mChildren.push_back(widget);
         }
     }
 
     void MdiWindow::SetRect(const SDL_Rect& rect)
     {
-        const int deltaX = rect.x - mRect.x;
-        const int deltaY = rect.y - mRect.y;
-
         mRect = rect;
+    }
 
-        for (const auto& child : mChildren)
-        {
-            if (child != nullptr)
-            {
-                SDL_Rect r = child->GetRect();
-                r.x += deltaX;
-                r.y += deltaY;
-                child->SetRect(r);
-            }
-        }
+    SDL_Point MdiWindow::GetContentOrigin() const
+    {
+        const SDL_Rect clientRect = GetClientRect();
+        return SDL_Point{.x = clientRect.x, .y = clientRect.y};
     }
 
     const std::vector<std::shared_ptr<Widget>>& MdiWindow::GetChildren() const
@@ -277,24 +225,37 @@ namespace nuvelocity
         return mChildren;
     }
 
-    void MdiWindow::SetAutoResize(bool autoResize)
+    void MdiWindow::FitToChildren(Game* game)
     {
-        mAutoResize = autoResize;
-    }
+        // First update children to ensure their sizes are correct before fitting.
+        Update(game);
 
-    bool MdiWindow::IsAutoResize() const
-    {
-        return mAutoResize;
-    }
+        int maxBottom = 0;
 
-    void MdiWindow::SetAutoCenter(bool autoCenter)
-    {
-        mAutoCenter = autoCenter;
-    }
+        for (const auto& child : mChildren)
+        {
+            if (child->IsVisible())
+            {
+                const SDL_Rect r = child->GetRect();
+                maxBottom = SDL_max(maxBottom, r.y + r.h);
+            }
+        }
 
-    bool MdiWindow::IsAutoCenter() const
-    {
-        return mAutoCenter;
+        if (maxBottom > 0)
+        {
+            const SDL_Rect windowRect = GetScreenRect();
+            const SDL_Rect clientRect = GetClientRect();
+            const int topInset = clientRect.y - windowRect.y;
+            const int bottomInset = (windowRect.y + windowRect.h) - (clientRect.y + clientRect.h);
+            const int newHeight = topInset + maxBottom + bottomInset;
+
+            if (mRect.h != newHeight)
+            {
+                SDL_Rect newRect = mRect;
+                newRect.h = newHeight;
+                SetRect(newRect);
+            }
+        }
     }
 
     void MdiWindow::SetFullScreen(bool fullScreen)
@@ -323,8 +284,7 @@ namespace nuvelocity
 
     bool MdiWindow::Intersects(const SDL_Point& point) const
     {
-        return point.x >= mRect.x && point.y >= mRect.y && point.x <= mRect.x + mRect.w &&
-               point.y <= mRect.y + mRect.h;
+        return ContainsPoint(point);
     }
 
     void MdiWindow::SetOnClose(const std::function<void(MdiWindow&)>& callback)

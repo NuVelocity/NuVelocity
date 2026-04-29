@@ -27,7 +27,20 @@ namespace nuvelocity
 
     SDL_Rect Widget::GetScreenRect() const
     {
-        return mRect;
+        if (mParent == nullptr)
+        {
+            return mRect;
+        }
+
+        const SDL_Point origin = mParent->GetContentOrigin();
+        return SDL_Rect{
+            .x = origin.x + mRect.x, .y = origin.y + mRect.y, .w = mRect.w, .h = mRect.h};
+    }
+
+    SDL_Point Widget::GetContentOrigin() const
+    {
+        const SDL_Rect rect = GetScreenRect();
+        return SDL_Point{.x = rect.x, .y = rect.y};
     }
 
     void Widget::SetVisible(bool visible)

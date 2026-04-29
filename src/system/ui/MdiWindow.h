@@ -40,6 +40,7 @@ namespace nuvelocity
         void Draw(Game* game) override;
 
         void SetRect(const SDL_Rect& rect) override;
+        SDL_Point GetContentOrigin() const override;
 
         void SetTitle(const std::string& title);
         const std::string& GetTitle() const;
@@ -62,14 +63,10 @@ namespace nuvelocity
         void AddChild(const std::shared_ptr<Widget>& widget);
         const std::vector<std::shared_ptr<Widget>>& GetChildren() const;
 
+        void FitToChildren(Game* game);
+
         void Close();
         bool ShouldClose() const;
-
-        void SetAutoResize(bool autoResize);
-        bool IsAutoResize() const;
-
-        void SetAutoCenter(bool autoCenter);
-        bool IsAutoCenter() const;
 
         void SetFullScreen(bool fullScreen);
         bool IsFullScreen() const;
@@ -90,7 +87,6 @@ namespace nuvelocity
         bool mDragging;
         bool mShouldClose;
         bool mAutoResize = false;
-        bool mAutoCenter = false;
         bool mFullScreen = false;
 
         SDL_Point mDragGrabOffset;

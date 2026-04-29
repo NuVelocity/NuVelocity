@@ -18,6 +18,8 @@ namespace nuvelocity
         void Update(Game* game) override;
         void Draw(Game* game) override;
 
+        void SetRect(const SDL_Rect& rect) override;
+
         void SetSpacing(int spacing);
         int GetSpacing() const;
 
@@ -38,10 +40,14 @@ namespace nuvelocity
         bool IsAutoCenter() const;
 
     private:
+        void InvalidateLayout();
+        void DoLayout();
+
         std::vector<std::shared_ptr<Button>> mButtons;
         int mSpacing = 8;
         Padding mPadding;
         bool mAutoCenter = false;
+        bool mNeedsLayout = true;
     };
 } // namespace nuvelocity
 

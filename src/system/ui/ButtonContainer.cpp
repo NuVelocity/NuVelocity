@@ -13,6 +13,7 @@ namespace nuvelocity
         {
             mButtons.push_back(button);
             button->SetParent(this);
+            InvalidateLayout();
         }
     }
 
@@ -23,19 +24,47 @@ namespace nuvelocity
             return;
         }
 
+        if (mNeedsLayout)
+        {
+            DoLayout();
+            mNeedsLayout = false;
+        }
+
+        for (auto& btn : mButtons)
+        {
+            btn->Update(game);
+        }
+    }
+
+    void ButtonContainer::SetRect(const SDL_Rect& rect)
+    {
+        if (mRect.w != rect.w)
+        {
+            InvalidateLayout();
+        }
+        Widget::SetRect(rect);
+    }
+
+    void ButtonContainer::InvalidateLayout()
+    {
+        mNeedsLayout = true;
+    }
+
+    void ButtonContainer::DoLayout()
+    {
         if (mAutoCenter && mParent != nullptr)
         {
-            SDL_Rect parentRect;
+            int parentWidth = 0;
             if (auto* mdi = dynamic_cast<MdiWindow*>(mParent))
             {
-                parentRect = mdi->GetClientRect();
+                parentWidth = mdi->GetClientRect().w;
             }
             else
             {
-                parentRect = mParent->GetScreenRect();
+                parentWidth = mParent->GetRect().w;
             }
 
-            const int centerX = parentRect.x + ((parentRect.w - mRect.w) / 2);
+            const int centerX = (parentWidth - mRect.w) / 2;
             if (mRect.x != centerX)
             {
                 mRect.x = centerX;
@@ -50,18 +79,17 @@ namespace nuvelocity
             SDL_Rect btnRect = btn->GetRect();
             if (btnRect.w > 0 && btnRect.w < availableWidth)
             {
-                btnRect.x = mRect.x + mPadding.left + ((availableWidth - btnRect.w) / 2);
+                btnRect.x = mPadding.left + ((availableWidth - btnRect.w) / 2);
             }
             else
             {
-                btnRect.x = mRect.x + mPadding.left;
+                btnRect.x = mPadding.left;
                 btnRect.w = SDL_max(0, availableWidth);
             }
-            btnRect.y = mRect.y + currentY;
+            btnRect.y = currentY;
             btn->SetRect(btnRect);
 
             currentY += btnRect.h + mSpacing;
-            btn->Update(game);
         }
 
         mRect.h = SDL_max(0, currentY - (mButtons.empty() ? 0 : mSpacing) + mPadding.bottom);
@@ -83,6 +111,7 @@ namespace nuvelocity
     void ButtonContainer::SetSpacing(int spacing)
     {
         mSpacing = spacing;
+        InvalidateLayout();
     }
 
     int ButtonContainer::GetSpacing() const
@@ -93,16 +122,19 @@ namespace nuvelocity
     void ButtonContainer::SetPadding(int padding)
     {
         mPadding = {.top = padding, .right = padding, .bottom = padding, .left = padding};
+        InvalidateLayout();
     }
 
     void ButtonContainer::SetPadding(int horizontal, int vertical)
     {
         mPadding = {.top = vertical, .right = horizontal, .bottom = vertical, .left = horizontal};
+        InvalidateLayout();
     }
 
     void ButtonContainer::SetPadding(int top, int right, int bottom, int left)
     {
         mPadding = {.top = top, .right = right, .bottom = bottom, .left = left};
+        InvalidateLayout();
     }
 
     const ButtonContainer::Padding& ButtonContainer::GetPadding() const
@@ -113,6 +145,7 @@ namespace nuvelocity
     void ButtonContainer::SetAutoCenter(bool autoCenter)
     {
         mAutoCenter = autoCenter;
+        InvalidateLayout();
     }
 
     bool ButtonContainer::IsAutoCenter() const
