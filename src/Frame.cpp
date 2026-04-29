@@ -38,6 +38,7 @@ namespace nuvelocity
             , mTexture(nullptr)
             , mTextureRenderer(nullptr)
             , mHotSpot({.x = 0, .y = 0})
+            , mAnchor({.x = 0, .y = 0})
     {
     }
 
@@ -50,6 +51,7 @@ namespace nuvelocity
             , mTexture(nullptr)
             , mTextureRenderer(nullptr)
             , mHotSpot({.x = 0, .y = 0})
+            , mAnchor({.x = 0, .y = 0})
     {
         Initialize(width, height, bpp);
     }
@@ -255,6 +257,17 @@ namespace nuvelocity
     {
         mHotSpot.x = x;
         mHotSpot.y = y;
+    }
+
+    SDL_Point Frame::GetAnchor() const
+    {
+        return mAnchor;
+    }
+
+    void Frame::SetAnchor(int x, int y)
+    {
+        mAnchor.x = x;
+        mAnchor.y = y;
     }
 
     std::vector<SDL_FPoint> Frame::GetCollisionPolygon() const

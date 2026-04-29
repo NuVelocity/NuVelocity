@@ -21,6 +21,7 @@ namespace nuvelocity
             return nullptr;
         }
 
+        frame->SetAnchor(frame->GetWidth(), frame->GetHeight());
         return frame;
     }
 

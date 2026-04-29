@@ -59,6 +59,9 @@ namespace nuvelocity
         NVE_API SDL_Point GetHotSpot() const;
         NVE_API void SetHotSpot(int x, int y);
 
+        NVE_API SDL_Point GetAnchor() const;
+        NVE_API void SetAnchor(int x, int y);
+
         NVE_API std::vector<SDL_FPoint> GetCollisionPolygon() const;
 
         iterator begin();
@@ -80,6 +83,7 @@ namespace nuvelocity
         SDL_Renderer* mTextureRenderer;
 
         SDL_Point mHotSpot;
+        SDL_Point mAnchor;
 
         friend class DecodeUtils;
     };

@@ -38,6 +38,10 @@ namespace nuvelocity
         bool GetCenterHotSpot() const;
 
         void SetFrames(std::vector<std::unique_ptr<Frame>>&& frames);
+
+        NVE_API SDL_Point GetAnchor() const;
+        NVE_API void SetAnchor(int x, int y);
+
         std::size_t GetFrameCount() const;
         float GetFramesPerSecond() const;
         Frame* GetFrame(std::size_t index) const;
@@ -150,6 +154,7 @@ namespace nuvelocity
         int mJpegQuality;
 
         std::vector<std::unique_ptr<Frame>> mFrames;
+        SDL_Point mAnchor;
         AssetSource mSource;
 
 #ifdef NVE_RESTORE_TGA

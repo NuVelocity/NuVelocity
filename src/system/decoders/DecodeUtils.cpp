@@ -72,7 +72,7 @@ namespace nuvelocity
     }
 
     static bool BuildFrameSurfaces(SDL_Surface* spriteAtlas,
-                                   const Sequence* sequence,
+                                   Sequence* sequence,
                                    const std::vector<FrameInfo*>& frameInfos,
                                    std::vector<std::unique_ptr<Frame>>& frames)
     {
@@ -84,6 +84,9 @@ namespace nuvelocity
         const int baseXOffset = sequence->GetXOffset();
         const int baseYOffset = sequence->GetYOffset();
 
+        int maxW = 0;
+        int maxH = 0;
+
         for (size_t i = 0; i < frameInfos.size(); ++i)
         {
             const FrameInfo* frameInfo = frameInfos[i];
@@ -94,6 +97,14 @@ namespace nuvelocity
                 frames[i] = std::make_unique<Frame>();
                 frames[i]->SetSurface(transparent);
                 frames[i]->SetHotSpot(0, 0);
+                if (1 > maxW)
+                {
+                    maxW = 1;
+                }
+                if (1 > maxH)
+                {
+                    maxH = 1;
+                }
                 continue;
             }
 
@@ -106,10 +117,28 @@ namespace nuvelocity
                 frameSurface = DecodeUtils::BuildTransparentSurface(1, 1);
             }
 
+            if (frameSurface->w > maxW)
+            {
+                maxW = frameSurface->w;
+            }
+            if (frameSurface->h > maxH)
+            {
+                maxH = frameSurface->h;
+            }
+
             SDL_SetSurfaceBlendMode(frameSurface, SDL_BLENDMODE_BLEND);
             frames[i] = std::make_unique<Frame>();
             frames[i]->SetSurface(frameSurface);
             frames[i]->SetHotSpot(offsetX, offsetY);
+        }
+
+        sequence->SetAnchor(maxW, maxH);
+        for (auto& frame : frames)
+        {
+            if (frame)
+            {
+                frame->SetAnchor(maxW, maxH);
+            }
         }
 
         return true;
@@ -249,7 +278,9 @@ namespace nuvelocity
                 std::vector<std::unique_ptr<Frame>> emptyFrames;
                 auto frame = std::make_unique<Frame>();
                 frame->SetSurface(DecodeUtils::BuildTransparentSurface(1, 1));
+                frame->SetAnchor(1, 1);
                 emptyFrames.push_back(std::move(frame));
+                sequence->SetAnchor(1, 1);
                 sequence->SetFrames(std::move(emptyFrames));
             }
             delete frameInfoList;
@@ -267,8 +298,12 @@ namespace nuvelocity
         {
             std::vector<std::unique_ptr<Frame>> frames;
             auto frame = std::make_unique<Frame>();
+            const int w = spriteAtlas->w;
+            const int h = spriteAtlas->h;
             frame->SetSurface(spriteAtlas);
+            frame->SetAnchor(w, h);
             frames.push_back(std::move(frame));
+            sequence->SetAnchor(w, h);
             sequence->SetFrames(std::move(frames));
             delete frameInfoList;
             return sequence;

@@ -52,6 +52,7 @@ namespace nuvelocity
             , mDoDither(true)
             , mIsLossless(false)
             , mJpegQuality(kDefaultJpegQuality)
+            , mAnchor({.x = 0, .y = 0})
             , mSource(AssetSource::Unknown)
 #endif
     {
@@ -96,6 +97,17 @@ namespace nuvelocity
     void Sequence::SetFrames(std::vector<std::unique_ptr<Frame>>&& frames)
     {
         mFrames = std::move(frames);
+    }
+
+    SDL_Point Sequence::GetAnchor() const
+    {
+        return mAnchor;
+    }
+
+    void Sequence::SetAnchor(int x, int y)
+    {
+        mAnchor.x = x;
+        mAnchor.y = y;
     }
 
     std::size_t Sequence::GetFrameCount() const
