@@ -25,7 +25,7 @@ namespace nuvelocity
             return;
         }
 
-        SDL_Rect rect = GetRect();
+        SDL_Rect rect = GetScreenRect();
         game->mFont->DrawStringWithFontAt(mFont,
                                           game->mSpriteBatch,
                                           mText,
