@@ -199,7 +199,7 @@ namespace nuvelocity
         bool mnemonicPending = false;
         for (char ch : mCaption)
         {
-            if (ch == '_')
+            if (ch == '&')
             {
                 mnemonicPending = true;
                 continue;
