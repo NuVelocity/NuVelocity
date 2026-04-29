@@ -181,7 +181,8 @@ namespace nuvelocity
                                 int pointSize,
                                 TextAlignment alignment,
                                 bool verticalCenter,
-                                int underlineIndex) const
+                                int underlineIndex,
+                                const SDL_Color& underlineColor) const
     {
         if (batch == nullptr || text.empty() || mSequence == nullptr)
         {
@@ -269,7 +270,7 @@ namespace nuvelocity
             const int lineEndX = lineStartX + SDL_max(1, characterWidth);
 
             // Use SpriteBatch for line drawing
-            batch->DrawLine(lineStartX, lineY, lineEndX, lineY, color);
+            batch->DrawLine(lineStartX, lineY, lineEndX, lineY, underlineColor);
         }
     }
 
@@ -281,7 +282,8 @@ namespace nuvelocity
                                   int pointSize,
                                   TextAlignment alignment,
                                   bool verticalCenter,
-                                  int underlineIndex) const
+                                  int underlineIndex,
+                                  const SDL_Color& underlineColor) const
     {
         if (batch == nullptr || text.empty() || mSequence == nullptr)
         {
@@ -294,7 +296,8 @@ namespace nuvelocity
                    pointSize,
                    alignment,
                    verticalCenter,
-                   underlineIndex);
+                   underlineIndex,
+                   underlineColor);
     }
 
     FontBitmap::~FontBitmap() = default;

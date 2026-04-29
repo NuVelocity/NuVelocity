@@ -165,7 +165,8 @@ namespace nuvelocity
                                  int pointSize,
                                  TextAlignment alignment,
                                  bool verticalCenter,
-                                 int underlineIndex) const
+                                 int underlineIndex,
+                                 const SDL_Color& underlineColor) const
     {
         if (batch == nullptr || text.empty())
         {
@@ -185,8 +186,15 @@ namespace nuvelocity
         {
             font = mFallbackFont;
         }
-        font->DrawString(
-            batch, text, bounds, color, pointSize, alignment, verticalCenter, underlineIndex);
+        font->DrawString(batch,
+                         text,
+                         bounds,
+                         color,
+                         pointSize,
+                         alignment,
+                         verticalCenter,
+                         underlineIndex,
+                         underlineColor);
     }
 
     void FontManager::DrawStringWithFont(const std::string& fontName,
@@ -197,7 +205,8 @@ namespace nuvelocity
                                          int pointSize,
                                          TextAlignment alignment,
                                          bool verticalCenter,
-                                         int underlineIndex) const
+                                         int underlineIndex,
+                                         const SDL_Color& underlineColor) const
     {
         if (batch == nullptr || text.empty())
         {
@@ -221,8 +230,15 @@ namespace nuvelocity
         {
             font = mFallbackFont;
         }
-        font->DrawString(
-            batch, text, bounds, color, pointSize, alignment, verticalCenter, underlineIndex);
+        font->DrawString(batch,
+                         text,
+                         bounds,
+                         color,
+                         pointSize,
+                         alignment,
+                         verticalCenter,
+                         underlineIndex,
+                         underlineColor);
     }
 
     void FontManager::DrawStringAt(SpriteBatch* batch,
@@ -233,7 +249,8 @@ namespace nuvelocity
                                    int pointSize,
                                    TextAlignment alignment,
                                    const SDL_Rect* clipRect,
-                                   int underlineIndex) const
+                                   int underlineIndex,
+                                   const SDL_Color& underlineColor) const
     {
         if (batch == nullptr || text.empty())
         {
@@ -256,14 +273,23 @@ namespace nuvelocity
 
         if (clipRect == nullptr)
         {
-            font->DrawStringAt(
-                batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
+            font->DrawStringAt(batch,
+                               text,
+                               x,
+                               y,
+                               color,
+                               pointSize,
+                               alignment,
+                               false,
+                               underlineIndex,
+                               underlineColor);
             return;
         }
 
         // Clip management is now handled through the batch
         batch->SetClipRect(clipRect);
-        font->DrawStringAt(batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
+        font->DrawStringAt(
+            batch, text, x, y, color, pointSize, alignment, false, underlineIndex, underlineColor);
         batch->SetClipRect(nullptr); // Reset clip after drawing
     }
 
@@ -276,7 +302,8 @@ namespace nuvelocity
                                            int pointSize,
                                            TextAlignment alignment,
                                            const SDL_Rect* clipRect,
-                                           int underlineIndex) const
+                                           int underlineIndex,
+                                           const SDL_Color& underlineColor) const
     {
         if (batch == nullptr || text.empty())
         {
@@ -295,13 +322,22 @@ namespace nuvelocity
 
         if (clipRect == nullptr)
         {
-            font->DrawStringAt(
-                batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
+            font->DrawStringAt(batch,
+                               text,
+                               x,
+                               y,
+                               color,
+                               pointSize,
+                               alignment,
+                               false,
+                               underlineIndex,
+                               underlineColor);
             return;
         }
 
         batch->SetClipRect(clipRect);
-        font->DrawStringAt(batch, text, x, y, color, pointSize, alignment, false, underlineIndex);
+        font->DrawStringAt(
+            batch, text, x, y, color, pointSize, alignment, false, underlineIndex, underlineColor);
         batch->SetClipRect(nullptr);
     }
 } // namespace nuvelocity

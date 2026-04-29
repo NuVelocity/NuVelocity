@@ -44,7 +44,8 @@ namespace nuvelocity
                         int pointSize,
                         TextAlignment alignment = TextAlignment::Left,
                         bool verticalCenter = true,
-                        int underlineIndex = -1) const override;
+                        int underlineIndex = -1,
+                        const SDL_Color& underlineColor = Colors::White) const override;
         void DrawStringAt(SpriteBatch* batch,
                           const std::string& text,
                           int x,
@@ -53,7 +54,8 @@ namespace nuvelocity
                           int pointSize,
                           TextAlignment alignment = TextAlignment::Left,
                           bool verticalCenter = false,
-                          int underlineIndex = -1) const override;
+                          int underlineIndex = -1,
+                          const SDL_Color& underlineColor = Colors::White) const override;
 
         static void InitClassInfo(ClassInfo& info)
         {

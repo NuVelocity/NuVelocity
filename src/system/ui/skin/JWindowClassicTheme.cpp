@@ -71,7 +71,8 @@ namespace nuvelocity
                                 buttonStyle.fontPointSize,
                                 TextAlignment::Center,
                                 true,
-                                button->GetMnemonicIndex());
+                                button->GetMnemonicIndex(),
+                                buttonStyle.textColor);
 
         if (buttonStyle.showFocusRing && button->IsFocused() && !button->IsHovered())
         {
@@ -124,7 +125,9 @@ namespace nuvelocity
                                 windowStyle.titleTextColor,
                                 windowStyle.titleFontPointSize,
                                 TextAlignment::Left,
-                                true);
+                                true,
+                                -1,
+                                windowStyle.titleTextColor);
 
         // 3. Draw Client Background
         if (windowStyle.tileBackground && window->GetBackgroundTile() != nullptr)
@@ -154,7 +157,9 @@ namespace nuvelocity
                                     windowStyle.titleTextColor,
                                     windowStyle.titleFontPointSize,
                                     TextAlignment::Center,
-                                    true);
+                                    true,
+                                    -1,
+                                    windowStyle.titleTextColor);
         }
     }
 
@@ -196,7 +201,9 @@ namespace nuvelocity
                                 style.textColor,
                                 style.fontPointSize,
                                 TextAlignment::Left,
-                                true);
+                                true,
+                                -1,
+                                style.textColor);
 
         if (textBox->IsFocused())
         {

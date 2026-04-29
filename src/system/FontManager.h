@@ -2,6 +2,7 @@
 #define NVE_FONT_MANAGER_H
 
 #include "API.h"
+#include "Colors.h"
 #include "Manager.h"
 #include "TextAlignment.h"
 
@@ -43,7 +44,8 @@ namespace nuvelocity
                         int pointSize,
                         TextAlignment alignment = TextAlignment::Left,
                         bool verticalCenter = false,
-                        int underlineIndex = -1) const;
+                        int underlineIndex = -1,
+                        const SDL_Color& underlineColor = Colors::White) const;
 
         void DrawStringWithFont(const std::string& fontName,
                                 SpriteBatch* batch,
@@ -53,7 +55,8 @@ namespace nuvelocity
                                 int pointSize,
                                 TextAlignment alignment = TextAlignment::Left,
                                 bool verticalCenter = false,
-                                int underlineIndex = -1) const;
+                                int underlineIndex = -1,
+                                const SDL_Color& underlineColor = Colors::White) const;
 
         void DrawStringAt(SpriteBatch* batch,
                           const std::string& text,
@@ -63,7 +66,8 @@ namespace nuvelocity
                           int pointSize,
                           TextAlignment alignment = TextAlignment::Left,
                           const SDL_Rect* clipRect = nullptr,
-                          int underlineIndex = -1) const;
+                          int underlineIndex = -1,
+                          const SDL_Color& underlineColor = Colors::White) const;
 
         void DrawStringWithFontAt(const std::string& fontName,
                                   SpriteBatch* batch,
@@ -74,7 +78,8 @@ namespace nuvelocity
                                   int pointSize,
                                   TextAlignment alignment = TextAlignment::Left,
                                   const SDL_Rect* clipRect = nullptr,
-                                  int underlineIndex = -1) const;
+                                  int underlineIndex = -1,
+                                  const SDL_Color& underlineColor = Colors::White) const;
 
     private:
         Font* FindFont(const std::string& name) const;

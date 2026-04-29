@@ -26,7 +26,16 @@ namespace nuvelocity
         }
 
         SDL_Rect rect = GetRect();
-        game->mFont->DrawStringWithFontAt(
-            mFont, game->mSpriteBatch, mText, rect.x, rect.y, Colors::White, 13);
+        game->mFont->DrawStringWithFontAt(mFont,
+                                          game->mSpriteBatch,
+                                          mText,
+                                          rect.x,
+                                          rect.y,
+                                          Colors::White,
+                                          13,
+                                          TextAlignment::Left,
+                                          nullptr,
+                                          -1,
+                                          Colors::White);
     }
 } // namespace nuvelocity

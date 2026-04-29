@@ -92,7 +92,8 @@ namespace nuvelocity
                                         13,
                                         TextAlignment::Center,
                                         true,
-                                        button->GetMnemonicIndex());
+                                        button->GetMnemonicIndex(),
+                                        textColor);
 
         if (button->GetButtonStyle().showFocusRing && button->IsFocused() && !button->IsHovered())
         {
@@ -156,7 +157,10 @@ namespace nuvelocity
                                           titleY,
                                           window->GetWindowStyle().titleTextColor,
                                           13,
-                                          TextAlignment::Center);
+                                          TextAlignment::Center,
+                                          nullptr,
+                                          -1,
+                                          window->GetWindowStyle().titleTextColor);
     }
 
     void JWindowAlphaTheme::DrawTextBox(Game* game, TextBox* textBox)
@@ -201,7 +205,9 @@ namespace nuvelocity
                                         style.textColor,
                                         style.fontPointSize,
                                         TextAlignment::Left,
-                                        true);
+                                        true,
+                                        -1,
+                                        style.textColor);
 
         if (textBox->IsFocused())
         {
@@ -337,8 +343,17 @@ namespace nuvelocity
                     colClip.h = SDL_max(0, bottom - colClip.y);
 
                     batch->SetClipRect(&colClip);
-                    game->mFont->DrawStringWithFontAt(
-                        mOptions->mGeneralFont, batch, row[c], curX + 4, ry + 1, textColor, 13);
+                    game->mFont->DrawStringWithFontAt(mOptions->mGeneralFont,
+                                                      batch,
+                                                      row[c],
+                                                      curX + 4,
+                                                      ry + 1,
+                                                      textColor,
+                                                      13,
+                                                      TextAlignment::Left,
+                                                      nullptr,
+                                                      -1,
+                                                      textColor);
                     batch->SetClipRect(&contentClip);
                 }
                 curX += columns[c].width;

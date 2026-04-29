@@ -61,7 +61,8 @@ namespace nuvelocity
                           int pointSize,
                           TextAlignment alignment,
                           bool verticalCenter,
-                          int underlineIndex) const
+                          int underlineIndex,
+                          const SDL_Color& underlineColor) const
     {
         TTF_Font* font = GetTtfFont(pointSize);
         if (batch == nullptr || text.empty() || font == nullptr)
@@ -122,7 +123,7 @@ namespace nuvelocity
             const int lineEndX = lineStartX + SDL_max(1, characterWidth);
 
             // Use SpriteBatch for line drawing
-            batch->DrawLine(lineStartX, lineY, lineEndX, lineY, color);
+            batch->DrawLine(lineStartX, lineY, lineEndX, lineY, underlineColor);
         }
 
         SDL_DestroySurface(surface);
@@ -136,7 +137,8 @@ namespace nuvelocity
                             int pointSize,
                             TextAlignment alignment,
                             bool verticalCenter,
-                            int underlineIndex) const
+                            int underlineIndex,
+                            const SDL_Color& underlineColor) const
     {
         DrawString(batch,
                    text,
@@ -145,7 +147,8 @@ namespace nuvelocity
                    pointSize,
                    alignment,
                    verticalCenter,
-                   underlineIndex);
+                   underlineIndex,
+                   underlineColor);
     }
 
     Font::~Font()
