@@ -12,13 +12,7 @@ namespace nuvelocity
 {
     AlphaSkinBorder::AlphaSkinBorder() = default;
 
-    AlphaSkinBorder::~AlphaSkinBorder()
-    {
-        if (mCachedSurface != nullptr)
-        {
-            SDL_DestroySurface(mCachedSurface);
-        }
-    }
+    AlphaSkinBorder::~AlphaSkinBorder() = default;
 
     void AlphaSkinBorder::Load(AssetManager* assets)
     {
@@ -58,24 +52,6 @@ namespace nuvelocity
         {
             return;
         }
-
-        // 1. Check if we can reuse the cached composite surface
-        if (mCachedSurface != nullptr && mCachedW == rect.w && mCachedH == rect.h)
-        {
-            SDL_Rect compositeDest{.x = rect.x, .y = rect.y, .w = rect.w, .h = rect.h};
-            spriteBatch->Draw(mCachedSurface, &compositeDest, nullptr);
-            return;
-        }
-
-        // 2. Size changed or no cache - Rebuild
-        if (mCachedSurface != nullptr)
-        {
-            SDL_DestroySurface(mCachedSurface);
-            mCachedSurface = nullptr;
-        }
-
-        mCachedW = rect.w;
-        mCachedH = rect.h;
 
         // Calculate individual corner dimensions as integers for stable mask assembly.
         // We use separate metrics for each side to handle asymmetrical skin assets.
@@ -195,10 +171,9 @@ namespace nuvelocity
 
         // Step 3: Draw the composite surface to the sprite batch
         SDL_SetSurfaceBlendMode(compositeSurface, SDL_BLENDMODE_BLEND);
-        mCachedSurface = compositeSurface;
 
-        SDL_Rect compositeDest{.x = rect.x, .y = rect.y, .w = mCachedW, .h = mCachedH};
-        spriteBatch->Draw(mCachedSurface, &compositeDest, nullptr);
+        SDL_Rect compositeDest{.x = rect.x, .y = rect.y, .w = rect.w, .h = rect.h};
+        spriteBatch->Draw(compositeSurface, &compositeDest, nullptr);
     }
 
     void AlphaSkinBorder::DrawTiledBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect)

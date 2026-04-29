@@ -73,10 +73,6 @@ namespace nuvelocity
     private:
         void DrawBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect);
         void DrawHighlights(SpriteBatch* spriteBatch, const SDL_Rect& rect) const;
-
-        SDL_Surface* mCachedSurface = nullptr;
-        int mCachedW = 0;
-        int mCachedH = 0;
     };
 } // namespace nuvelocity
 
