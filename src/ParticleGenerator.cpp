@@ -33,7 +33,8 @@ namespace nuvelocity
     void ParticleGenerator::Burst(const SDL_FPoint& pos,
                                   const ParticleGeneratorInfo* info,
                                   const std::vector<ParticleType*>* customTypes,
-                                  float baseAngle)
+                                  float baseAngle,
+                                  float posVariation)
     {
         if (info == nullptr)
         {
@@ -66,6 +67,7 @@ namespace nuvelocity
                                                         info->GetConeAngle() * 0.5F);
         std::uniform_real_distribution<float> lifeDist(0.2F, 0.6F);
         std::uniform_real_distribution<float> speedVar(0.3F, 1.1F);
+        std::uniform_real_distribution<float> posVar(-posVariation, posVariation);
 
         for (int i = 0; i < info->GetParticles(); ++i)
         {
@@ -91,9 +93,10 @@ namespace nuvelocity
             float speed = static_cast<float>(info->GetVelocity()) * speedVar(gen);
 
             SDL_FPoint vel = {.x = std::cos(angle) * speed, .y = std::sin(angle) * speed};
+            SDL_FPoint p = {pos.x + posVar(gen), pos.y + posVar(gen)};
 
             mParticles.push_back(
-                std::make_unique<Particle>(selectedType->GetSequence(), pos, vel, lifeDist(gen)));
+                std::make_unique<Particle>(selectedType->GetSequence(), p, vel, lifeDist(gen)));
         }
     }
 } // namespace nuvelocity

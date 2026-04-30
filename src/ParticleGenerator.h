@@ -23,7 +23,8 @@ namespace nuvelocity
         void Burst(const SDL_FPoint& pos,
                    const nuvelocity::ParticleGeneratorInfo* info,
                    const std::vector<ParticleType*>* customTypes = nullptr,
-                   float baseAngle = 0.0F);
+                   float baseAngle = 0.0F,
+                   float posVariation = 0.0F);
 
         bool IsFinished() const
         {

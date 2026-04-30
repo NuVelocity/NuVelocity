@@ -55,7 +55,9 @@ namespace nuvelocity
                 .w = surface->w,
                 .h = surface->h};
 
-            game->mSpriteBatch->Draw(surface, &destRect, nullptr, {255, 255, 255, 255});
+            float alphaPercent = mLife / mMaxLife;
+            uint8_t alpha = static_cast<uint8_t>(std::clamp(alphaPercent * 255.0F, 0.0F, 255.0F));
+            game->mSpriteBatch->Draw(surface, &destRect, nullptr, {255, 255, 255, alpha});
         }
     }
 } // namespace nuvelocity
