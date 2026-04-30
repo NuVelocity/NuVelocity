@@ -57,10 +57,10 @@ namespace nuvelocity
             {
                 const size_t next = (i + 1) % poly.size();
                 game->mSpriteBatch->DrawLine(
-                    static_cast<int>(std::lround(mPosition.x + poly[i].x)),
-                    static_cast<int>(std::lround(mPosition.y + poly[i].y)),
-                    static_cast<int>(std::lround(mPosition.x + poly[next].x)),
-                    static_cast<int>(std::lround(mPosition.y + poly[next].y)),
+                    static_cast<int>(std::lround(GetPosition().x + poly[i].x)),
+                    static_cast<int>(std::lround(GetPosition().y + poly[i].y)),
+                    static_cast<int>(std::lround(GetPosition().x + poly[next].x)),
+                    static_cast<int>(std::lround(GetPosition().y + poly[next].y)),
                     Colors::Green);
             }
         }
