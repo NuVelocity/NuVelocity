@@ -94,17 +94,6 @@ namespace nuvelocity
     class Object : public Base
     {
     private:
-        // SFINAE to detect if Derived has static InitClassInfo method
-        template <typename T>
-        static auto HasInitClassInfo(int)
-            -> decltype(T::InitClassInfo(std::declval<ClassInfo&>()), std::true_type{});
-
-        template <typename T>
-        static std::false_type HasInitClassInfo(...);
-
-        static constexpr bool HasInitClassInfoMethod =
-            decltype(HasInitClassInfo<Derived>(0))::value;
-
         static ClassInfo GetClassInfoInternal()
         {
             ClassInfo info;
@@ -340,7 +329,7 @@ namespace nuvelocity
         static ClassInfo* GetClassInfo()
         {
             static_assert(
-                HasInitClassInfoMethod,
+                requires(ClassInfo& info) { Derived::InitClassInfo(info); },
                 "Derived class must implement static void InitClassInfo(ClassInfo& info)");
             static ClassInfo classInfo = GetClassInfoInternal();
             return &classInfo;
