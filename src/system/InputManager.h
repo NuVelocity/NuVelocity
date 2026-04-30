@@ -47,6 +47,8 @@ namespace nuvelocity
         bool IsMouseButtonDown(uint8_t button) const;
         bool IsMouseButtonPressed(uint8_t button) const;
         bool IsMouseButtonReleased(uint8_t button) const;
+        void ConsumeKey(SDL_Scancode scancode);
+        void ConsumeMouseButton(uint8_t button);
 
         SDL_Point GetMousePosition() const;
         SDL_Point GetMouseDelta() const;

@@ -203,6 +203,26 @@ namespace nuvelocity
         return GetMouseButtonState(mMouseButtonStates, button, &ButtonState::released);
     }
 
+    void InputManager::ConsumeKey(SDL_Scancode scancode)
+    {
+        auto stateIt = mKeyStates.find(scancode);
+        if (stateIt != mKeyStates.end())
+        {
+            stateIt->second.pressed = false;
+            stateIt->second.released = false;
+        }
+    }
+
+    void InputManager::ConsumeMouseButton(uint8_t button)
+    {
+        auto stateIt = mMouseButtonStates.find(button);
+        if (stateIt != mMouseButtonStates.end())
+        {
+            stateIt->second.pressed = false;
+            stateIt->second.released = false;
+        }
+    }
+
     SDL_Point InputManager::GetMousePosition() const
     {
         return mMousePosition;
