@@ -1,6 +1,7 @@
 #ifndef NVE_UI_WIDGET_H
 #define NVE_UI_WIDGET_H
 
+#include "API.h"
 #include "Insets.h"
 #include <SDL3/SDL.h>
 #include <system/GameComponent.h>
@@ -27,39 +28,39 @@ namespace nuvelocity
     class Widget : public GameComponent
     {
     public:
-        Widget();
-        virtual ~Widget() = default;
+        NVE_API Widget();
+        NVE_API virtual ~Widget() = default;
 
-        virtual void Update(Game* game) override;
-        virtual void Draw(Game* game) override;
+        NVE_API virtual void Update(Game* game) override;
+        NVE_API virtual void Draw(Game* game) override;
 
-        virtual void SetRect(const SDL_Rect& rect);
-        SDL_Rect GetRect() const;
-        SDL_Rect& GetActualRect();
-        SDL_Rect GetScreenRect() const;
+        NVE_API virtual void SetRect(const SDL_Rect& rect);
+        NVE_API SDL_Rect GetRect() const;
+        NVE_API SDL_Rect& GetActualRect();
+        NVE_API SDL_Rect GetScreenRect() const;
 
-        void SetVisible(bool visible);
-        bool IsVisible() const;
+        NVE_API void SetVisible(bool visible);
+        NVE_API bool IsVisible() const;
 
-        void SetEnabled(bool enabled);
-        bool IsEnabled() const;
+        NVE_API void SetEnabled(bool enabled);
+        NVE_API bool IsEnabled() const;
 
-        void SetStyle(const WidgetStyle& style);
-        const WidgetStyle& GetStyle() const;
+        NVE_API void SetStyle(const WidgetStyle& style);
+        NVE_API const WidgetStyle& GetStyle() const;
 
-        void SetSkin(JWindowSkin* skin);
-        JWindowSkin* GetSkin(Game* game) const;
+        NVE_API void SetSkin(JWindowSkin* skin);
+        NVE_API JWindowSkin* GetSkin(Game* game) const;
 
-        void SetParent(Widget* parent);
-        Widget* GetParent() const;
+        NVE_API void SetParent(Widget* parent);
+        NVE_API Widget* GetParent() const;
 
-        virtual SDL_Point GetContentOrigin() const;
+        NVE_API virtual SDL_Point GetContentOrigin() const;
 
     protected:
-        bool ContainsPoint(const SDL_Point& point) const;
+        NVE_API bool ContainsPoint(const SDL_Point& point) const;
 
-        virtual void InvalidateLayout();
-        virtual void DoLayout();
+        NVE_API virtual void InvalidateLayout();
+        NVE_API virtual void DoLayout();
 
         SDL_Rect mRect;
         SDL_Rect mActualRect;

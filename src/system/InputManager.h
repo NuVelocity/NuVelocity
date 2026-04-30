@@ -1,6 +1,7 @@
 #ifndef NVE_INPUT_MANAGER_H
 #define NVE_INPUT_MANAGER_H
 
+#include "API.h"
 #include "Manager.h"
 
 #include <SDL3/SDL.h>
@@ -30,38 +31,40 @@ namespace nuvelocity
             bool connected = false;
         };
 
-        InputManager();
-        ~InputManager() override = default;
+        NVE_API InputManager();
+        NVE_API ~InputManager() override = default;
 
-        bool Initialize(char** argv) override;
+        NVE_API bool Initialize(char** argv) override;
 
-        void ProcessEvent(const SDL_Event& event);
-        void EndFrame();
+        NVE_API void ProcessEvent(const SDL_Event& event);
+        NVE_API void EndFrame();
 
-        bool IsQuitRequested() const;
+        NVE_API bool IsQuitRequested() const;
 
-        bool IsKeyDown(SDL_Scancode scancode) const;
-        bool IsKeyPressed(SDL_Scancode scancode) const;
-        bool IsKeyReleased(SDL_Scancode scancode) const;
+        NVE_API bool IsKeyDown(SDL_Scancode scancode) const;
+        NVE_API bool IsKeyPressed(SDL_Scancode scancode) const;
+        NVE_API bool IsKeyReleased(SDL_Scancode scancode) const;
 
-        bool IsMouseButtonDown(uint8_t button) const;
-        bool IsMouseButtonPressed(uint8_t button) const;
-        bool IsMouseButtonReleased(uint8_t button) const;
-        void ConsumeKey(SDL_Scancode scancode);
-        void ConsumeMouseButton(uint8_t button);
+        NVE_API bool IsMouseButtonDown(uint8_t button) const;
+        NVE_API bool IsMouseButtonPressed(uint8_t button) const;
+        NVE_API bool IsMouseButtonReleased(uint8_t button) const;
+        NVE_API void ConsumeKey(SDL_Scancode scancode);
+        NVE_API void ConsumeMouseButton(uint8_t button);
 
-        SDL_Point GetMousePosition() const;
-        SDL_Point GetMouseDelta() const;
-        SDL_Point GetWheelDelta() const;
+        NVE_API SDL_Point GetMousePosition() const;
+        NVE_API SDL_Point GetMouseDelta() const;
+        NVE_API SDL_Point GetWheelDelta() const;
 
-        bool IsGamepadConnected(SDL_JoystickID gamepadId) const;
-        bool IsGamepadButtonDown(SDL_JoystickID gamepadId, SDL_GamepadButton button) const;
-        bool IsGamepadButtonPressed(SDL_JoystickID gamepadId, SDL_GamepadButton button) const;
-        bool IsGamepadButtonReleased(SDL_JoystickID gamepadId, SDL_GamepadButton button) const;
-        int16_t GetGamepadAxis(SDL_JoystickID gamepadId, SDL_GamepadAxis axis) const;
+        NVE_API bool IsGamepadConnected(SDL_JoystickID gamepadId) const;
+        NVE_API bool IsGamepadButtonDown(SDL_JoystickID gamepadId, SDL_GamepadButton button) const;
+        NVE_API bool IsGamepadButtonPressed(SDL_JoystickID gamepadId,
+                                            SDL_GamepadButton button) const;
+        NVE_API bool IsGamepadButtonReleased(SDL_JoystickID gamepadId,
+                                             SDL_GamepadButton button) const;
+        NVE_API int16_t GetGamepadAxis(SDL_JoystickID gamepadId, SDL_GamepadAxis axis) const;
 
-        const std::string& GetTextInput() const;
-        const std::vector<SDL_Event>& GetFrameEvents() const;
+        NVE_API const std::string& GetTextInput() const;
+        NVE_API const std::vector<SDL_Event>& GetFrameEvents() const;
 
     private:
         std::unordered_map<SDL_Scancode, ButtonState> mKeyStates;

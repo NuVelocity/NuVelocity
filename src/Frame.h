@@ -16,11 +16,11 @@ namespace nuvelocity
         using iterator = uint8_t*;
         using const_iterator = const uint8_t*;
 
-        Frame();
-        Frame(int width, int height, int bpp);
-        ~Frame();
+        NVE_API Frame();
+        NVE_API Frame(int width, int height, int bpp);
+        NVE_API ~Frame();
 
-        void InitFromArgs(const std::vector<std::string>& args) override;
+        NVE_API void InitFromArgs(const std::vector<std::string>& args) override;
 
         static void InitClassInfo(ClassInfo& info)
         {
@@ -47,10 +47,10 @@ namespace nuvelocity
             };
         }
 
-        uint32_t GetPixel(int pointX, int pointY) const;
-        int GetWidth() const;
-        int GetHeight() const;
-        int GetBitsPerPixel() const;
+        NVE_API uint32_t GetPixel(int pointX, int pointY) const;
+        NVE_API int GetWidth() const;
+        NVE_API int GetHeight() const;
+        NVE_API int GetBitsPerPixel() const;
 
         NVE_API SDL_Surface* GetSurface() const;
         NVE_API void SetSurface(SDL_Surface* surface);
@@ -72,7 +72,7 @@ namespace nuvelocity
         const_iterator cend() const;
 
     private:
-        void Initialize(int width, int height, int bpp);
+        NVE_API void Initialize(int width, int height, int bpp);
 
         int mWidth;
         int mHeight;

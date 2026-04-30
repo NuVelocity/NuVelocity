@@ -1,6 +1,7 @@
 #ifndef NVE_UI_J_LIST_BOX_H
 #define NVE_UI_J_LIST_BOX_H
 
+#include "API.h"
 #include "Widget.h"
 #include <functional>
 #include <string>
@@ -17,60 +18,60 @@ namespace nuvelocity
             int width;
         };
 
-        JListBox();
-        virtual ~JListBox() = default;
+        NVE_API JListBox();
+        NVE_API virtual ~JListBox() = default;
 
-        void AddColumn(const std::string& title, int width);
-        void AddRow(const std::vector<std::string>& cells);
-        void Clear();
+        NVE_API void AddColumn(const std::string& title, int width);
+        NVE_API void AddRow(const std::vector<std::string>& cells);
+        NVE_API void Clear();
 
-        int GetSelectedIndex() const;
-        void SetSelectedIndex(int index);
+        NVE_API int GetSelectedIndex() const;
+        NVE_API void SetSelectedIndex(int index);
 
-        void Update(Game* game) override;
-        void Draw(Game* game) override;
+        NVE_API void Update(Game* game) override;
+        NVE_API void Draw(Game* game) override;
 
-        void SetRowHeight(int height)
+        NVE_API void SetRowHeight(int height)
         {
             mRowHeight = height;
         }
-        void SetHeaderHeight(int height)
+        NVE_API void SetHeaderHeight(int height)
         {
             mHeaderHeight = height;
         }
 
-        void SetOnSelectionChanged(std::function<void(int)> callback);
+        NVE_API void SetOnSelectionChanged(std::function<void(int)> callback);
 
-        const std::vector<Column>& GetColumns() const
+        NVE_API const std::vector<Column>& GetColumns() const
         {
             return mColumns;
         }
-        const std::vector<std::vector<std::string>>& GetRows() const
+        NVE_API const std::vector<std::vector<std::string>>& GetRows() const
         {
             return mRows;
         }
-        int GetHeaderHeight() const
+        NVE_API int GetHeaderHeight() const
         {
             return mHeaderHeight;
         }
-        int GetRowHeight() const
+        NVE_API int GetRowHeight() const
         {
             return mRowHeight;
         }
-        int GetScrollOffset() const
+        NVE_API int GetScrollOffset() const
         {
             return mScrollOffset;
         }
-        bool IsUpPressed() const
+        NVE_API bool IsUpPressed() const
         {
             return mUpPressed;
         }
-        bool IsDownPressed() const
+        NVE_API bool IsDownPressed() const
         {
             return mDownPressed;
         }
 
-        void SetColumnWidth(int index, int width);
+        NVE_API void SetColumnWidth(int index, int width);
 
     private:
         std::vector<Column> mColumns;

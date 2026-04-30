@@ -11,8 +11,8 @@ namespace nuvelocity
     class ParticleType : public Object<ParticleType>
     {
     public:
-        ParticleType();
-        ~ParticleType();
+        NVE_API ParticleType();
+        NVE_API ~ParticleType();
 
         static void InitClassInfo(ClassInfo& info)
         {
@@ -21,22 +21,22 @@ namespace nuvelocity
             AddProperty(info, "Weight", &ParticleType::mWeight);
         }
 
-        std::string GetParticleType() const
+        NVE_API std::string GetParticleType() const
         {
             return mParticleType;
         }
 
-        int GetWeight() const
+        NVE_API int GetWeight() const
         {
             return mWeight;
         }
 
-        Sequence* GetSequence() const
+        NVE_API Sequence* GetSequence() const
         {
             return mSequence;
         }
 
-        void SetSequence(Sequence* sequence)
+        NVE_API void SetSequence(Sequence* sequence)
         {
             mSequence = sequence;
         }

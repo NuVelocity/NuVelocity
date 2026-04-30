@@ -1,6 +1,7 @@
 #ifndef NVE_UI_TEXT_BOX_H
 #define NVE_UI_TEXT_BOX_H
 
+#include "API.h"
 #include "Widget.h"
 
 #include <functional>
@@ -22,28 +23,28 @@ namespace nuvelocity
             int fontPointSize = 12;
         };
 
-        TextBox();
+        NVE_API TextBox();
 
-        void Update(Game* game) override;
-        void Draw(Game* game) override;
+        NVE_API void Update(Game* game) override;
+        NVE_API void Draw(Game* game) override;
 
-        void SetText(const std::string& text);
-        const std::string& GetText() const;
+        NVE_API void SetText(const std::string& text);
+        NVE_API const std::string& GetText() const;
 
-        void SetReadOnly(bool readOnly);
-        bool IsReadOnly() const;
+        NVE_API void SetReadOnly(bool readOnly);
+        NVE_API bool IsReadOnly() const;
 
-        void SetFocused(bool focused);
-        bool IsFocused() const;
+        NVE_API void SetFocused(bool focused);
+        NVE_API bool IsFocused() const;
 
-        void SetMaxLength(std::size_t maxLength);
-        std::size_t GetMaxLength() const;
+        NVE_API void SetMaxLength(std::size_t maxLength);
+        NVE_API std::size_t GetMaxLength() const;
 
-        void SetOnTextChanged(const std::function<void(const std::string&)>& callback);
-        void SetOnSubmit(const std::function<void(const std::string&)>& callback);
+        NVE_API void SetOnTextChanged(const std::function<void(const std::string&)>& callback);
+        NVE_API void SetOnSubmit(const std::function<void(const std::string&)>& callback);
 
-        void SetStyle(const Style& style);
-        const Style& GetTextBoxStyle() const;
+        NVE_API void SetStyle(const Style& style);
+        NVE_API const Style& GetTextBoxStyle() const;
 
     private:
         std::string mText;

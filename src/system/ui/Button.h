@@ -1,6 +1,7 @@
 #ifndef NVE_UI_BUTTON_H
 #define NVE_UI_BUTTON_H
 
+#include "API.h"
 #include "Widget.h"
 
 #include <functional>
@@ -21,29 +22,29 @@ namespace nuvelocity
             bool showFocusRing = true;
         };
 
-        Button();
-        explicit Button(const std::string& caption);
+        NVE_API Button();
+        NVE_API explicit Button(const std::string& caption);
 
-        void Update(Game* game) override;
-        void Draw(Game* game) override;
+        NVE_API void Update(Game* game) override;
+        NVE_API void Draw(Game* game) override;
 
-        void SetCaption(const std::string& caption);
-        const std::string& GetCaption() const;
-        const std::string& GetDisplayCaption() const;
-        SDL_Scancode GetMnemonicScancode() const;
-        int GetMnemonicIndex() const;
+        NVE_API void SetCaption(const std::string& caption);
+        NVE_API const std::string& GetCaption() const;
+        NVE_API const std::string& GetDisplayCaption() const;
+        NVE_API SDL_Scancode GetMnemonicScancode() const;
+        NVE_API int GetMnemonicIndex() const;
 
-        void SetFocused(bool focused);
-        bool IsFocused() const;
+        NVE_API void SetFocused(bool focused);
+        NVE_API bool IsFocused() const;
 
-        void SetOnClick(const std::function<void(Game*)>& callback);
-        virtual void Activate(Game* game);
+        NVE_API void SetOnClick(const std::function<void(Game*)>& callback);
+        NVE_API virtual void Activate(Game* game);
 
-        void SetStyle(const Style& style);
-        const Style& GetButtonStyle() const;
+        NVE_API void SetStyle(const Style& style);
+        NVE_API const Style& GetButtonStyle() const;
 
-        bool IsHovered() const;
-        bool IsPressed() const;
+        NVE_API bool IsHovered() const;
+        NVE_API bool IsPressed() const;
 
     protected:
         bool mHovered;

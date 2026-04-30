@@ -3,6 +3,7 @@
 
 #include "API.h"
 #include "Colors.h"
+#include "Font.h"
 #include "Manager.h"
 #include "TextAlignment.h"
 
@@ -15,40 +16,29 @@
 
 namespace nuvelocity
 {
-    class Font;
     class SpriteBatch;
 
     class FontManager : public Manager
     {
     public:
-        FontManager() = default;
-        ~FontManager();
+        NVE_API FontManager() = default;
+        NVE_API ~FontManager();
 
-        bool Initialize(char** argv) override;
+        NVE_API bool Initialize(char** argv) override;
 
-        bool RegisterFont(const std::string& name, std::unique_ptr<Font>&& font);
-        bool SetDefaultFont(const std::string& name);
-        bool SetFallbackFont(const std::string& name);
+        NVE_API bool RegisterFont(const std::string& name, std::unique_ptr<Font>&& font);
+        NVE_API bool SetDefaultFont(const std::string& name);
+        NVE_API bool SetFallbackFont(const std::string& name);
 
-        bool MeasureString(const std::string& text, int pointSize, int& width, int& height) const;
-        bool MeasureStringWithFont(const std::string& fontName,
-                                   const std::string& text,
-                                   int pointSize,
-                                   int& width,
-                                   int& height) const;
+        NVE_API bool
+        MeasureString(const std::string& text, int pointSize, int& width, int& height) const;
+        NVE_API bool MeasureStringWithFont(const std::string& fontName,
+                                           const std::string& text,
+                                           int pointSize,
+                                           int& width,
+                                           int& height) const;
 
-        void DrawString(SpriteBatch* batch,
-                        const std::string& text,
-                        const SDL_Rect& bounds,
-                        const SDL_Color& color,
-                        int pointSize,
-                        TextAlignment alignment = TextAlignment::Left,
-                        bool verticalCenter = false,
-                        int underlineIndex = -1,
-                        const SDL_Color& underlineColor = Colors::White) const;
-
-        void DrawStringWithFont(const std::string& fontName,
-                                SpriteBatch* batch,
+        NVE_API void DrawString(SpriteBatch* batch,
                                 const std::string& text,
                                 const SDL_Rect& bounds,
                                 const SDL_Color& color,
@@ -58,19 +48,18 @@ namespace nuvelocity
                                 int underlineIndex = -1,
                                 const SDL_Color& underlineColor = Colors::White) const;
 
-        void DrawStringAt(SpriteBatch* batch,
-                          const std::string& text,
-                          int x,
-                          int y,
-                          const SDL_Color& color,
-                          int pointSize,
-                          TextAlignment alignment = TextAlignment::Left,
-                          const SDL_Rect* clipRect = nullptr,
-                          int underlineIndex = -1,
-                          const SDL_Color& underlineColor = Colors::White) const;
+        NVE_API void DrawStringWithFont(const std::string& fontName,
+                                        SpriteBatch* batch,
+                                        const std::string& text,
+                                        const SDL_Rect& bounds,
+                                        const SDL_Color& color,
+                                        int pointSize,
+                                        TextAlignment alignment = TextAlignment::Left,
+                                        bool verticalCenter = false,
+                                        int underlineIndex = -1,
+                                        const SDL_Color& underlineColor = Colors::White) const;
 
-        void DrawStringWithFontAt(const std::string& fontName,
-                                  SpriteBatch* batch,
+        NVE_API void DrawStringAt(SpriteBatch* batch,
                                   const std::string& text,
                                   int x,
                                   int y,
@@ -80,6 +69,18 @@ namespace nuvelocity
                                   const SDL_Rect* clipRect = nullptr,
                                   int underlineIndex = -1,
                                   const SDL_Color& underlineColor = Colors::White) const;
+
+        NVE_API void DrawStringWithFontAt(const std::string& fontName,
+                                          SpriteBatch* batch,
+                                          const std::string& text,
+                                          int x,
+                                          int y,
+                                          const SDL_Color& color,
+                                          int pointSize,
+                                          TextAlignment alignment = TextAlignment::Left,
+                                          const SDL_Rect* clipRect = nullptr,
+                                          int underlineIndex = -1,
+                                          const SDL_Color& underlineColor = Colors::White) const;
 
     private:
         Font* FindFont(const std::string& name) const;

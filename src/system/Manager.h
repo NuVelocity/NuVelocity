@@ -10,18 +10,18 @@ namespace nuvelocity
     class Manager
     {
     public:
-        virtual ~Manager() = default;
-        virtual bool Initialize(char** argv) = 0;
+        NVE_API virtual ~Manager() = default;
+        NVE_API virtual bool Initialize(char** argv) = 0;
 
     protected:
         bool mInitialized;
 
-        Manager()
+        NVE_API Manager()
                 : mInitialized(false)
         {
         }
-        Manager(const Manager&) = delete;
-        Manager& operator=(const Manager&) = delete;
+        NVE_API Manager(const Manager&) = delete;
+        NVE_API Manager& operator=(const Manager&) = delete;
 
         inline bool WarnIfAlreadyInitialized(const char* managerName)
         {

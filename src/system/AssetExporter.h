@@ -1,6 +1,7 @@
 #ifndef NVE_ASSET_EXPORTER_H
 #define NVE_ASSET_EXPORTER_H
 
+#include "API.h"
 #include "Sequence.h"
 #include "StandAloneFrame.h"
 
@@ -15,9 +16,9 @@ namespace nuvelocity
     class AssetExporter
     {
     public:
-        static bool ExportStandAloneFrameToTga(const std::string& path,
-                                               const StandAloneFrame& frame);
-        static bool ExportSequenceToTga(const std::string& path, const Sequence& sequence);
+        NVE_API static bool ExportStandAloneFrameToTga(const std::string& path,
+                                                       const StandAloneFrame& frame);
+        NVE_API static bool ExportSequenceToTga(const std::string& path, const Sequence& sequence);
 
     private:
         static bool WriteAll(PHYSFS_File* file, const void* data, size_t dataSize);

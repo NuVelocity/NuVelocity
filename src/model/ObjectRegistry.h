@@ -1,6 +1,7 @@
 #ifndef NVE_OBJECT_REGISTRY_H
 #define NVE_OBJECT_REGISTRY_H
 
+#include "API.h"
 #include "ClassInfo.h"
 #include <stdexcept>
 #include <string>
@@ -8,7 +9,7 @@
 
 namespace nuvelocity
 {
-    class ObjectRegistry
+    class NVE_API ObjectRegistry
     {
     private:
         ObjectRegistry() = default;

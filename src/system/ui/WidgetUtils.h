@@ -1,6 +1,7 @@
 #ifndef NVE_UI_WIDGET_UTILS_H
 #define NVE_UI_WIDGET_UTILS_H
 
+#include "API.h"
 #include <SDL3/SDL.h>
 
 namespace nuvelocity
@@ -26,35 +27,37 @@ namespace nuvelocity
             SDL_Color bottomRightOuter = SDL_Color{.r = 0, .g = 0, .b = 0, .a = 128};
         };
 
-        static void FillRect(SpriteBatch* batch, const SDL_Rect& rect, const SDL_Color& color);
-        static void DrawRect(SpriteBatch* batch, const SDL_Rect& rect, const SDL_Color& color);
-        static void
+        NVE_API static void
+        FillRect(SpriteBatch* batch, const SDL_Rect& rect, const SDL_Color& color);
+        NVE_API static void
+        DrawRect(SpriteBatch* batch, const SDL_Rect& rect, const SDL_Color& color);
+        NVE_API static void
         DrawTiledFrame(SpriteBatch* batch, StandAloneFrame* frame, const SDL_Rect& area);
-        static void
+        NVE_API static void
         DrawTiledFrameH(SpriteBatch* batch, StandAloneFrame* frame, const SDL_Rect& area);
-        static void
+        NVE_API static void
         DrawTiledFrameV(SpriteBatch* batch, StandAloneFrame* frame, const SDL_Rect& area);
-        static void DrawTiledFramePart(SpriteBatch* batch,
-                                       StandAloneFrame* frame,
-                                       const SDL_Rect& area,
-                                       const SDL_Rect& srcRect);
-        static void DrawTiledFramePartH(SpriteBatch* batch,
-                                        StandAloneFrame* frame,
-                                        const SDL_Rect& area,
-                                        const SDL_Rect& srcRect);
-        static void DrawTiledFramePartV(SpriteBatch* batch,
-                                        StandAloneFrame* frame,
-                                        const SDL_Rect& area,
-                                        const SDL_Rect& srcRect);
-        static void DrawBevel(SpriteBatch* batch,
-                              const SDL_Rect& rect,
-                              const BevelColors& colors,
-                              bool sunken,
-                              int thickness);
-        static void DrawBorder(SpriteBatch* batch,
-                               const SDL_Rect& rect,
-                               const BorderColors& colors,
-                               int thickness);
+        NVE_API static void DrawTiledFramePart(SpriteBatch* batch,
+                                               StandAloneFrame* frame,
+                                               const SDL_Rect& area,
+                                               const SDL_Rect& srcRect);
+        NVE_API static void DrawTiledFramePartH(SpriteBatch* batch,
+                                                StandAloneFrame* frame,
+                                                const SDL_Rect& area,
+                                                const SDL_Rect& srcRect);
+        NVE_API static void DrawTiledFramePartV(SpriteBatch* batch,
+                                                StandAloneFrame* frame,
+                                                const SDL_Rect& area,
+                                                const SDL_Rect& srcRect);
+        NVE_API static void DrawBevel(SpriteBatch* batch,
+                                      const SDL_Rect& rect,
+                                      const BevelColors& colors,
+                                      bool sunken,
+                                      int thickness);
+        NVE_API static void DrawBorder(SpriteBatch* batch,
+                                       const SDL_Rect& rect,
+                                       const BorderColors& colors,
+                                       int thickness);
     };
 } // namespace nuvelocity
 

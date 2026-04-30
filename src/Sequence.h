@@ -1,6 +1,7 @@
 #ifndef NVE_SEQUENCE_H
 #define NVE_SEQUENCE_H
 
+#include "API.h"
 #include "AssetSource.h"
 #include "BlitType.h"
 #include "Frame.h"
@@ -29,35 +30,35 @@ namespace nuvelocity
     class Sequence : public Object<Sequence>
     {
     public:
-        Sequence();
-        explicit Sequence(ImagePropertyListFormat format);
-        ~Sequence();
+        NVE_API Sequence();
+        NVE_API explicit Sequence(ImagePropertyListFormat format);
+        NVE_API ~Sequence();
 
-        int GetXOffset() const;
-        int GetYOffset() const;
-        bool GetCenterHotSpot() const;
+        NVE_API int GetXOffset() const;
+        NVE_API int GetYOffset() const;
+        NVE_API bool GetCenterHotSpot() const;
 
-        void SetFrames(std::vector<std::unique_ptr<Frame>>&& frames);
+        NVE_API void SetFrames(std::vector<std::unique_ptr<Frame>>&& frames);
 
         NVE_API SDL_Point GetAnchor() const;
         NVE_API void SetAnchor(int x, int y);
 
-        std::size_t GetFrameCount() const;
-        float GetFramesPerSecond() const;
-        Frame* GetFrame(std::size_t index) const;
-        SDL_Surface* GetSurface(std::size_t index) const;
-        SDL_Texture* GetTexture(std::size_t index, SDL_Renderer* renderer) const;
+        NVE_API std::size_t GetFrameCount() const;
+        NVE_API float GetFramesPerSecond() const;
+        NVE_API Frame* GetFrame(std::size_t index) const;
+        NVE_API SDL_Surface* GetSurface(std::size_t index) const;
+        NVE_API SDL_Texture* GetTexture(std::size_t index, SDL_Renderer* renderer) const;
 
-        void SetSource(AssetSource source);
-        AssetSource GetSource() const;
-        bool IsSourceCache() const;
-        bool IsSourceAsset() const;
+        NVE_API void SetSource(AssetSource source);
+        NVE_API AssetSource GetSource() const;
+        NVE_API bool IsSourceCache() const;
+        NVE_API bool IsSourceAsset() const;
 
 #ifdef NVE_RESTORE_TGA
-        void SetRawListText(std::string text);
-        const std::string& GetRawListText() const;
-        void SetSpriteAtlas(SDL_Surface* atlas);
-        SDL_Surface* GetSpriteAtlas() const;
+        NVE_API void SetRawListText(std::string text);
+        NVE_API const std::string& GetRawListText() const;
+        NVE_API void SetSpriteAtlas(SDL_Surface* atlas);
+        NVE_API SDL_Surface* GetSpriteAtlas() const;
 #endif
 
         static void InitClassInfo(ClassInfo& info)
@@ -113,11 +114,11 @@ namespace nuvelocity
 #endif
         }
 
-        void ApplySequenceFlags(SequenceFlags flags);
-        void ApplyFrameInfoList(SequenceFlags flags,
-                                int rawBlitType,
-                                float framesPerSecond,
-                                BlitTypeRevision revision);
+        NVE_API void ApplySequenceFlags(SequenceFlags flags);
+        NVE_API void ApplyFrameInfoList(SequenceFlags flags,
+                                        int rawBlitType,
+                                        float framesPerSecond,
+                                        BlitTypeRevision revision);
 
     private:
 #if 0

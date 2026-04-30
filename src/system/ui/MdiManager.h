@@ -1,6 +1,7 @@
 #ifndef NVE_UI_MDI_MANAGER_H
 #define NVE_UI_MDI_MANAGER_H
 
+#include "API.h"
 #include "Manager.h"
 
 #include <SDL3/SDL.h>
@@ -20,28 +21,28 @@ namespace nuvelocity
     class MdiManager : public Manager
     {
     public:
-        MdiManager() = default;
-        ~MdiManager() override;
+        NVE_API MdiManager() = default;
+        NVE_API ~MdiManager() override;
 
-        bool Initialize(char** argv) override;
+        NVE_API bool Initialize(char** argv) override;
 
-        void AddWindow(const std::shared_ptr<MdiWindow>& window);
-        void AddCenteredWindow(Game* game, const std::shared_ptr<MdiWindow>& window);
-        void RemoveWindow(const std::shared_ptr<MdiWindow>& window);
-        void Clear();
+        NVE_API void AddWindow(const std::shared_ptr<MdiWindow>& window);
+        NVE_API void AddCenteredWindow(Game* game, const std::shared_ptr<MdiWindow>& window);
+        NVE_API void RemoveWindow(const std::shared_ptr<MdiWindow>& window);
+        NVE_API void Clear();
 
-        void Update(Game* game);
-        void Draw(Game* game);
+        NVE_API void Update(Game* game);
+        NVE_API void Draw(Game* game);
 
-        const std::vector<std::shared_ptr<MdiWindow>>& GetWindows() const;
-        std::shared_ptr<MdiWindow> GetActiveWindow() const;
-        void SetActiveWindow(const std::shared_ptr<MdiWindow>& window);
+        NVE_API const std::vector<std::shared_ptr<MdiWindow>>& GetWindows() const;
+        NVE_API std::shared_ptr<MdiWindow> GetActiveWindow() const;
+        NVE_API void SetActiveWindow(const std::shared_ptr<MdiWindow>& window);
 
-        void RegisterSkin(const std::string& name, JWindowSkin* skin);
-        JWindowSkin* GetSkin(const std::string& name) const;
+        NVE_API void RegisterSkin(const std::string& name, JWindowSkin* skin);
+        NVE_API JWindowSkin* GetSkin(const std::string& name) const;
 
-        void SetDefaultSkin(JWindowSkin* skin);
-        JWindowSkin* GetDefaultSkin() const;
+        NVE_API void SetDefaultSkin(JWindowSkin* skin);
+        NVE_API JWindowSkin* GetDefaultSkin() const;
 
     private:
         std::vector<std::shared_ptr<MdiWindow>> mWindows;
