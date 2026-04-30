@@ -110,6 +110,7 @@ namespace nuvelocity
         {
             if (activeWindow != nullptr)
             {
+                input.ConsumeKey(SDL_SCANCODE_ESCAPE);
                 activeWindow->Close();
             }
         }
