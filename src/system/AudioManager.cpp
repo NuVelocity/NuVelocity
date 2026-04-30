@@ -49,6 +49,7 @@ namespace nuvelocity
             return true;
         }
         auto* music = MIX_LoadAudio_IO(mMixer, data->stream, false, true);
+        data->stream = nullptr;
         if (music == nullptr)
         {
             SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to load BGM track: %s", SDL_GetError());
@@ -87,6 +88,7 @@ namespace nuvelocity
         }
         auto* track = MIX_CreateTrack(mMixer);
         auto* sfx = MIX_LoadAudio_IO(mMixer, data->stream, false, true);
+        data->stream = nullptr;
         if (sfx == nullptr)
         {
             SDL_LogError(NVE_LOG_CATEGORY_ENGINE, "Failed to load SFX track: %s", SDL_GetError());
