@@ -34,7 +34,8 @@ namespace nuvelocity
                                   const ParticleGeneratorInfo* info,
                                   const std::vector<ParticleType*>* customTypes,
                                   float baseAngle,
-                                  float posVariation)
+                                  float posVariation,
+                                  float lifeMultiplier)
     {
         if (info == nullptr)
         {
@@ -65,7 +66,8 @@ namespace nuvelocity
         std::uniform_int_distribution<> weightDist(0, totalWeight - 1);
         std::uniform_real_distribution<float> angleDist(-info->GetConeAngle() * 0.5F,
                                                         info->GetConeAngle() * 0.5F);
-        std::uniform_real_distribution<float> lifeDist(0.2F, 0.6F);
+        std::uniform_real_distribution<float> lifeDist(0.2F * lifeMultiplier,
+                                                       0.6F * lifeMultiplier);
         std::uniform_real_distribution<float> speedVar(0.3F, 1.1F);
         std::uniform_real_distribution<float> posVar(-posVariation, posVariation);
 

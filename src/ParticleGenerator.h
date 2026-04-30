@@ -24,7 +24,8 @@ namespace nuvelocity
                    const nuvelocity::ParticleGeneratorInfo* info,
                    const std::vector<ParticleType*>* customTypes = nullptr,
                    float baseAngle = 0.0F,
-                   float posVariation = 0.0F);
+                   float posVariation = 0.0F,
+                   float lifeMultiplier = 1.0F);
 
         bool IsFinished() const
         {
