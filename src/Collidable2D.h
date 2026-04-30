@@ -22,7 +22,7 @@ namespace nuvelocity
             mPosition = pos;
         }
 
-        const SDL_FPoint& GetPosition() const
+        virtual SDL_FPoint GetPosition() const
         {
             return mPosition;
         }
