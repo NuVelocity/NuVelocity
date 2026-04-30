@@ -5,7 +5,7 @@ namespace nuvelocity
     SequenceFrameInfoList::SequenceFrameInfoList()
             : mHasTextBlitType(false)
             , mWasRle(false)
-            , mFlags(0)
+            , mFlags(static_cast<SequenceFlags>(0))
             , mBlitType(BlitTransparentMask)
             , mFramesPerSecond(kSequenceDefaultFramesPerSecond)
     {
@@ -22,8 +22,7 @@ namespace nuvelocity
 
     void SequenceFrameInfoList::CopyTo(Sequence& sequence, BlitTypeRevision revision) const
     {
-        SequenceFlags flags = static_cast<SequenceFlags>(mFlags);
-        sequence.ApplyFrameInfoList(flags, mBlitType, mFramesPerSecond, revision);
+        sequence.ApplyFrameInfoList(mFlags, mBlitType, mFramesPerSecond, revision);
     }
 
     const std::vector<FrameInfo*>& SequenceFrameInfoList::GetValues() const

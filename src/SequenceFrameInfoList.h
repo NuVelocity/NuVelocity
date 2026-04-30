@@ -5,6 +5,7 @@
 #include "FrameInfo.h"
 #include "Object.h"
 #include "Sequence.h"
+#include "SequenceFlags.h"
 #include <vector>
 
 namespace nuvelocity
@@ -20,7 +21,10 @@ namespace nuvelocity
             info.mName = "CSequenceFrameInfoList";
             AddProperty(info, "Frame Infos", &SequenceFrameInfoList::mValues, "Frame Info");
             AddProperty(info, "WasRLE", &SequenceFrameInfoList::mWasRle);
-            AddProperty(info, "Flags", &SequenceFrameInfoList::mFlags);
+            AddProperty(
+                info,
+                "Flags",
+                reinterpret_cast<int SequenceFrameInfoList::*>(&SequenceFrameInfoList::mFlags));
             AddEnumProperty(
                 info, "BlitType", &SequenceFrameInfoList::mBlitType, GetBlitTypeSerializedValues());
             AddEnumProperty(info,
@@ -37,7 +41,7 @@ namespace nuvelocity
         bool mHasTextBlitType;
         std::vector<FrameInfo*> mValues;
         bool mWasRle;
-        int mFlags;
+        SequenceFlags mFlags;
         int mBlitType;
         float mFramesPerSecond;
     };
