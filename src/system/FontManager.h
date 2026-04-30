@@ -26,7 +26,7 @@ namespace nuvelocity
 
         NVE_API bool Initialize(char** argv) override;
 
-        NVE_API bool RegisterFont(const std::string& name, std::unique_ptr<Font>&& font);
+        NVE_API bool RegisterFont(const std::string& name, Font* font);
         NVE_API bool SetDefaultFont(const std::string& name);
         NVE_API bool SetFallbackFont(const std::string& name);
 
@@ -86,7 +86,7 @@ namespace nuvelocity
         Font* FindFont(const std::string& name) const;
         const Font* GetActiveFont() const;
 
-        mutable std::unordered_map<std::string, std::unique_ptr<Font>> mFonts;
+        mutable std::unordered_map<std::string, Font*> mFonts;
         mutable Font* mDefaultFont = nullptr;
         mutable Font* mFallbackFont = nullptr;
     };

@@ -111,7 +111,7 @@ namespace nuvelocity
             {
                 continue;
             }
-            fontManager->RegisterFont(name, std::unique_ptr<Font>(static_cast<Font*>(bitmapFont)));
+            fontManager->RegisterFont(name, bitmapFont);
             hasAnyFont = true;
         }
 
@@ -124,7 +124,7 @@ namespace nuvelocity
             {
                 continue;
             }
-            fontManager->RegisterFont(name, std::unique_ptr<Font>(font));
+            fontManager->RegisterFont(name, font);
             hasAnyFont = true;
         }
 

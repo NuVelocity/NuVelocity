@@ -37,14 +37,14 @@ namespace nuvelocity
         return true;
     }
 
-    bool FontManager::RegisterFont(const std::string& name, std::unique_ptr<Font>&& font)
+    bool FontManager::RegisterFont(const std::string& name, Font* font)
     {
         if (name.empty() || font == nullptr)
         {
             return false;
         }
 
-        mFonts[name] = std::move(font);
+        mFonts[name] = font;
         return true;
     }
 
@@ -85,7 +85,7 @@ namespace nuvelocity
             return nullptr;
         }
 
-        return fontIt->second.get();
+        return fontIt->second;
     }
 
     const Font* FontManager::GetActiveFont() const
