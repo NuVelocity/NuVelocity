@@ -527,16 +527,19 @@ namespace nuvelocity
                     "correcting the asset reference if this warning appears frequently.",
                     path.c_str());
 
-        std::filesystem::path oldPath(path);
-        if (oldPath.has_parent_path() && oldPath.parent_path().has_parent_path())
+        size_t lastSlash = path.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
         {
-            std::filesystem::path newPath =
-                oldPath.parent_path().parent_path() / oldPath.filename();
-            if (newPath == oldPath)
+            size_t secondLastSlash = path.find_last_of("/\\", lastSlash - 1);
+            if (secondLastSlash != std::string::npos)
             {
-                return nullptr; // Prevent infinite loop
+                std::string newPath =
+                    path.substr(0, secondLastSlash + 1) + path.substr(lastSlash + 1);
+                if (newPath != path)
+                {
+                    return TryLoadStandAloneFrame(newPath);
+                }
             }
-            return TryLoadStandAloneFrame(newPath.string());
         }
 
         return nullptr;
@@ -555,16 +558,19 @@ namespace nuvelocity
                     "correcting the asset reference if this warning appears frequently.",
                     path.c_str());
 
-        std::filesystem::path oldPath(path);
-        if (oldPath.has_parent_path() && oldPath.parent_path().has_parent_path())
+        size_t lastSlash = path.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
         {
-            std::filesystem::path newPath =
-                oldPath.parent_path().parent_path() / oldPath.filename();
-            if (newPath == oldPath)
+            size_t secondLastSlash = path.find_last_of("/\\", lastSlash - 1);
+            if (secondLastSlash != std::string::npos)
             {
-                return nullptr;
+                std::string newPath =
+                    path.substr(0, secondLastSlash + 1) + path.substr(lastSlash + 1);
+                if (newPath != path)
+                {
+                    return TryLoadSequence(newPath);
+                }
             }
-            return TryLoadSequence(newPath.string());
         }
 
         return nullptr;
