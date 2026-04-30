@@ -720,13 +720,21 @@ namespace nuvelocity
             return nullptr;
         }
 
-        std::string effectsPath = "Resources/Effects/" + path;
+        // FIXME: this is a hack for an outdated path used in RX.
+        std::string resolvedPath = path;
+        size_t pos = resolvedPath.find("Player Parts/");
+        if (pos != std::string::npos)
+        {
+            resolvedPath.replace(pos, 13, "Player Ship/");
+        }
+
+        std::string effectsPath = "Resources/Effects/" + resolvedPath;
         Sequence* sequence = LoadSequence(effectsPath);
         if (sequence != nullptr)
         {
             return sequence;
         }
-        return LoadSequence("Resources/" + path);
+        return LoadSequence("Resources/" + resolvedPath);
     }
 
     JWindowSkin* AssetManager::LoadWindowSkin(const std::string& path)
