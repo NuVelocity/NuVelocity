@@ -244,6 +244,11 @@ namespace nuvelocity
                 PropertySerializer::Deserialize(propertiesText, dest);
             }
 
+            if (frame->GetDoDither())
+            {
+                DecodeUtils::DitherSurface(frame->GetSurface());
+            }
+
             frame->SetSource(loadedFromCache ? AssetSource::Cache : AssetSource::SourceAsset);
 #ifdef NVE_RESTORE_TGA
             if (loadedFromCache && mRestoreMode &&

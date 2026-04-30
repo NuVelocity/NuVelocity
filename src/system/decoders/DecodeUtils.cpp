@@ -127,6 +127,10 @@ namespace nuvelocity
             }
 
             SDL_SetSurfaceBlendMode(frameSurface, SDL_BLENDMODE_BLEND);
+            if (sequence->GetDoDither())
+            {
+                DecodeUtils::DitherSurface(frameSurface);
+            }
             frames[i] = std::make_unique<Frame>();
             frames[i]->SetSurface(frameSurface);
             frames[i]->SetHotSpot(offsetX, offsetY);
@@ -438,5 +442,61 @@ namespace nuvelocity
 
         SDL_ClearSurface(surface, 0.0F, 0.0F, 0.0F, 0.0F);
         return surface;
+    }
+
+    static int Quantize(int val, int levels)
+    {
+        const int q = (std::clamp(val, 0, 255) * (levels - 1) + 127) / 255;
+        return (q * 255) / (levels - 1);
+    }
+
+    static void DistributeError(std::vector<int16_t>& err, int er, int x, int y, int w)
+    {
+        err[y * (w + 2) + x + 2] += static_cast<int16_t>((er * 7) / 16);
+        err[(y + 1) * (w + 2) + x] += static_cast<int16_t>((er * 3) / 16);
+        err[(y + 1) * (w + 2) + x + 1] += static_cast<int16_t>((er * 5) / 16);
+        err[(y + 1) * (w + 2) + x + 2] += static_cast<int16_t>((er * 1) / 16);
+    }
+
+    void DecodeUtils::DitherSurface(SDL_Surface* surface)
+    {
+        if (surface == nullptr || surface->format != SDL_PIXELFORMAT_RGBA32)
+        {
+            return;
+        }
+
+        constexpr int kDitherLevels = 27;
+        const int w = surface->w;
+        const int h = surface->h;
+        uint8_t* pixels = static_cast<uint8_t*>(surface->pixels);
+        const int pitch = surface->pitch;
+
+        std::vector<int16_t> rError((w + 2) * (h + 1), 0);
+        std::vector<int16_t> gError((w + 2) * (h + 1), 0);
+        std::vector<int16_t> bError((w + 2) * (h + 1), 0);
+
+        for (int y = 0; y < h; ++y)
+        {
+            for (int x = 0; x < w; ++x)
+            {
+                uint8_t* p = pixels + y * pitch + x * 4;
+
+                int r = p[0] + rError[y * (w + 2) + x + 1];
+                int g = p[1] + gError[y * (w + 2) + x + 1];
+                int b = p[2] + bError[y * (w + 2) + x + 1];
+
+                int nr = Quantize(r, kDitherLevels);
+                int ng = Quantize(g, kDitherLevels);
+                int nb = Quantize(b, kDitherLevels);
+
+                p[0] = static_cast<uint8_t>(nr);
+                p[1] = static_cast<uint8_t>(ng);
+                p[2] = static_cast<uint8_t>(nb);
+
+                DistributeError(rError, r - nr, x, y, w);
+                DistributeError(gError, g - ng, x, y, w);
+                DistributeError(bError, b - nb, x, y, w);
+            }
+        }
     }
 } // namespace nuvelocity

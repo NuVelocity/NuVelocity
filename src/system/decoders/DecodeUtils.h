@@ -116,6 +116,7 @@ namespace nuvelocity
                                          SequenceFrameInfoList* frameInfoList,
                                          SDL_Surface* spriteAtlas);
         static SDL_Surface* BuildTransparentSurface(int width, int height);
+        static void DitherSurface(SDL_Surface* surface);
     };
 } // namespace nuvelocity
 

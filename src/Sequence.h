@@ -53,6 +53,10 @@ namespace nuvelocity
         NVE_API AssetSource GetSource() const;
         NVE_API bool IsSourceCache() const;
         NVE_API bool IsSourceAsset() const;
+        NVE_API bool GetDoDither() const
+        {
+            return mDoDither;
+        }
 
 #ifdef NVE_RESTORE_TGA
         NVE_API void SetRawListText(std::string text);
