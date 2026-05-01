@@ -318,7 +318,7 @@ namespace nuvelocity
                                                             .bottomRightInner = mTopOuterColor,
                                                             .bottomRightOuter = mTopInnerColor};
 
-        WidgetUtils::DrawBorder(spriteBatch, rect, borderColors, mTextureMargin);
+        WidgetUtils::DrawBevel(spriteBatch, rect, borderColors, mTextureMargin);
     }
 
     void ClassicSkinBorder::DrawBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect)
