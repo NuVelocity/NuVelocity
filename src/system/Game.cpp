@@ -311,14 +311,14 @@ namespace nuvelocity
         mLastUpdateTick = now;
 
         HandleDebugHotkeys();
-        if (mScene != nullptr)
-        {
-            mScene->Update(this);
-        }
-
         if (mMdi != nullptr)
         {
             mMdi->Update(this);
+        }
+
+        if (mScene != nullptr)
+        {
+            mScene->Update(this);
         }
 
         if (mPendingScene != nullptr)

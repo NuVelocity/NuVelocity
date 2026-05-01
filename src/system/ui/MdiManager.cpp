@@ -90,6 +90,7 @@ namespace nuvelocity
         }
 
         std::shared_ptr<MdiWindow> activeWindow = GetActiveWindow();
+        bool mouseOverAnyWindow = false;
         for (auto& window : mWindows)
         {
             if (window == nullptr)
@@ -104,6 +105,20 @@ namespace nuvelocity
             {
                 window->Update(game);
             }
+
+            if (window->IsVisible() && window->Intersects(mousePosition))
+            {
+                mouseOverAnyWindow = true;
+            }
+        }
+
+        // Consume mouse pressed/released transitions when the pointer is inside
+        // any visible window so the scene does not receive the same click.
+        // We only clear pressed/released (not down) to keep drag logic intact.
+        if (mouseOverAnyWindow)
+        {
+            input.ConsumeMouseButton(SDL_BUTTON_LEFT);
+            input.ConsumeMouseButton(SDL_BUTTON_RIGHT);
         }
 
         if (input.IsKeyPressed(SDL_SCANCODE_ESCAPE))
