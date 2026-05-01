@@ -3,7 +3,9 @@
 
 #include "model/Object.h"
 
+#include <cstdint>
 #include <string>
+#include <unordered_map>
 
 namespace nuvelocity
 {
@@ -73,6 +75,9 @@ namespace nuvelocity
     private:
         void DrawBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect);
         void DrawHighlights(SpriteBatch* spriteBatch, const SDL_Rect& rect) const;
+
+        // FIXME: Get rid of this in the future.
+        std::unordered_map<uint64_t, SDL_Surface*> mCachedSurfaces;
     };
 } // namespace nuvelocity
 

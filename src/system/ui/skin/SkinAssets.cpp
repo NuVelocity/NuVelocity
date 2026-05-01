@@ -12,7 +12,17 @@ namespace nuvelocity
 {
     AlphaSkinBorder::AlphaSkinBorder() = default;
 
-    AlphaSkinBorder::~AlphaSkinBorder() = default;
+    AlphaSkinBorder::~AlphaSkinBorder()
+    {
+        for (auto& pair : mCachedSurfaces)
+        {
+            if (pair.second != nullptr)
+            {
+                SDL_DestroySurface(pair.second);
+            }
+        }
+        mCachedSurfaces.clear();
+    }
 
     void AlphaSkinBorder::Load(AssetManager* assets)
     {
@@ -131,26 +141,18 @@ namespace nuvelocity
         SDL_DestroySurface(mask);
     }
 
-    void AlphaSkinBorder::DrawBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect)
+    inline SDL_Surface* CreateCompositeSurface(AlphaSkinBorder* border, int areaW, int areaH)
     {
-        if (rect.w <= 0 || rect.h <= 0)
-        {
-            return;
-        }
-
-        const int areaW = rect.w;
-        const int areaH = rect.h;
-
         SDL_Surface* compositeSurface = SDL_CreateSurface(areaW, areaH, SDL_PIXELFORMAT_RGBA32);
         if (compositeSurface == nullptr)
         {
-            return;
+            return nullptr;
         }
 
         // Step 1: Tile the background across the full composite surface
-        if (mBackgroundFrame != nullptr)
+        if (border->mBackgroundFrame != nullptr)
         {
-            SDL_Surface* bgSurface = mBackgroundFrame->GetSurface();
+            SDL_Surface* bgSurface = border->mBackgroundFrame->GetSurface();
             if (bgSurface != nullptr)
             {
                 SDL_SetSurfaceBlendMode(bgSurface, SDL_BLENDMODE_NONE);
@@ -170,32 +172,78 @@ namespace nuvelocity
             SDL_GetPixelFormatDetails(compositeSurface->format);
 
         // Get dimensions for positioning corners correctly
-        const int rwT = (mTopRightAlphaFrame != nullptr) ? mTopRightAlphaFrame->GetWidth() : 0;
-        const int rwB =
-            (mBottomRightAlphaFrame != nullptr) ? mBottomRightAlphaFrame->GetWidth() : 0;
-        const int bhL = (mBottomLeftAlphaFrame != nullptr) ? mBottomLeftAlphaFrame->GetHeight() : 0;
-        const int bhR =
-            (mBottomRightAlphaFrame != nullptr) ? mBottomRightAlphaFrame->GetHeight() : 0;
+        const int rwT =
+            (border->mTopRightAlphaFrame != nullptr) ? border->mTopRightAlphaFrame->GetWidth() : 0;
+        const int rwB = (border->mBottomRightAlphaFrame != nullptr)
+                            ? border->mBottomRightAlphaFrame->GetWidth()
+                            : 0;
+        const int bhL = (border->mBottomLeftAlphaFrame != nullptr)
+                            ? border->mBottomLeftAlphaFrame->GetHeight()
+                            : 0;
+        const int bhR = (border->mBottomRightAlphaFrame != nullptr)
+                            ? border->mBottomRightAlphaFrame->GetHeight()
+                            : 0;
 
         // Apply Corners
-        ApplyAlphaMask(mTopLeftAlphaFrame, 0, 0, areaW, areaH, compositeSurface, dstDetails);
         ApplyAlphaMask(
-            mTopRightAlphaFrame, areaW - rwT, 0, areaW, areaH, compositeSurface, dstDetails);
-        ApplyAlphaMask(
-            mBottomLeftAlphaFrame, 0, areaH - bhL, areaW, areaH, compositeSurface, dstDetails);
-        ApplyAlphaMask(mBottomRightAlphaFrame,
+            border->mTopLeftAlphaFrame, 0, 0, areaW, areaH, compositeSurface, dstDetails);
+        ApplyAlphaMask(border->mTopRightAlphaFrame,
+                       areaW - rwT,
+                       0,
+                       areaW,
+                       areaH,
+                       compositeSurface,
+                       dstDetails);
+        ApplyAlphaMask(border->mBottomLeftAlphaFrame,
+                       0,
+                       areaH - bhL,
+                       areaW,
+                       areaH,
+                       compositeSurface,
+                       dstDetails);
+        ApplyAlphaMask(border->mBottomRightAlphaFrame,
                        areaW - rwB,
                        areaH - bhR,
                        areaW,
                        areaH,
                        compositeSurface,
                        dstDetails);
+        SDL_SetSurfaceBlendMode(compositeSurface, SDL_BLENDMODE_BLEND);
+        return compositeSurface;
+    }
+
+    void AlphaSkinBorder::DrawBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect)
+    {
+        if (rect.w <= 0 || rect.h <= 0)
+        {
+            return;
+        }
+
+        const int areaW = rect.w;
+        const int areaH = rect.h;
+        const uint64_t key = (static_cast<uint64_t>(areaW) << 32) | static_cast<uint64_t>(areaH);
+
+        // FIXME: We are actually caching this twice. Once here, and the other one is in
+        // the sprite batch class as a texture.
+        SDL_Surface* compositeSurface = nullptr;
+        auto it = mCachedSurfaces.find(key);
+        if (it != mCachedSurfaces.end())
+        {
+            compositeSurface = it->second;
+        }
+        else
+        {
+            compositeSurface = CreateCompositeSurface(this, areaW, areaH);
+            if (compositeSurface == nullptr)
+            {
+                return;
+            }
+            mCachedSurfaces[key] = compositeSurface;
+        }
 
         // Step 3: Draw the composite surface to the sprite batch
-        SDL_SetSurfaceBlendMode(compositeSurface, SDL_BLENDMODE_BLEND);
         SDL_Rect compositeDest{.x = rect.x, .y = rect.y, .w = areaW, .h = areaH};
         spriteBatch->Draw(compositeSurface, &compositeDest, nullptr);
-        SDL_DestroySurface(compositeSurface);
     }
 
     void AlphaSkinBorder::DrawTiledBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect)
