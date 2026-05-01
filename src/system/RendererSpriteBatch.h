@@ -1,13 +1,11 @@
 #ifndef NVE_RENDERER_SPRITE_BATCH_H
 #define NVE_RENDERER_SPRITE_BATCH_H
 
-#include <SDL3/SDL.h>
-#include <cstdint>
-#include <unordered_map>
-#include <vector>
-
 #include "Colors.h"
 #include "SpriteBatch.h"
+#include <SDL3/SDL.h>
+#include <unordered_map>
+#include <vector>
 
 namespace nuvelocity
 {
@@ -41,40 +39,37 @@ namespace nuvelocity
 
         void Present() override;
 
+        // Call when a surface's pixels have been modified so the cached
+        // GPU texture gets rebuilt on the next draw.
+        void InvalidateCache(SDL_Surface* surface);
+
     private:
-        enum class CommandType : uint8_t
+        // Cached texture entry. Stores surface->pixels at upload time so we can
+        // detect in-place surface modifications and rebuild automatically.
+        struct CachedTexture
         {
-            DrawSurface,
-            DrawTexture,
-            DrawLine,
-            FillRect,
-            SetClipRect,
-            Clear
+            SDL_Texture* texture = nullptr;
+            void* pixelsSnap = nullptr;
         };
 
-        struct DrawCommand
-        {
-            CommandType type;
-            SDL_Surface* surface;
-            SDL_Texture* texture;
-            bool centered;
-            bool hasDestRect;
-            SDL_Rect destRect;
-            bool hasSrcRect;
-            SDL_Rect srcRect;
-            bool hasClipRect;
-            SDL_Rect clipRect;
-            SDL_Color color;
-            int x1, y1, x2, y2;
-            int thickness;
-            SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND;
-        };
+        // Returns (lazily creating) the GPU texture for a surface.
+        // Rebuilds automatically if surface->pixels has changed since last upload.
+        SDL_Texture* GetOrCreateTexture(SDL_Surface* surface);
 
-        SDL_Renderer* mRenderer;
-        SDL_Window* mWindow;
-        std::vector<DrawCommand> mDrawCommands;
-        std::unordered_map<SDL_Surface*, SDL_Texture*> mTextureCache;
+        SDL_Renderer* mRenderer = nullptr;
+        SDL_Window* mWindow = nullptr;
+
+        // Texture cache
+        std::unordered_map<SDL_Surface*, CachedTexture> mTextureCache;
+
+        // Consecutive sprite draws sharing the same texture + blend mode are
+        // accumulated here and submitted as one SDL_RenderGeometry call.
+        SDL_Texture* mBatchTexture = nullptr;
+        SDL_BlendMode mBatchBlendMode = SDL_BLENDMODE_BLEND;
+        std::vector<SDL_Vertex> mBatchVertices;
+        std::vector<int> mBatchIndices;
     };
+
 } // namespace nuvelocity
 
 #endif // NVE_RENDERER_SPRITE_BATCH_H

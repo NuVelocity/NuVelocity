@@ -14,6 +14,10 @@ namespace nuvelocity
 {
     constexpr float kCenterFactor = 0.5F;
 
+    // Maximum vertices per flush — Uint16 indices cap out at 65535.
+    // We leave a small margin so the overflow check before push_back is simple.
+    constexpr Uint16 kMaxVerticesPerFlush = 65532; // divisible by 4 (one quad)
+
     Uint32 FloatToUint32(float value)
     {
         const long rounded = std::lround(value);
@@ -54,6 +58,11 @@ namespace nuvelocity
             , mCurrentTexture(nullptr)
             , mCurrentBlendMode(SDL_BLENDMODE_BLEND)
             , mHasCurrentClipRect(false)
+            // Persistent GPU buffer state
+            , mVertexGPUBuffer(nullptr)
+            , mIndexGPUBuffer(nullptr)
+            , mVertexGPUBufferCapacity(0)
+            , mIndexGPUBufferCapacity(0)
     {
         if (mDevice != nullptr)
         {
@@ -64,7 +73,7 @@ namespace nuvelocity
     GPUSpriteBatch::~GPUSpriteBatch()
     {
         // Cancel any unsubmitted command buffer — shutdown doesn't need the work
-        // to reach the screen. Submitting would force SDL_DestroyGPUDevice to wait.
+        // to reach the screen.
         if (mCommandBuffer != nullptr)
         {
             mVertexData.clear();
@@ -72,13 +81,14 @@ namespace nuvelocity
             SDL_CancelGPUCommandBuffer(mCommandBuffer);
             mCommandBuffer = nullptr;
         }
+
         if (mDevice != nullptr)
         {
-            for (auto& [surface, texture] : mTextureCache)
+            for (auto& [surface, entry] : mTextureCache)
             {
-                if (texture != nullptr)
+                if (entry.texture != nullptr)
                 {
-                    SDL_ReleaseGPUTexture(mDevice, texture);
+                    SDL_ReleaseGPUTexture(mDevice, entry.texture);
                 }
             }
             mTextureCache.clear();
@@ -99,6 +109,16 @@ namespace nuvelocity
             if (mWhiteTexture != nullptr)
             {
                 SDL_ReleaseGPUTexture(mDevice, mWhiteTexture);
+            }
+
+            // Release persistent GPU buffers
+            if (mVertexGPUBuffer != nullptr)
+            {
+                SDL_ReleaseGPUBuffer(mDevice, mVertexGPUBuffer);
+            }
+            if (mIndexGPUBuffer != nullptr)
+            {
+                SDL_ReleaseGPUBuffer(mDevice, mIndexGPUBuffer);
             }
         }
     }
@@ -126,7 +146,7 @@ namespace nuvelocity
         };
         mSampler = SDL_CreateGPUSampler(mDevice, &samplerInfo);
 
-        // Create and cache the 1x1 white texture for primitives
+        // Create and cache the 1x1 white texture for primitive drawing.
         SDL_Surface* ws = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
         if (ws != nullptr)
         {
@@ -135,8 +155,8 @@ namespace nuvelocity
             EnsureCommandBuffer();
             mWhiteTexture = CreateAndUploadTexture(ws);
             SDL_DestroySurface(ws);
-            // Submit the upload immediately so it doesn't bleed into the first frame's
-            // command buffer, which would mix a copy pass with a swapchain render pass.
+            // Submit the upload immediately so it doesn't bleed into the first
+            // frame's command buffer (mixing copy pass with swapchain render pass).
             SDL_SubmitGPUCommandBuffer(mCommandBuffer);
             mCommandBuffer = nullptr;
         }
@@ -260,6 +280,55 @@ namespace nuvelocity
         return pipeline;
     }
 
+    // Ensures mVertexGPUBuffer has at least neededBytes capacity, reallocating
+    // (with 1.5x growth) if necessary.
+    void GPUSpriteBatch::EnsureVertexBufferCapacity(Uint32 neededBytes)
+    {
+        if (neededBytes <= mVertexGPUBufferCapacity)
+        {
+            return;
+        }
+
+        if (mVertexGPUBuffer != nullptr)
+        {
+            SDL_ReleaseGPUBuffer(mDevice, mVertexGPUBuffer);
+            mVertexGPUBuffer = nullptr;
+        }
+
+        Uint32 newCapacity =
+            std::max(neededBytes, static_cast<Uint32>(mVertexGPUBufferCapacity * 1.5F));
+        // Round up to a 256-byte boundary for alignment friendliness.
+        newCapacity = (newCapacity + 255u) & ~255u;
+
+        SDL_GPUBufferCreateInfo info{
+            .usage = SDL_GPU_BUFFERUSAGE_VERTEX, .size = newCapacity, .props = 0};
+        mVertexGPUBuffer = SDL_CreateGPUBuffer(mDevice, &info);
+        mVertexGPUBufferCapacity = (mVertexGPUBuffer != nullptr) ? newCapacity : 0;
+    }
+
+    void GPUSpriteBatch::EnsureIndexBufferCapacity(Uint32 neededBytes)
+    {
+        if (neededBytes <= mIndexGPUBufferCapacity)
+        {
+            return;
+        }
+
+        if (mIndexGPUBuffer != nullptr)
+        {
+            SDL_ReleaseGPUBuffer(mDevice, mIndexGPUBuffer);
+            mIndexGPUBuffer = nullptr;
+        }
+
+        Uint32 newCapacity =
+            std::max(neededBytes, static_cast<Uint32>(mIndexGPUBufferCapacity * 1.5F));
+        newCapacity = (newCapacity + 255u) & ~255u;
+
+        SDL_GPUBufferCreateInfo info{
+            .usage = SDL_GPU_BUFFERUSAGE_INDEX, .size = newCapacity, .props = 0};
+        mIndexGPUBuffer = SDL_CreateGPUBuffer(mDevice, &info);
+        mIndexGPUBufferCapacity = (mIndexGPUBuffer != nullptr) ? newCapacity : 0;
+    }
+
     void GPUSpriteBatch::FlushBatch()
     {
         if (mVertexData.empty() || mCommandBuffer == nullptr || mDevice == nullptr ||
@@ -268,39 +337,57 @@ namespace nuvelocity
             return;
         }
 
-        // 1. Create/Upload vertices and indices using transfer buffers
-        Uint32 vertexBufferSize = static_cast<Uint32>(mVertexData.size() * sizeof(SpriteVertex));
-        Uint32 indexBufferSize = static_cast<Uint32>(mIndexData.size() * sizeof(Uint16));
+        const Uint32 vertexBufferSize =
+            static_cast<Uint32>(mVertexData.size() * sizeof(SpriteVertex));
+        const Uint32 indexBufferSize = static_cast<Uint32>(mIndexData.size() * sizeof(Uint16));
 
+        // 1. Grow persistent GPU buffers if needed.
+        EnsureVertexBufferCapacity(vertexBufferSize);
+        EnsureIndexBufferCapacity(indexBufferSize);
+
+        if (mVertexGPUBuffer == nullptr || mIndexGPUBuffer == nullptr)
+        {
+            // Allocation failed; drop the batch rather than crash.
+            mVertexData.clear();
+            mIndexData.clear();
+            return;
+        }
+
+        // 2. Upload via a single transfer buffer.
         SDL_GPUTransferBufferCreateInfo tbufInfo{.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
                                                  .size = vertexBufferSize + indexBufferSize,
                                                  .props = 0};
         SDL_GPUTransferBuffer* tbuf = SDL_CreateGPUTransferBuffer(mDevice, &tbufInfo);
+        if (tbuf == nullptr)
+        {
+            mVertexData.clear();
+            mIndexData.clear();
+            return;
+        }
+
         void* mapped = SDL_MapGPUTransferBuffer(mDevice, tbuf, false);
         SDL_memcpy(mapped, mVertexData.data(), vertexBufferSize);
         SDL_memcpy(
             static_cast<uint8_t*>(mapped) + vertexBufferSize, mIndexData.data(), indexBufferSize);
         SDL_UnmapGPUTransferBuffer(mDevice, tbuf);
 
-        SDL_GPUBufferCreateInfo vbufInfo{
-            .usage = SDL_GPU_BUFFERUSAGE_VERTEX, .size = vertexBufferSize, .props = 0};
-        SDL_GPUBufferCreateInfo ibufInfo{
-            .usage = SDL_GPU_BUFFERUSAGE_INDEX, .size = indexBufferSize, .props = 0};
-        SDL_GPUBuffer* vbuf = SDL_CreateGPUBuffer(mDevice, &vbufInfo);
-        SDL_GPUBuffer* ibuf = SDL_CreateGPUBuffer(mDevice, &ibufInfo);
-
         SDL_GPUCopyPass* copyPass = SDL_BeginGPUCopyPass(mCommandBuffer);
+
         SDL_GPUTransferBufferLocation srcVert{.transfer_buffer = tbuf, .offset = 0};
-        SDL_GPUBufferRegion dstVert{.buffer = vbuf, .offset = 0, .size = vertexBufferSize};
+        SDL_GPUBufferRegion dstVert{
+            .buffer = mVertexGPUBuffer, .offset = 0, .size = vertexBufferSize};
         SDL_UploadToGPUBuffer(copyPass, &srcVert, &dstVert, false);
 
-        SDL_GPUTransferBufferLocation srcIndex = {.transfer_buffer = tbuf,
-                                                  .offset = vertexBufferSize};
-        SDL_GPUBufferRegion dstIndex = {.buffer = ibuf, .offset = 0, .size = indexBufferSize};
+        SDL_GPUTransferBufferLocation srcIndex{.transfer_buffer = tbuf, .offset = vertexBufferSize};
+        SDL_GPUBufferRegion dstIndex{
+            .buffer = mIndexGPUBuffer, .offset = 0, .size = indexBufferSize};
         SDL_UploadToGPUBuffer(copyPass, &srcIndex, &dstIndex, false);
         SDL_EndGPUCopyPass(copyPass);
 
-        // 2. Render Pass
+        // The transfer buffer is only needed for the copy. Release it immediately.
+        SDL_ReleaseGPUTransferBuffer(mDevice, tbuf);
+
+        // 3. Render pass
         bool requiresInitialClear = mNeedsClear && !mHasBlittedThisFrame;
         SDL_GPUColorTargetInfo colorPassInfo = {
             .texture = mSwapchainTexture,
@@ -315,14 +402,7 @@ namespace nuvelocity
 
         SDL_GPUGraphicsPipeline* pipeline = nullptr;
         auto it = mPipelines.find(mCurrentBlendMode);
-        if (it != mPipelines.end())
-        {
-            pipeline = it->second;
-        }
-        else
-        {
-            pipeline = mPipelines[SDL_BLENDMODE_BLEND];
-        }
+        pipeline = (it != mPipelines.end()) ? it->second : mPipelines[SDL_BLENDMODE_BLEND];
 
         if (pipeline != nullptr)
         {
@@ -334,9 +414,10 @@ namespace nuvelocity
             SDL_SetGPUScissor(renderPass, &mCurrentClipRect);
         }
 
-        SDL_GPUBufferBinding vbind{.buffer = vbuf, .offset = 0};
+        SDL_GPUBufferBinding vbind{.buffer = mVertexGPUBuffer, .offset = 0};
         SDL_BindGPUVertexBuffers(renderPass, 0, &vbind, 1);
-        SDL_GPUBufferBinding ibind{.buffer = ibuf, .offset = 0};
+
+        SDL_GPUBufferBinding ibind{.buffer = mIndexGPUBuffer, .offset = 0};
         SDL_BindGPUIndexBuffer(renderPass, &ibind, SDL_GPU_INDEXELEMENTSIZE_16BIT);
 
         if (mCurrentTexture != nullptr)
@@ -359,10 +440,45 @@ namespace nuvelocity
         mIndexData.clear();
         mHasBlittedThisFrame = true;
         mNeedsClear = false;
+    }
 
-        SDL_ReleaseGPUTransferBuffer(mDevice, tbuf);
-        SDL_ReleaseGPUBuffer(mDevice, vbuf);
-        SDL_ReleaseGPUBuffer(mDevice, ibuf);
+    void GPUSpriteBatch::PushQuad(float x0,
+                                  float y0,
+                                  float x1,
+                                  float y1,
+                                  float x2,
+                                  float y2,
+                                  float x3,
+                                  float y3,
+                                  float u0,
+                                  float v0,
+                                  float u1_,
+                                  float v1_,
+                                  float r,
+                                  float g,
+                                  float b,
+                                  float a)
+    {
+        // Guard against Uint16 overflow — flush the current batch first if we're
+        // about to exceed the index range.
+        if (static_cast<Uint32>(mVertexData.size()) + 4u > kMaxVerticesPerFlush)
+        {
+            FlushBatch();
+        }
+
+        const Uint16 base = static_cast<Uint16>(mVertexData.size());
+
+        mVertexData.push_back({x0, y0, u0, v0, r, g, b, a});
+        mVertexData.push_back({x1, y1, u1_, v0, r, g, b, a});
+        mVertexData.push_back({x2, y2, u1_, v1_, r, g, b, a});
+        mVertexData.push_back({x3, y3, u0, v1_, r, g, b, a});
+
+        mIndexData.push_back(base + 0);
+        mIndexData.push_back(base + 1);
+        mIndexData.push_back(base + 2);
+        mIndexData.push_back(base + 0);
+        mIndexData.push_back(base + 2);
+        mIndexData.push_back(base + 3);
     }
 
     void GPUSpriteBatch::DrawLine(int x1, int y1, int x2, int y2, SDL_Color color, int thickness)
@@ -372,23 +488,22 @@ namespace nuvelocity
             return;
         }
 
-        float fx1 = static_cast<float>(x1);
-        float fy1 = static_cast<float>(y1);
-        float fx2 = static_cast<float>(x2);
-        float fy2 = static_cast<float>(y2);
-        float fThickness = static_cast<float>(thickness);
+        const float fx1 = static_cast<float>(x1);
+        const float fy1 = static_cast<float>(y1);
+        const float fx2 = static_cast<float>(x2);
+        const float fy2 = static_cast<float>(y2);
+        const float fThickness = static_cast<float>(thickness);
 
-        float dx = fx2 - fx1;
-        float dy = fy2 - fy1;
-        float len = std::sqrt((dx * dx) + (dy * dy));
+        const float dx = fx2 - fx1;
+        const float dy = fy2 - fy1;
+        const float len = std::sqrt((dx * dx) + (dy * dy));
         if (len < 0.001F)
         {
             return;
         }
 
-        // Thickness offset (half of total thickness)
-        float wx = -dy / len * (fThickness * 0.5F);
-        float wy = dx / len * (fThickness * 0.5F);
+        const float wx = -dy / len * (fThickness * 0.5F);
+        const float wy = dx / len * (fThickness * 0.5F);
 
         if (mWhiteTexture != mCurrentTexture)
         {
@@ -396,27 +511,27 @@ namespace nuvelocity
             mCurrentTexture = mWhiteTexture;
         }
 
-        float r = color.r / 255.0F;
-        float g = color.g / 255.0F;
-        float b = color.b / 255.0F;
-        float a = color.a / 255.0F;
+        const float r = color.r / 255.0F;
+        const float g = color.g / 255.0F;
+        const float b = color.b / 255.0F;
+        const float a = color.a / 255.0F;
 
-        Uint16 baseIdx = static_cast<Uint16>(mVertexData.size());
-        mVertexData.push_back(
-            {.x = fx1 + wx, .y = fy1 + wy, .u = 0.0F, .v = 0.0F, .r = r, .g = g, .b = b, .a = a});
-        mVertexData.push_back(
-            {.x = fx1 - wx, .y = fy1 - wy, .u = 1.0F, .v = 0.0F, .r = r, .g = g, .b = b, .a = a});
-        mVertexData.push_back(
-            {.x = fx2 - wx, .y = fy2 - wy, .u = 1.0F, .v = 1.0F, .r = r, .g = g, .b = b, .a = a});
-        mVertexData.push_back(
-            {.x = fx2 + wx, .y = fy2 + wy, .u = 0.0F, .v = 1.0F, .r = r, .g = g, .b = b, .a = a});
-
-        mIndexData.push_back(baseIdx + 0);
-        mIndexData.push_back(baseIdx + 1);
-        mIndexData.push_back(baseIdx + 2);
-        mIndexData.push_back(baseIdx + 0);
-        mIndexData.push_back(baseIdx + 2);
-        mIndexData.push_back(baseIdx + 3);
+        PushQuad(fx1 + wx,
+                 fy1 + wy,
+                 fx1 - wx,
+                 fy1 - wy,
+                 fx2 - wx,
+                 fy2 - wy,
+                 fx2 + wx,
+                 fy2 + wy,
+                 0.0F,
+                 0.0F,
+                 1.0F,
+                 1.0F,
+                 r,
+                 g,
+                 b,
+                 a);
     }
 
     void GPUSpriteBatch::FillRect(const SDL_Rect* rect, SDL_Color color)
@@ -456,31 +571,18 @@ namespace nuvelocity
             return;
         }
 
-        float r = color.r / 255.0F;
-        float g = color.g / 255.0F;
-        float b = color.b / 255.0F;
-        float a = color.a / 255.0F;
+        const float r = color.r / 255.0F;
+        const float g = color.g / 255.0F;
+        const float b = color.b / 255.0F;
+        const float a = color.a / 255.0F;
 
-        float fx = static_cast<float>(dr.x);
-        float fy = static_cast<float>(dr.y);
-        float fw = static_cast<float>(dr.w);
-        float fh = static_cast<float>(dr.h);
+        const float fx = static_cast<float>(dr.x);
+        const float fy = static_cast<float>(dr.y);
+        const float fw = static_cast<float>(dr.w);
+        const float fh = static_cast<float>(dr.h);
 
-        Uint16 baseIdx = static_cast<Uint16>(mVertexData.size());
-        mVertexData.push_back({.x = fx, .y = fy, .u = 0, .v = 0, .r = r, .g = g, .b = b, .a = a});
-        mVertexData.push_back(
-            {.x = fx + fw, .y = fy, .u = 1, .v = 0, .r = r, .g = g, .b = b, .a = a});
-        mVertexData.push_back(
-            {.x = fx + fw, .y = fy + fh, .u = 1, .v = 1, .r = r, .g = g, .b = b, .a = a});
-        mVertexData.push_back(
-            {.x = fx, .y = fy + fh, .u = 0, .v = 1, .r = r, .g = g, .b = b, .a = a});
-
-        mIndexData.push_back(baseIdx + 0);
-        mIndexData.push_back(baseIdx + 1);
-        mIndexData.push_back(baseIdx + 2);
-        mIndexData.push_back(baseIdx + 0);
-        mIndexData.push_back(baseIdx + 2);
-        mIndexData.push_back(baseIdx + 3);
+        PushQuad(
+            fx, fy, fx + fw, fy, fx + fw, fy + fh, fx, fy + fh, 0.0F, 0.0F, 1.0F, 1.0F, r, g, b, a);
     }
 
     void GPUSpriteBatch::OutlineRect(const SDL_Rect* rect, SDL_Color color, int thickness)
@@ -500,7 +602,6 @@ namespace nuvelocity
 
     void GPUSpriteBatch::SetClipRect(const SDL_Rect* rect)
     {
-        // Only trigger a flush if the clip state is actually changing
         bool isAlreadyClipped = mHasCurrentClipRect;
         bool willBeClipped = (rect != nullptr);
 
@@ -622,6 +723,7 @@ namespace nuvelocity
                                               .pixels_per_row =
                                                   static_cast<Uint32>(surface->pitch / 4),
                                               .rows_per_layer = static_cast<Uint32>(surface->h)};
+
         SDL_GPUTextureRegion destinationInfo{.texture = texture,
                                              .mip_level = 0,
                                              .layer = 0,
@@ -660,8 +762,26 @@ namespace nuvelocity
             return;
         }
 
-        auto cacheIt = mTextureCache.find(surface);
-        SDL_GPUTexture* texture = (cacheIt != mTextureCache.end()) ? cacheIt->second : nullptr;
+        // Texture cache lookup with stale-entry detection
+        SDL_GPUTexture* texture = nullptr;
+        {
+            auto cacheIt = mTextureCache.find(surface);
+            if (cacheIt != mTextureCache.end())
+            {
+                CachedTexture& entry = cacheIt->second;
+                // If the surface's pixel pointer changed the surface was likely
+                // re-created at the same address — invalidate the cached GPU texture.
+                if (entry.pixelsSnapshot == surface->pixels)
+                {
+                    texture = entry.texture;
+                }
+                else
+                {
+                    SDL_ReleaseGPUTexture(mDevice, entry.texture);
+                    mTextureCache.erase(cacheIt);
+                }
+            }
+        }
 
         if (texture == nullptr)
         {
@@ -683,7 +803,7 @@ namespace nuvelocity
                 return;
             }
 
-            mTextureCache[surface] = texture;
+            mTextureCache[surface] = CachedTexture{texture, surface->pixels};
         }
 
         SDL_BlendMode surfaceMode = SDL_BLENDMODE_BLEND;
@@ -703,48 +823,58 @@ namespace nuvelocity
                           ? *srcRect
                           : SDL_Rect{.x = 0, .y = 0, .w = surface->w, .h = surface->h};
 
-        float u1 = static_cast<float>(sr.x) / static_cast<float>(surface->w);
-        float v1 = static_cast<float>(sr.y) / static_cast<float>(surface->h);
-        float u2 = static_cast<float>(sr.x + sr.w) / static_cast<float>(surface->w);
-        float v2 = static_cast<float>(sr.y + sr.h) / static_cast<float>(surface->h);
+        const float u1 = static_cast<float>(sr.x) / static_cast<float>(surface->w);
+        const float v1 = static_cast<float>(sr.y) / static_cast<float>(surface->h);
+        const float u2 = static_cast<float>(sr.x + sr.w) / static_cast<float>(surface->w);
+        const float v2 = static_cast<float>(sr.y + sr.h) / static_cast<float>(surface->h);
 
-        float r = color.r / 255.0F;
-        float g = color.g / 255.0F;
-        float b = color.b / 255.0F;
-        float a = color.a / 255.0F;
+        const float r = color.r / 255.0F;
+        const float g = color.g / 255.0F;
+        const float b = color.b / 255.0F;
+        const float a = color.a / 255.0F;
 
-        float fdx = static_cast<float>(dr.x);
-        float fdy = static_cast<float>(dr.y);
-        float fdw = static_cast<float>(dr.w);
-        float fdh = static_cast<float>(dr.h);
+        const float fdx = static_cast<float>(dr.x);
+        const float fdy = static_cast<float>(dr.y);
+        const float fdw = static_cast<float>(dr.w);
+        const float fdh = static_cast<float>(dr.h);
 
-        Uint16 baseIdx = static_cast<Uint16>(mVertexData.size());
-        mVertexData.push_back(
-            {.x = fdx, .y = fdy, .u = u1, .v = v1, .r = r, .g = g, .b = b, .a = a});
-        mVertexData.push_back(
-            {.x = fdx + fdw, .y = fdy, .u = u2, .v = v1, .r = r, .g = g, .b = b, .a = a});
-        mVertexData.push_back(
-            {.x = fdx + fdw, .y = fdy + fdh, .u = u2, .v = v2, .r = r, .g = g, .b = b, .a = a});
-        mVertexData.push_back(
-            {.x = fdx, .y = fdy + fdh, .u = u1, .v = v2, .r = r, .g = g, .b = b, .a = a});
+        PushQuad(fdx,
+                 fdy,
+                 fdx + fdw,
+                 fdy,
+                 fdx + fdw,
+                 fdy + fdh,
+                 fdx,
+                 fdy + fdh,
+                 u1,
+                 v1,
+                 u2,
+                 v2,
+                 r,
+                 g,
+                 b,
+                 a);
 
-        mIndexData.push_back(baseIdx + 0);
-        mIndexData.push_back(baseIdx + 1);
-        mIndexData.push_back(baseIdx + 2);
-        mIndexData.push_back(baseIdx + 0);
-        mIndexData.push_back(baseIdx + 2);
-        mIndexData.push_back(baseIdx + 3);
-
-        // We don't release the texture here because it's now part of a batch
-        // In a real system, we'd cache textures. For now, we'll flush to be safe if textures are
-        // short-lived. FlushBatch();
-
+        // Deferred until after the sprite quad is pushed so we don't break the
+        // sprite's batch mid-draw. We save/restore texture+blend state so the
+        // debug lines don't corrupt the next sprite's batch grouping.
         if (mDrawBounds)
         {
+            SDL_GPUTexture* savedTexture = mCurrentTexture;
+            SDL_BlendMode savedBlendMode = mCurrentBlendMode;
+
             OutlineRect(&dr, Colors::Magenta);
             if (srcRect != nullptr)
             {
                 OutlineRect(&sr, Colors::Cyan);
+            }
+
+            // Restore sprite state so subsequent same-texture draws still batch.
+            if (savedTexture != mCurrentTexture || savedBlendMode != mCurrentBlendMode)
+            {
+                FlushBatch();
+                mCurrentTexture = savedTexture;
+                mCurrentBlendMode = savedBlendMode;
             }
         }
     }
@@ -794,4 +924,5 @@ namespace nuvelocity
             mCurrentTexture = nullptr;
         }
     }
+
 } // namespace nuvelocity
