@@ -463,11 +463,7 @@ namespace nuvelocity
 
                 if (value.empty())
                 {
-                    ClassInfo* defaultInfo = prop->GetChildClassInfo();
-                    if (defaultInfo != nullptr)
-                    {
-                        className = defaultInfo->mName;
-                    }
+                    break;
                 }
                 else
                 {
