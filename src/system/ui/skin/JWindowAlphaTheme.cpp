@@ -180,19 +180,9 @@ namespace nuvelocity
                          .h = screenRect.h};
         const auto& style = textBox->GetTextBoxStyle();
 
-        const SDL_Color fillColor =
-            textBox->IsFocused() ? style.focusedColor : style.unfocusedColor;
-
-        WidgetUtils::FillRect(game->mSpriteBatch, rect, fillColor);
-
-        // TextBox always uses a sunken classic bevel
-        WidgetUtils::DrawBevel(
-            game->mSpriteBatch,
-            rect,
-            WidgetUtils::BevelColors{.light = textBox->GetStyle().borderLightColor,
-                                     .dark = textBox->GetStyle().borderDarkColor},
-            true,
-            textBox->GetStyle().borderThickness);
+        SDL_Rect borderRect = {.x = rect.x + 1, .y = rect.y + 1, .w = rect.w - 2, .h = rect.h - 2};
+        mOptions->mButtonBorder->DrawBorder(game->mSpriteBatch, borderRect);
+        WidgetUtils::DrawRect(game->mSpriteBatch, rect, Colors::Black);
 
         SDL_Rect textRect{.x = rect.x + 6,
                           .y = rect.y + 3,
