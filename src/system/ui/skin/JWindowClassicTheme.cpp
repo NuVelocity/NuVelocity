@@ -6,6 +6,7 @@
 #include <system/SpriteBatch.h>
 #include <system/ui/Button.h>
 #include <system/ui/JListBox.h>
+#include <system/ui/JTabControl.h>
 #include <system/ui/MdiWindow.h>
 #include <system/ui/TextBox.h>
 #include <system/ui/WidgetUtils.h>
@@ -351,6 +352,67 @@ namespace nuvelocity
                 curX += columns[c].width;
             }
         }
+    }
+
+    void JWindowClassicTheme::DrawTabControl(Game* game, JTabControl* tabControl)
+    {
+        if (game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr ||
+            tabControl == nullptr)
+        {
+            return;
+        }
+
+        const SDL_Rect screenRect = tabControl->GetScreenRect();
+        const std::vector<std::string>& tabs = tabControl->GetTabs();
+        const int selectedIndex = tabControl->GetSelectedIndex();
+        const int padding = tabControl->GetTabPadding();
+        const auto& style = tabControl->GetStyle();
+        const int pointSize = GetTabPointSize();
+
+        int curX = screenRect.x;
+        for (int i = 0; i < static_cast<int>(tabs.size()); ++i)
+        {
+            int textWidth = MeasureTextWidth(game, tabs[i], pointSize);
+            int tabWidth = textWidth + (padding * 2);
+            SDL_Rect tabRect = {curX, screenRect.y, tabWidth, screenRect.h};
+
+            bool selected = (i == selectedIndex);
+            if (selected)
+            {
+                tabRect.y -= 2;
+                tabRect.h += 2;
+            }
+
+            WidgetUtils::FillRect(game->mSpriteBatch, tabRect, style.backgroundColor);
+            WidgetUtils::DrawBevel(game->mSpriteBatch,
+                                   tabRect,
+                                   {style.borderLightColor, style.borderDarkColor},
+                                   false,
+                                   1);
+
+            if (selected)
+            {
+                // Remove bottom border for selected tab
+                SDL_Rect bottomLine = {tabRect.x + 1, tabRect.y + tabRect.h - 1, tabRect.w - 2, 1};
+                WidgetUtils::FillRect(game->mSpriteBatch, bottomLine, style.backgroundColor);
+            }
+
+            game->mFont->DrawString(game->mSpriteBatch,
+                                    tabs[i],
+                                    tabRect,
+                                    Colors::Black,
+                                    pointSize,
+                                    TextAlignment::Center);
+
+            curX += tabWidth;
+        }
+
+        // Draw a line under the tabs (except for the selected one)
+        game->mSpriteBatch->DrawLine(screenRect.x,
+                                     screenRect.y + screenRect.h - 1,
+                                     screenRect.x + screenRect.w,
+                                     screenRect.y + screenRect.h - 1,
+                                     style.borderDarkColor);
     }
 
     SDL_Rect JWindowClassicTheme::GetInnerRect(const MdiWindow* window) const

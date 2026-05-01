@@ -21,6 +21,8 @@ target_sources(
     Label.h
     JListBox.cpp
     JListBox.h
+    JTabControl.cpp
+    JTabControl.h
 )
 
 add_subdirectory(skin)

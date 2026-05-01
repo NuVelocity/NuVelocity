@@ -27,6 +27,16 @@ namespace nuvelocity
             SDL_Color bottomRightOuter = SDL_Color{.r = 0, .g = 0, .b = 0, .a = 128};
         };
 
+        enum BorderSide
+        {
+            Side_None = 0,
+            Side_Left = 1 << 0,
+            Side_Top = 1 << 1,
+            Side_Right = 1 << 2,
+            Side_Bottom = 1 << 3,
+            Side_All = Side_Left | Side_Top | Side_Right | Side_Bottom
+        };
+
         NVE_API static void
         FillRect(SpriteBatch* batch, const SDL_Rect& rect, const SDL_Color& color);
         NVE_API static void
@@ -51,13 +61,20 @@ namespace nuvelocity
                                                 const SDL_Rect& srcRect);
         NVE_API static void DrawBevel(SpriteBatch* batch,
                                       const SDL_Rect& rect,
+                                      const BorderColors& colors,
+                                      int thickness,
+                                      int sides = Side_All);
+        NVE_API static void DrawBevel(SpriteBatch* batch,
+                                      const SDL_Rect& rect,
                                       const BevelColors& colors,
                                       bool sunken,
-                                      int thickness);
+                                      int thickness,
+                                      int sides = Side_All);
         NVE_API static void DrawBorder(SpriteBatch* batch,
                                        const SDL_Rect& rect,
                                        const BorderColors& colors,
-                                       int thickness);
+                                       int thickness,
+                                       int sides = Side_All);
     };
 } // namespace nuvelocity
 

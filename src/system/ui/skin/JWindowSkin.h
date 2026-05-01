@@ -11,6 +11,7 @@ namespace nuvelocity
     class Game;
     class Button;
     class JListBox;
+    class JTabControl;
     class MdiWindow;
     class TextBox;
     class SpriteBatch;
@@ -26,12 +27,14 @@ namespace nuvelocity
         virtual void DrawListBox(Game* game, JListBox* listBox) = 0;
         virtual void DrawMdiWindow(Game* game, MdiWindow* window) = 0;
         virtual void DrawTextBox(Game* game, TextBox* textBox) = 0;
+        virtual void DrawTabControl(Game* game, JTabControl* tabControl) = 0;
 
         // Returns pixel width of text rendered at the given point size using this skin's font.
         virtual int MeasureTextWidth(Game* game, const std::string& text, int pointSize) const = 0;
 
         virtual SDL_Rect GetInnerRect(const MdiWindow* window) const = 0;
         virtual SDL_Rect GetCloseButtonRect(const MdiWindow* window) const = 0;
+        virtual int GetTabPointSize() const = 0;
     };
 } // namespace nuvelocity
 

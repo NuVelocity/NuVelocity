@@ -7,6 +7,7 @@
 #include "system/SpriteBatch.h"
 #include "system/ui/Button.h"
 #include "system/ui/JListBox.h"
+#include "system/ui/JTabControl.h"
 #include "system/ui/MdiWindow.h"
 #include "system/ui/TextBox.h"
 #include "system/ui/WidgetUtils.h"
@@ -514,6 +515,145 @@ namespace nuvelocity
                 mOptions->mWindowBorder->DrawTiledBackground(batch, thumbRect);
             }
             mOptions->mButtonBorder->DrawBorder(batch, thumbRect, false);
+        }
+    }
+
+    void JWindowAlphaTheme::DrawTabControl(Game* game, JTabControl* tabControl)
+    {
+        if (game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr ||
+            tabControl == nullptr || mOptions == nullptr || mOptions->mButtonBorder == nullptr)
+        {
+            return;
+        }
+
+        const SDL_Rect screenRect = tabControl->GetScreenRect();
+        const std::vector<std::string>& tabs = tabControl->GetTabs();
+        const int selectedIndex = tabControl->GetSelectedIndex();
+        const int padding = tabControl->GetTabPadding();
+        const int pointSize = GetTabPointSize();
+
+        ClassicSkinBorder* b = mOptions->mButtonBorder;
+        ClassicSkinBorder* bPressed = mOptions->mPressedButtonBorder != nullptr
+                                          ? mOptions->mPressedButtonBorder
+                                          : mOptions->mButtonBorder;
+
+        WidgetUtils::BorderColors borderColors = {.topLeftOuter = b->mBottomInnerColor,
+                                                  .topLeftInner = b->mBottomOuterColor,
+                                                  .bottomRightInner = b->mTopOuterColor,
+                                                  .bottomRightOuter = b->mTopInnerColor};
+
+        WidgetUtils::BorderColors pressedBorderColors = {
+            .topLeftOuter = bPressed->mBottomInnerColor,
+            .topLeftInner = bPressed->mBottomOuterColor,
+            .bottomRightInner = bPressed->mTopOuterColor,
+            .bottomRightOuter = bPressed->mTopInnerColor};
+
+        // Continuous bottom strip under the tab row.
+        const int headerHeight = tabControl->GetTabHeaderHeight();
+
+        // Compute widths first so the tabs fill the control width.
+        std::vector<int> tabWidths;
+        tabWidths.reserve(tabs.size());
+        int totalTabWidth = 0;
+        for (size_t i = 0; i < tabs.size(); ++i)
+        {
+            int textWidth = MeasureTextWidth(game, tabs[i], pointSize);
+            int tabWidth = textWidth + (padding * 2);
+            tabWidths.push_back(tabWidth);
+            totalTabWidth += tabWidth;
+        }
+
+        int curX = screenRect.x;
+        int activeLeft = screenRect.x;
+        int activeRight = screenRect.x;
+        for (size_t i = 0; i < tabs.size(); ++i)
+        {
+            int tabWidth = tabWidths[i];
+            bool selected = (static_cast<int>(i) == selectedIndex);
+
+            // Inactive tabs sit 1px lower, like classic Win9x tabs.
+            const int tabY = selected ? screenRect.y : (screenRect.y + 1);
+            const int tabH = selected ? headerHeight : SDL_max(0, headerHeight - 1);
+            SDL_Rect tabRect = {curX, tabY, tabWidth, tabH};
+
+            int sides = WidgetUtils::Side_Top | WidgetUtils::Side_Left | WidgetUtils::Side_Right;
+
+            const WidgetUtils::BorderColors& useColors =
+                selected ? pressedBorderColors : borderColors;
+            WidgetUtils::DrawBevel(
+                game->mSpriteBatch, tabRect, useColors, b->mTextureMargin, sides);
+
+            SDL_Rect textRect = {
+                .x = tabRect.x, .y = tabRect.y + 6, .w = tabRect.w, .h = tabRect.h};
+            if (selected)
+            {
+                textRect.y -= 1;
+            }
+
+            game->mFont->DrawStringWithFont(mOptions->mGeneralFont,
+                                            game->mSpriteBatch,
+                                            tabs[i],
+                                            textRect,
+                                            Colors::White,
+                                            13,
+                                            TextAlignment::Center);
+
+            curX += tabWidth;
+
+            if (selected)
+            {
+                activeLeft = tabRect.x;
+                activeRight = tabRect.x + tabRect.w;
+            }
+        }
+
+        // Content bevel starts at the tab span width so it aligns with the headers.
+        const SDL_Rect tRect = tabControl->GetScreenRect();
+        Widget* parent = tabControl->GetParent();
+        SDL_Rect containerRect =
+            parent != nullptr
+                ? parent->GetScreenRect()
+                : SDL_Rect{.x = 0, .y = 0, .w = game->mWindowWidth, .h = game->mWindowHeight};
+
+        const int contentX = screenRect.x;
+        const int contentY = screenRect.y + headerHeight;
+        const int contentW = SDL_max(0, screenRect.w);
+        const int contentH = SDL_max(0, screenRect.h - headerHeight);
+
+        SDL_Rect contentRect{.x = contentX, .y = contentY, .w = contentW, .h = contentH};
+        if (contentRect.w > 0 && contentRect.h > 0)
+        {
+            WidgetUtils::DrawBevel(game->mSpriteBatch,
+                                   contentRect,
+                                   pressedBorderColors,
+                                   b->mTextureMargin,
+                                   WidgetUtils::Side_Left | WidgetUtils::Side_Right |
+                                       WidgetUtils::Side_Bottom);
+
+            // Draw the content top border in two segments so it does not run
+            // under the active tab.
+            const int thickness = b->mTextureMargin;
+            for (int i = 0; i < thickness; ++i)
+            {
+                const SDL_Color topColor = (i < (thickness / 2)) ? pressedBorderColors.topLeftOuter
+                                                                 : pressedBorderColors.topLeftInner;
+
+                const int y = contentRect.y + i;
+                const int leftW = SDL_max(0, SDL_min(activeLeft - contentRect.x, contentRect.w));
+                if (leftW > 0)
+                {
+                    SDL_Rect leftLine{.x = contentRect.x, .y = y, .w = leftW, .h = 1};
+                    WidgetUtils::FillRect(game->mSpriteBatch, leftLine, topColor);
+                }
+
+                const int rightX = SDL_max(activeRight, contentRect.x);
+                const int rightW = SDL_max(0, (contentRect.x + contentRect.w) - rightX);
+                if (rightW > 0)
+                {
+                    SDL_Rect rightLine{.x = rightX, .y = y, .w = rightW, .h = 1};
+                    WidgetUtils::FillRect(game->mSpriteBatch, rightLine, topColor);
+                }
+            }
         }
     }
 
