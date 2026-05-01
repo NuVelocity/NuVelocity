@@ -3,6 +3,8 @@
 
 #include "model/Object.h"
 
+#include <string>
+
 namespace nuvelocity
 {
     class AssetManager;
@@ -24,6 +26,9 @@ namespace nuvelocity
         virtual void DrawListBox(Game* game, JListBox* listBox) = 0;
         virtual void DrawMdiWindow(Game* game, MdiWindow* window) = 0;
         virtual void DrawTextBox(Game* game, TextBox* textBox) = 0;
+
+        // Returns pixel width of text rendered at the given point size using this skin's font.
+        virtual int MeasureTextWidth(Game* game, const std::string& text, int pointSize) const = 0;
 
         virtual SDL_Rect GetInnerRect(const MdiWindow* window) const = 0;
         virtual SDL_Rect GetCloseButtonRect(const MdiWindow* window) const = 0;

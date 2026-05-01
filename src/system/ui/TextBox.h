@@ -20,6 +20,7 @@ namespace nuvelocity
             SDL_Color unfocusedColor = SDL_Color{.r = 236, .g = 236, .b = 236, .a = 255};
             SDL_Color caretColor = SDL_Color{.r = 0, .g = 0, .b = 0, .a = 255};
             SDL_Color textColor = SDL_Color{.r = 0, .g = 0, .b = 0, .a = 255};
+            SDL_Color selectionColor = SDL_Color{.r = 0, .g = 120, .b = 215, .a = 128};
             int fontPointSize = 12;
         };
 
@@ -46,6 +47,25 @@ namespace nuvelocity
         NVE_API void SetStyle(const Style& style);
         NVE_API const Style& GetTextBoxStyle() const;
 
+        // Caret
+        NVE_API std::size_t GetCaretPos() const;
+        NVE_API void SetCaretPos(std::size_t pos);
+
+        // Selection — selStart <= selEnd, both byte offsets into mText
+        NVE_API bool HasSelection() const;
+        NVE_API void GetSelection(std::size_t& start, std::size_t& end) const;
+        NVE_API void SelectAll();
+        NVE_API void ClearSelection();
+
+        // Overwrite (Insert key)
+        NVE_API bool IsOverwriteMode() const;
+
+        // Blink — skin calls this so caret visibility is centralised here
+        NVE_API bool IsCaretVisible() const;
+
+        // Horizontal scroll offset in pixels (how many pixels the text is shifted left)
+        NVE_API int GetScrollOffset() const;
+
     private:
         std::string mText;
         std::size_t mMaxLength;
@@ -53,8 +73,34 @@ namespace nuvelocity
         bool mFocused;
         Style mTextBoxStyle;
 
+        // Caret & selection state
+        std::size_t mCaretPos;     // byte offset in mText; caret is before this index
+        std::size_t mSelAnchor;    // anchor set when selection starts (byte offset)
+        std::size_t mSelEnd;       // current drag/extend end (byte offset)
+        bool mHasSelection;        // true when mSelAnchor != mSelEnd
+        bool mOverwriteMode;       // toggled by Insert key
+        bool mDragging;            // true while mouse button held for drag-select
+        uint64_t mCaretBlinkStart; // SDL_GetTicks() at last caret reset; drives blink
+        int mScrollOffset;         // pixels the text is scrolled left to keep caret visible
+
         std::function<void(const std::string&)> mOnTextChanged;
         std::function<void(const std::string&)> mOnSubmit;
+
+        // Returns byte offset of the caret position closest to the given pixel X
+        // in text-space (i.e. already adjusted for mScrollOffset by the caller).
+        std::size_t HitTestCaret(Game* game, int pixelX) const;
+
+        // Deletes [selStart, selEnd) from mText; moves caret to selStart; clears selection.
+        void DeleteSelection();
+
+        // Resets blink timer; call on any input that moves the caret.
+        void ResetBlink();
+
+        // Clamps mCaretPos to [0, mText.size()]; normalises selection range.
+        void ClampCaret();
+
+        // Adjusts mScrollOffset so the caret is within the visible text area.
+        void EnsureCaretVisible(Game* game);
     };
 } // namespace nuvelocity
 

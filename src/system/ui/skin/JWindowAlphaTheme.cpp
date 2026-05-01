@@ -179,47 +179,131 @@ namespace nuvelocity
                          .w = screenRect.w,
                          .h = screenRect.h};
         const auto& style = textBox->GetTextBoxStyle();
+        const std::string& text = textBox->GetText();
+        const int scrollOffset = textBox->GetScrollOffset();
 
         SDL_Rect borderRect = {.x = rect.x + 1, .y = rect.y + 1, .w = rect.w - 2, .h = rect.h - 2};
         mOptions->mButtonBorder->DrawBorder(game->mSpriteBatch, borderRect);
         WidgetUtils::DrawRect(game->mSpriteBatch, rect, Colors::Black);
 
-        SDL_Rect textRect{.x = rect.x + 6,
-                          .y = rect.y + 3,
-                          .w = SDL_max(0, rect.w - 12),
-                          .h = SDL_max(0, rect.h - 6)};
+        const SDL_Rect textRect{.x = rect.x + 6,
+                                .y = rect.y + 3,
+                                .w = SDL_max(0, rect.w - 12),
+                                .h = SDL_max(0, rect.h - 6)};
 
+        // Clip all text-area drawing to textRect
+        game->mSpriteBatch->SetClipRect(&textRect);
+
+        // Draw selection highlight (positions offset by scroll)
+        if (textBox->IsFocused() && textBox->HasSelection())
+        {
+            std::size_t selStart = 0;
+            std::size_t selEnd = 0;
+            textBox->GetSelection(selStart, selEnd);
+
+            int xStart = 0;
+            int xEnd = 0;
+            int dummy = 0;
+            game->mFont->MeasureStringWithFont(mOptions->mGeneralFont,
+                                               text.substr(0, selStart),
+                                               13, // style.fontPointSize,
+                                               xStart,
+                                               dummy);
+            game->mFont->MeasureStringWithFont(mOptions->mGeneralFont,
+                                               text.substr(0, selEnd),
+                                               13, // style.fontPointSize,
+                                               xEnd,
+                                               dummy);
+
+            const SDL_Rect selRect{.x = textRect.x + xStart - scrollOffset,
+                                   .y = textRect.y,
+                                   .w = SDL_max(0, xEnd - xStart),
+                                   .h = textRect.h};
+            WidgetUtils::FillRect(game->mSpriteBatch, selRect, mOptions->mSelectColor);
+        }
+
+        // Draw text shifted left by scrollOffset
+        SDL_Rect shiftedTextRect = textRect;
+        shiftedTextRect.x -= scrollOffset;
+        shiftedTextRect.w += scrollOffset;
         game->mFont->DrawStringWithFont(mOptions->mGeneralFont,
                                         game->mSpriteBatch,
-                                        textBox->GetText(),
-                                        textRect,
-                                        style.textColor,
-                                        style.fontPointSize,
+                                        text,
+                                        shiftedTextRect,
+                                        // FIXME: we don't respect text color for now.
+                                        mOptions->mShortcutKeyHighlightColor, // style.textColor,
+                                        13, // style.fontPointSize,
                                         TextAlignment::Left,
                                         true,
                                         -1,
-                                        style.textColor);
+                                        // FIXME: we don't respect text color for now.
+                                        mOptions->mShortcutKeyHighlightColor // style.textColor
+        );
 
         if (textBox->IsFocused())
         {
-            int textWidth = 0;
-            int textHeight = 0;
-            game->mFont->MeasureStringWithFont(mOptions->mGeneralFont,
-                                               textBox->GetText(),
-                                               style.fontPointSize,
-                                               textWidth,
-                                               textHeight);
-
-            const bool visibleCaret = ((SDL_GetTicks() / 500U) % 2U) == 0U;
+            const bool visibleCaret = textBox->IsCaretVisible();
             if (visibleCaret)
             {
-                SDL_Rect caretRect{.x = rect.x + 6 + textWidth,
-                                   .y = rect.y + 4,
-                                   .w = 1,
-                                   .h = SDL_max(0, rect.h - 8)};
-                WidgetUtils::FillRect(game->mSpriteBatch, caretRect, style.caretColor);
+                int caretPixelX = 0;
+                int dummy = 0;
+                game->mFont->MeasureStringWithFont(mOptions->mGeneralFont,
+                                                   text.substr(0, textBox->GetCaretPos()),
+                                                   13, // style.fontPointSize,
+                                                   caretPixelX,
+                                                   dummy);
+
+                if (textBox->IsOverwriteMode() && textBox->GetCaretPos() < text.size())
+                {
+                    // Block caret: cover the full width of the character under the caret
+                    int nextX = 0;
+                    game->mFont->MeasureStringWithFont(mOptions->mGeneralFont,
+                                                       text.substr(0, textBox->GetCaretPos() + 1),
+                                                       13, // style.fontPointSize,
+                                                       nextX,
+                                                       dummy);
+
+                    SDL_Rect caretRect{.x = textRect.x + caretPixelX - scrollOffset,
+                                       .y = rect.y + 4,
+                                       .w = SDL_max(2, nextX - caretPixelX),
+                                       .h = SDL_max(0, rect.h - 8)};
+                    WidgetUtils::FillRect(game->mSpriteBatch,
+                                          caretRect,
+                                          // FIXME: we don't respect caret color for now.
+                                          mOptions->mShortcutKeyHighlightColor
+                                          // style.caretColor
+                    );
+                }
+                else
+                {
+                    SDL_Rect caretRect{.x = textRect.x + caretPixelX - scrollOffset,
+                                       .y = rect.y + 4,
+                                       .w = 1,
+                                       .h = SDL_max(0, rect.h - 8)};
+                    WidgetUtils::FillRect(game->mSpriteBatch,
+                                          caretRect,
+                                          // FIXME: we don't respect caret color for now.
+                                          mOptions->mShortcutKeyHighlightColor
+                                          // style.caretColor
+                    );
+                }
             }
         }
+
+        game->mSpriteBatch->SetClipRect(nullptr);
+    }
+
+    int
+    JWindowAlphaTheme::MeasureTextWidth(Game* game, const std::string& text, int pointSize) const
+    {
+        if (game == nullptr || game->mFont == nullptr || mOptions == nullptr)
+        {
+            return 0;
+        }
+        int w = 0;
+        int h = 0;
+        game->mFont->MeasureStringWithFont(mOptions->mGeneralFont, text, pointSize, w, h);
+        return w;
     }
 
     void JWindowAlphaTheme::DrawListBox(Game* game, JListBox* listBox)

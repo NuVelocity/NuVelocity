@@ -21,6 +21,7 @@ namespace nuvelocity
 
         SDL_Rect GetInnerRect(const MdiWindow* window) const override;
         SDL_Rect GetCloseButtonRect(const MdiWindow* window) const override;
+        int MeasureTextWidth(Game* game, const std::string& text, int pointSize) const override;
 
         static void InitClassInfo(ClassInfo& info)
         {
