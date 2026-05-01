@@ -176,52 +176,119 @@ namespace nuvelocity
 
     void WidgetUtils::DrawBevel(SpriteBatch* batch,
                                 const SDL_Rect& rect,
-                                const BevelColors& colors,
-                                bool sunken,
-                                int thickness)
+                                const BorderColors& colors,
+                                int thickness,
+                                int sides)
     {
         if (batch == nullptr || thickness <= 0)
         {
             return;
         }
 
-        const SDL_Color topLeft = sunken ? colors.dark : colors.light;
-        const SDL_Color bottomRight = sunken ? colors.light : colors.dark;
+        // Draw a layered bevel by drawing thickness inset lines (rings).
+        // For each inset i (0..thickness-1) draw the top/left and bottom/right
+        // edges inset by i pixels.
+        for (int i = 0; i < thickness; ++i)
+        {
+            // Choose colors: outer half uses the "outer" colors, inner half uses "inner".
+            const SDL_Color topLeftColor =
+                (i < (thickness / 2)) ? colors.topLeftOuter : colors.topLeftInner;
+            const SDL_Color bottomRightColor =
+                (i < (thickness / 2)) ? colors.bottomRightOuter : colors.bottomRightInner;
 
-        SDL_Rect topEdge{.x = rect.x, .y = rect.y, .w = rect.w, .h = thickness};
-        SDL_Rect leftEdge{.x = rect.x, .y = rect.y, .w = thickness, .h = rect.h};
-        SDL_Rect rightEdge{
-            .x = rect.x + rect.w - thickness, .y = rect.y, .w = thickness, .h = rect.h};
-        SDL_Rect bottomEdge{
-            .x = rect.x, .y = rect.y + rect.h - thickness, .w = rect.w, .h = thickness};
+            const int insetX = rect.x + i;
+            const int insetY = rect.y + i;
+            const int w = rect.w - 2 * i;
+            const int h = rect.h - 2 * i;
 
-        WidgetUtils::FillRect(batch, topEdge, topLeft);
-        WidgetUtils::FillRect(batch, leftEdge, topLeft);
-        WidgetUtils::FillRect(batch, rightEdge, bottomRight);
-        WidgetUtils::FillRect(batch, bottomEdge, bottomRight);
+            if (w <= 0 || h <= 0)
+            {
+                break;
+            }
+
+            if (sides & Side_Top)
+            {
+                SDL_Rect topLine{.x = insetX, .y = insetY, .w = w, .h = 1};
+                WidgetUtils::FillRect(batch, topLine, topLeftColor);
+            }
+
+            if (sides & Side_Left)
+            {
+                SDL_Rect leftLine{.x = insetX, .y = insetY, .w = 1, .h = h};
+                WidgetUtils::FillRect(batch, leftLine, topLeftColor);
+            }
+
+            if (sides & Side_Right)
+            {
+                SDL_Rect rightLine{.x = insetX + w - 1, .y = insetY, .w = 1, .h = h};
+                WidgetUtils::FillRect(batch, rightLine, bottomRightColor);
+            }
+
+            if (sides & Side_Bottom)
+            {
+                SDL_Rect bottomLine{.x = insetX, .y = insetY + h - 1, .w = w, .h = 1};
+                WidgetUtils::FillRect(batch, bottomLine, bottomRightColor);
+            }
+        }
     }
 
     void WidgetUtils::DrawBorder(SpriteBatch* batch,
                                  const SDL_Rect& rect,
                                  const BorderColors& colors,
-                                 int thickness)
+                                 int thickness,
+                                 int sides)
     {
         if (batch == nullptr || thickness <= 0)
         {
             return;
         }
 
-        SDL_Rect topEdge{.x = rect.x, .y = rect.y, .w = rect.w, .h = thickness};
-        SDL_Rect leftEdge{.x = rect.x, .y = rect.y, .w = thickness, .h = rect.h};
-        SDL_Rect rightEdge{
-            .x = rect.x + rect.w - thickness, .y = rect.y, .w = thickness, .h = rect.h};
-        SDL_Rect bottomEdge{
-            .x = rect.x, .y = rect.y + rect.h - thickness, .w = rect.w, .h = thickness};
-
-        WidgetUtils::FillRect(batch, topEdge, colors.topLeftOuter);
-        WidgetUtils::FillRect(batch, leftEdge, colors.topLeftInner);
-        WidgetUtils::FillRect(batch, rightEdge, colors.bottomRightInner);
-        WidgetUtils::FillRect(batch, bottomEdge, colors.bottomRightOuter);
+        if (sides & Side_Top)
+        {
+            SDL_Rect topEdge{.x = rect.x, .y = rect.y, .w = rect.w, .h = thickness};
+            WidgetUtils::FillRect(batch, topEdge, colors.topLeftOuter);
+        }
+        if (sides & Side_Left)
+        {
+            SDL_Rect leftEdge{.x = rect.x, .y = rect.y, .w = thickness, .h = rect.h};
+            WidgetUtils::FillRect(batch, leftEdge, colors.topLeftInner);
+        }
+        if (sides & Side_Right)
+        {
+            SDL_Rect rightEdge{
+                .x = rect.x + rect.w - thickness, .y = rect.y, .w = thickness, .h = rect.h};
+            WidgetUtils::FillRect(batch, rightEdge, colors.bottomRightInner);
+        }
+        if (sides & Side_Bottom)
+        {
+            SDL_Rect bottomEdge{
+                .x = rect.x, .y = rect.y + rect.h - thickness, .w = rect.w, .h = thickness};
+            WidgetUtils::FillRect(batch, bottomEdge, colors.bottomRightOuter);
+        }
     }
 
+    void WidgetUtils::DrawBevel(SpriteBatch* batch,
+                                const SDL_Rect& rect,
+                                const BevelColors& colors,
+                                bool sunken,
+                                int thickness,
+                                int sides)
+    {
+        BorderColors bc;
+        if (sunken)
+        {
+            bc.topLeftOuter = colors.dark;
+            bc.topLeftInner = colors.dark;
+            bc.bottomRightInner = colors.light;
+            bc.bottomRightOuter = colors.light;
+        }
+        else
+        {
+            bc.topLeftOuter = colors.light;
+            bc.topLeftInner = colors.light;
+            bc.bottomRightInner = colors.dark;
+            bc.bottomRightOuter = colors.dark;
+        }
+        DrawBevel(batch, rect, bc, thickness, sides);
+    }
 } // namespace nuvelocity
