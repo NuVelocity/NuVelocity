@@ -864,10 +864,6 @@ namespace nuvelocity
             SDL_BlendMode savedBlendMode = mCurrentBlendMode;
 
             OutlineRect(&dr, Colors::Magenta);
-            if (srcRect != nullptr)
-            {
-                OutlineRect(&sr, Colors::Cyan);
-            }
 
             // Restore sprite state so subsequent same-texture draws still batch.
             if (savedTexture != mCurrentTexture || savedBlendMode != mCurrentBlendMode)

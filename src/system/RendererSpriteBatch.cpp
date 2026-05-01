@@ -143,8 +143,6 @@ namespace nuvelocity
         if (mDrawBounds)
         {
             OutlineRect(destRect, Colors::Magenta);
-            if (srcRect != nullptr)
-                OutlineRect(srcRect, Colors::Cyan);
         }
     }
 
