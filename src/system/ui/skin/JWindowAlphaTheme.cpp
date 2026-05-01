@@ -28,7 +28,6 @@ namespace nuvelocity
                          .y = screenRect.y + margin.top,
                          .w = screenRect.w,
                          .h = screenRect.h};
-        SDL_Color textColor = button->GetButtonStyle().textColor;
 
         // 1. Determine which border to use
         ClassicSkinBorder* border = nullptr;
@@ -85,6 +84,14 @@ namespace nuvelocity
             textRect.y += 1;
         }
 
+        // FIXME: we don't respect text color for now.
+        // SDL_Color textColor = button->GetButtonStyle().textColor;
+        SDL_Color textColor = mOptions->mShortcutKeyHighlightColor;
+        if (!button->IsEnabled())
+        {
+            textColor.a /= 2;
+        }
+
         game->mFont->DrawStringWithFont(mOptions->mGeneralFont,
                                         game->mSpriteBatch,
                                         button->GetDisplayCaption(),
@@ -94,8 +101,7 @@ namespace nuvelocity
                                         TextAlignment::Center,
                                         true,
                                         button->GetMnemonicIndex(),
-                                        // FIXME: we don't respect text color for now.
-                                        mOptions->mShortcutKeyHighlightColor);
+                                        textColor);
 
         if (button->GetButtonStyle().showFocusRing && button->IsFocused() && !button->IsHovered())
         {
