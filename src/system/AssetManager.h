@@ -74,6 +74,8 @@ namespace nuvelocity
         NVE_API SDL_IOStream* Load(const char* path);
 
         NVE_API SDL_IOStream* Load(const std::string& path);
+        NVE_API SDL_IOStream* OpenWrite(const char* path);
+        NVE_API SDL_IOStream* OpenWrite(const std::string& path);
 
         NVE_API StandAloneFrame* LoadStandAloneFrame(const std::string& path);
         NVE_API Sequence* LoadSequence(const std::string& path);

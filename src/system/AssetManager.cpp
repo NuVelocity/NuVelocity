@@ -150,6 +150,16 @@ namespace nuvelocity
         return PHYSFSSDL3_openRead(path);
     }
 
+    SDL_IOStream* AssetManager::OpenWrite(const char* path)
+    {
+        return PHYSFSSDL3_openWrite(path);
+    }
+
+    SDL_IOStream* AssetManager::OpenWrite(const std::string& path)
+    {
+        return OpenWrite(path.c_str());
+    }
+
     SDL_IOStream* AssetManager::LoadWithExtension(const std::string& path,
                                                   const std::string& extension)
     {
