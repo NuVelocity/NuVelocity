@@ -37,7 +37,7 @@ namespace nuvelocity
         {
             border = mOptions->mButtonBorder;
         }
-        else if (button->IsPressed())
+        else if (button->IsPressed() || button->IsSelected())
         {
             border = mOptions->mPressedButtonBorder;
             sunken = true;

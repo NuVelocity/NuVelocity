@@ -36,6 +36,7 @@ namespace nuvelocity
             : mHovered(false)
             , mPressed(false)
             , mFocused(false)
+            , mSelected(false)
             , mSuppressFocusAfterClick(false)
             , mMnemonicScancode(SDL_SCANCODE_UNKNOWN)
             , mMnemonicIndex(-1)
@@ -164,6 +165,16 @@ namespace nuvelocity
     bool Button::IsFocused() const
     {
         return mFocused;
+    }
+
+    void Button::SetSelected(bool selected)
+    {
+        mSelected = selected;
+    }
+
+    bool Button::IsSelected() const
+    {
+        return mSelected;
     }
 
     void Button::SetOnClick(const std::function<void(Game*)>& callback)

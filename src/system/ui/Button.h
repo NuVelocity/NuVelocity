@@ -36,6 +36,8 @@ namespace nuvelocity
 
         NVE_API void SetFocused(bool focused);
         NVE_API bool IsFocused() const;
+        NVE_API void SetSelected(bool selected);
+        NVE_API bool IsSelected() const;
 
         NVE_API void SetOnClick(const std::function<void(Game*)>& callback);
         NVE_API virtual void Activate(Game* game);
@@ -50,6 +52,7 @@ namespace nuvelocity
         bool mHovered;
         bool mPressed;
         bool mFocused;
+        bool mSelected;
         bool mSuppressFocusAfterClick;
         SDL_Scancode mMnemonicScancode;
         int mMnemonicIndex;

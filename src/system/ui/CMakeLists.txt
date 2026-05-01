@@ -23,6 +23,8 @@ target_sources(
     JListBox.h
     JTabControl.cpp
     JTabControl.h
+    ToggleButtonGroup.cpp
+    ToggleButtonGroup.h
 )
 
 add_subdirectory(skin)
