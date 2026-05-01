@@ -57,7 +57,9 @@ namespace nuvelocity
         UnorderedMap,
         Color,
         Polygon,
-        Point
+        Point,
+        Int64,
+        UInt64
     };
 
     class Property
@@ -307,6 +309,58 @@ namespace nuvelocity
         }
     };
 
+    class Int64Property : public Property
+    {
+    public:
+        Int64Property(const std::string& name, size_t offset, size_t size)
+                : Property(name, offset, size)
+        {
+        }
+
+        int64_t GetInt64Value(void* obj) const
+        {
+            return *(int64_t*)GetValuePtr(obj);
+        }
+
+        void SetInt64Value(void* obj, int64_t value)
+        {
+            *(int64_t*)GetValuePtr(obj) = value;
+        }
+
+        void SetValue(void* obj, const void* valuePtr) override
+        {
+            *(int64_t*)GetValuePtr(obj) = *(const int64_t*)valuePtr;
+        }
+
+        void SetValue(void* obj, const std::string& value) override
+        {
+            try
+            {
+                int64_t intValue = std::stoll(value);
+                SetInt64Value(obj, intValue);
+            }
+            catch (const std::exception& e)
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "Failed to convert '%s' to int64_t for property '%s': %s",
+                            value.c_str(),
+                            mName.c_str(),
+                            e.what());
+            }
+        }
+
+        void DumpValue(void* obj) const override
+        {
+            int64_t intValue = GetInt64Value(obj);
+            SDL_Log("  %s: %lld", mName.c_str(), (long long)intValue);
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::Int64;
+        }
+    };
+
     class UIntProperty : public Property
     {
     public:
@@ -356,6 +410,58 @@ namespace nuvelocity
         PropertyType GetType() const override
         {
             return PropertyType::UInt;
+        }
+    };
+
+    class UInt64Property : public Property
+    {
+    public:
+        UInt64Property(const std::string& name, size_t offset, size_t size)
+                : Property(name, offset, size)
+        {
+        }
+
+        uint64_t GetUInt64Value(void* obj) const
+        {
+            return *(uint64_t*)GetValuePtr(obj);
+        }
+
+        void SetUInt64Value(void* obj, uint64_t value)
+        {
+            *(uint64_t*)GetValuePtr(obj) = value;
+        }
+
+        void SetValue(void* obj, const void* valuePtr) override
+        {
+            *(uint64_t*)GetValuePtr(obj) = *(const uint64_t*)valuePtr;
+        }
+
+        void SetValue(void* obj, const std::string& value) override
+        {
+            try
+            {
+                uint64_t uintValue = std::stoull(value);
+                SetUInt64Value(obj, uintValue);
+            }
+            catch (const std::exception& e)
+            {
+                SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                            "Failed to convert '%s' to uint64_t for property '%s': %s",
+                            value.c_str(),
+                            mName.c_str(),
+                            e.what());
+            }
+        }
+
+        void DumpValue(void* obj) const override
+        {
+            uint64_t uintValue = GetUInt64Value(obj);
+            SDL_Log("  %s: %llu", mName.c_str(), (unsigned long long)uintValue);
+        }
+
+        PropertyType GetType() const override
+        {
+            return PropertyType::UInt64;
         }
     };
 

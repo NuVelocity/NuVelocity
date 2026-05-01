@@ -657,6 +657,10 @@ namespace nuvelocity
             }
             return std::to_string(*static_cast<const int*>(valuePtr));
         }
+        case PropertyType::Int64:
+            return std::to_string(*static_cast<const int64_t*>(valuePtr));
+        case PropertyType::UInt64:
+            return std::to_string(*static_cast<const uint64_t*>(valuePtr));
         default:
             return "";
         }

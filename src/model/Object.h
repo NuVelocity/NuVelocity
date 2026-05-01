@@ -192,10 +192,18 @@ namespace nuvelocity
             {
                 prop = new IntProperty(name, offset, size);
             }
+            else if constexpr (std::is_same_v<MemberType, int64_t>)
+            {
+                prop = new Int64Property(name, offset, size);
+            }
             else if constexpr (std::is_same_v<MemberType, unsigned int> ||
                                std::is_same_v<MemberType, uint16_t>)
             {
                 prop = new UIntProperty(name, offset, size);
+            }
+            else if constexpr (std::is_same_v<MemberType, uint64_t>)
+            {
+                prop = new UInt64Property(name, offset, size);
             }
             else if constexpr (std::is_same_v<MemberType, float>)
             {
