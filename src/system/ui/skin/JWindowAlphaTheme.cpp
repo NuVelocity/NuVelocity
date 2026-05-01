@@ -352,9 +352,18 @@ namespace nuvelocity
         // Content area
         int marginOffset = mOptions->mButtonBorder->mTextureMargin + 2;
 
+        const auto& rows = listBox->GetRows();
+        int rowHeight = listBox->GetRowHeight();
+        int scrollOffset = listBox->GetScrollOffset();
+        int selectedIndex = listBox->GetSelectedIndex();
+        int listAreaHeight = rect.h - headerHeight;
+        int totalHeight = static_cast<int>(rows.size()) * rowHeight;
+        bool showScrollbar = totalHeight > listAreaHeight;
+        int scrollbarWidth = showScrollbar ? 16 : 0;
+
         SDL_Rect contentClip = {.x = rect.x,
                                 .y = rect.y + headerHeight + 1 + marginOffset,
-                                .w = rect.w - 16,
+                                .w = rect.w - scrollbarWidth,
                                 .h = rect.h - headerHeight - 2 - marginOffset};
         const auto& columns = listBox->GetColumns();
         int curX = rect.x;
@@ -371,11 +380,6 @@ namespace nuvelocity
             rect.x, rect.y + headerHeight, rect.x + rect.w, rect.y + headerHeight, separatorColor);
 
         // Draw Rows
-        const auto& rows = listBox->GetRows();
-        int rowHeight = listBox->GetRowHeight();
-        int scrollOffset = listBox->GetScrollOffset();
-        int selectedIndex = listBox->GetSelectedIndex();
-
         int maxVisibleRows = (rect.h - headerHeight) / rowHeight;
 
         batch->SetClipRect(&contentClip);
@@ -396,10 +400,12 @@ namespace nuvelocity
 
             if (rowIndex == selectedIndex)
             {
-                WidgetUtils::FillRect(
-                    batch,
-                    {rect.x + leftMargin, ry, rect.w - 16 - rightMargin - leftMargin, rowHeight},
-                    selectColor);
+                WidgetUtils::FillRect(batch,
+                                      {rect.x + leftMargin,
+                                       ry,
+                                       rect.w - scrollbarWidth - rightMargin - leftMargin,
+                                       rowHeight},
+                                      selectColor);
             }
 
             curX = rect.x + leftMargin;
@@ -438,65 +444,62 @@ namespace nuvelocity
         batch->SetClipRect(nullptr);
 
         // Draw Scrollbar
-        int sbX = rect.x + rect.w - 16;
-        SDL_Rect upBtn = {sbX, rect.y + headerHeight + 1, 15, 15};
-        SDL_Rect downBtn = {sbX, rect.y + rect.h - 16, 15, 15};
-
-        // Scrollbar Track Container
-        SDL_Rect trackRect = {sbX, upBtn.y + 15, 15, downBtn.y - (upBtn.y + 15)};
-        WidgetUtils::FillRect(batch, trackRect, {0, 0, 0, 150}); // Black semi-transparent
-        mOptions->mButtonBorder->DrawBorder(batch, trackRect, true);
-
-        // Draw Up/Down buttons
-        if (mOptions->mWindowBorder != nullptr)
+        if (showScrollbar)
         {
-            mOptions->mWindowBorder->DrawTiledBackground(batch, upBtn);
-            mOptions->mWindowBorder->DrawTiledBackground(batch, downBtn);
-        }
-        mOptions->mButtonBorder->DrawBorder(batch, upBtn, listBox->IsUpPressed());
-        mOptions->mButtonBorder->DrawBorder(batch, downBtn, listBox->IsDownPressed());
+            int sbX = rect.x + rect.w - 16;
+            SDL_Rect upBtn = {sbX, rect.y + headerHeight + 1, 15, 15};
+            SDL_Rect downBtn = {sbX, rect.y + rect.h - 16, 15, 15};
 
-        // Font-based arrows
-        std::string upStr(1, (char)28);
-        std::string downStr(1, (char)29);
+            // Scrollbar Track Container
+            SDL_Rect trackRect = {sbX, upBtn.y + 15, 15, downBtn.y - (upBtn.y + 15)};
+            WidgetUtils::FillRect(batch, trackRect, {0, 0, 0, 150}); // Black semi-transparent
+            mOptions->mButtonBorder->DrawBorder(batch, trackRect, true);
 
-        SDL_Rect upIconRect = {.x = upBtn.x, .y = upBtn.y + 2, .w = upBtn.w, .h = upBtn.h};
-        if (listBox->IsUpPressed())
-        {
-            upIconRect.x += 1;
-            upIconRect.y += 1;
-        }
+            // Draw Up/Down buttons
+            if (mOptions->mWindowBorder != nullptr)
+            {
+                mOptions->mWindowBorder->DrawTiledBackground(batch, upBtn);
+                mOptions->mWindowBorder->DrawTiledBackground(batch, downBtn);
+            }
+            mOptions->mButtonBorder->DrawBorder(batch, upBtn, listBox->IsUpPressed());
+            mOptions->mButtonBorder->DrawBorder(batch, downBtn, listBox->IsDownPressed());
 
-        SDL_Rect downIconRect = {
-            .x = downBtn.x, .y = downBtn.y + 2, .w = downBtn.w, .h = downBtn.h};
-        if (listBox->IsDownPressed())
-        {
-            downIconRect.x += 1;
-            downIconRect.y += 1;
-        }
+            // Font-based arrows
+            std::string upStr(1, (char)28);
+            std::string downStr(1, (char)29);
 
-        game->mFont->DrawStringWithFont(mOptions->mGeneralFont,
-                                        batch,
-                                        upStr,
-                                        upIconRect,
-                                        Colors::White,
-                                        13,
-                                        TextAlignment::Center);
-        game->mFont->DrawStringWithFont(mOptions->mGeneralFont,
-                                        batch,
-                                        downStr,
-                                        downIconRect,
-                                        Colors::White,
-                                        13,
-                                        TextAlignment::Center);
+            SDL_Rect upIconRect = {.x = upBtn.x, .y = upBtn.y + 2, .w = upBtn.w, .h = upBtn.h};
+            if (listBox->IsUpPressed())
+            {
+                upIconRect.x += 1;
+                upIconRect.y += 1;
+            }
 
-        // Thumb (dynamic-ish sizing)
-        int totalHeight = (int)rows.size() * rowHeight;
-        int listAreaHeight = rect.h - headerHeight;
-        int trackHeight = downBtn.y - (upBtn.y + 15);
+            SDL_Rect downIconRect = {
+                .x = downBtn.x, .y = downBtn.y + 2, .w = downBtn.w, .h = downBtn.h};
+            if (listBox->IsDownPressed())
+            {
+                downIconRect.x += 1;
+                downIconRect.y += 1;
+            }
 
-        if (totalHeight > listAreaHeight)
-        {
+            game->mFont->DrawStringWithFont(mOptions->mGeneralFont,
+                                            batch,
+                                            upStr,
+                                            upIconRect,
+                                            Colors::White,
+                                            13,
+                                            TextAlignment::Center);
+            game->mFont->DrawStringWithFont(mOptions->mGeneralFont,
+                                            batch,
+                                            downStr,
+                                            downIconRect,
+                                            Colors::White,
+                                            13,
+                                            TextAlignment::Center);
+
+            // Thumb (dynamic-ish sizing)
+            int trackHeight = downBtn.y - (upBtn.y + 15);
             float ratio = (float)listAreaHeight / (float)totalHeight;
             int thumbHeight = (int)(trackHeight * ratio);
             thumbHeight = SDL_max(15, thumbHeight);

@@ -70,22 +70,34 @@ namespace nuvelocity
         mUpPressed = false;
         mDownPressed = false;
 
+        const SDL_Rect rect = GetScreenRect();
+        const int listAreaHeight = SDL_max(0, rect.h - mHeaderHeight);
+        const int totalHeight = static_cast<int>(mRows.size()) * mRowHeight;
+        const bool showScrollbar = totalHeight > listAreaHeight;
+        const int sbX = rect.x + rect.w - (showScrollbar ? 16 : 0);
+
+        if (!showScrollbar && mDraggingThumb)
+        {
+            mDraggingThumb = false;
+        }
+
         if (input.IsMouseButtonDown(SDL_BUTTON_LEFT))
         {
-            const SDL_Rect rect = GetScreenRect();
-            int sbX = rect.x + rect.w - 16;
-            SDL_Rect upBtn = {sbX, rect.y + mHeaderHeight + 1, 15, 15};
-            SDL_Rect downBtn = {sbX, rect.y + rect.h - 16, 15, 15};
+            if (showScrollbar)
+            {
+                SDL_Rect upBtn = {sbX, rect.y + mHeaderHeight + 1, 15, 15};
+                SDL_Rect downBtn = {sbX, rect.y + rect.h - 16, 15, 15};
 
-            if (mouse.x >= upBtn.x && mouse.x < upBtn.x + upBtn.w && mouse.y >= upBtn.y &&
-                mouse.y < upBtn.y + upBtn.h)
-            {
-                mUpPressed = true;
-            }
-            else if (mouse.x >= downBtn.x && mouse.x < downBtn.x + downBtn.w &&
-                     mouse.y >= downBtn.y && mouse.y < downBtn.y + downBtn.h)
-            {
-                mDownPressed = true;
+                if (mouse.x >= upBtn.x && mouse.x < upBtn.x + upBtn.w && mouse.y >= upBtn.y &&
+                    mouse.y < upBtn.y + upBtn.h)
+                {
+                    mUpPressed = true;
+                }
+                else if (mouse.x >= downBtn.x && mouse.x < downBtn.x + downBtn.w &&
+                         mouse.y >= downBtn.y && mouse.y < downBtn.y + downBtn.h)
+                {
+                    mDownPressed = true;
+                }
             }
         }
 
@@ -105,8 +117,6 @@ namespace nuvelocity
 
         if (ContainsPoint(mouse) && input.IsMouseButtonPressed(SDL_BUTTON_LEFT))
         {
-            const SDL_Rect rect = GetScreenRect();
-
             // Check header for resizing
             if (mouse.y < rect.y + mHeaderHeight)
             {
@@ -119,58 +129,66 @@ namespace nuvelocity
                         mResizingColumn = i;
                         mResizeStartX = mouse.x;
                         mResizeStartWidth = mColumns[i].width;
+                        mSelectingDrag = false;
                         return; // Start resizing, don't handle clicks
                     }
                 }
             }
 
             // Check scroll buttons
-            int sbX = rect.x + rect.w - 16;
-            SDL_Rect upBtn = {sbX, rect.y + mHeaderHeight + 1, 15, 15};
-            SDL_Rect downBtn = {sbX, rect.y + rect.h - 16, 15, 15};
+            if (showScrollbar)
+            {
+                SDL_Rect upBtn = {sbX, rect.y + mHeaderHeight + 1, 15, 15};
+                SDL_Rect downBtn = {sbX, rect.y + rect.h - 16, 15, 15};
 
-            if (mouse.x >= upBtn.x && mouse.x < upBtn.x + upBtn.w && mouse.y >= upBtn.y &&
-                mouse.y < upBtn.y + upBtn.h)
-            {
-                mScrollOffset -= mRowHeight;
-            }
-            else if (mouse.x >= downBtn.x && mouse.x < downBtn.x + downBtn.w &&
-                     mouse.y >= downBtn.y && mouse.y < downBtn.y + downBtn.h)
-            {
-                mScrollOffset += mRowHeight;
-            }
-            else if (mouse.x >= sbX && mouse.x < rect.x + rect.w)
-            {
-                // Scrollbar track (not buttons)
-                // Proportional scroll logic
-                int maxVisibleRows = (rect.h - mHeaderHeight) / mRowHeight;
-                int totalHeight = (int)mRows.size() * mRowHeight;
-                int visibleAreaHeight = rect.h - mHeaderHeight - 32;
-
-                if (totalHeight > visibleAreaHeight + 32)
+                if (mouse.x >= upBtn.x && mouse.x < upBtn.x + upBtn.w && mouse.y >= upBtn.y &&
+                    mouse.y < upBtn.y + upBtn.h)
                 {
-                    float ratio = (float)visibleAreaHeight / (float)totalHeight;
-                    int thumbHeight = SDL_max(10, (int)(visibleAreaHeight * ratio));
-                    int thumbY = upBtn.y + 15 + (int)((float)mScrollOffset * ratio);
+                    mScrollOffset -= mRowHeight;
+                    mSelectingDrag = false;
+                }
+                else if (mouse.x >= downBtn.x && mouse.x < downBtn.x + downBtn.w &&
+                         mouse.y >= downBtn.y && mouse.y < downBtn.y + downBtn.h)
+                {
+                    mScrollOffset += mRowHeight;
+                    mSelectingDrag = false;
+                }
+                else if (mouse.x >= sbX && mouse.x < rect.x + rect.w)
+                {
+                    // Scrollbar track (not buttons)
+                    // Proportional scroll logic
+                    int maxVisibleRows = (rect.h - mHeaderHeight) / mRowHeight;
+                    int visibleAreaHeight = rect.h - mHeaderHeight - 32;
 
-                    if (mouse.x >= sbX && mouse.x < sbX + 15 && mouse.y >= thumbY &&
-                        mouse.y < thumbY + thumbHeight)
+                    if (totalHeight > visibleAreaHeight + 32)
                     {
-                        mDraggingThumb = true;
-                        mDragStartY = mouse.y;
-                        mDragStartScroll = mScrollOffset;
-                    }
-                    else if (mouse.y < thumbY)
-                    {
-                        mScrollOffset -= maxVisibleRows * mRowHeight;
-                    }
-                    else if (mouse.y > thumbY + thumbHeight)
-                    {
-                        mScrollOffset += maxVisibleRows * mRowHeight;
+                        float ratio = (float)visibleAreaHeight / (float)totalHeight;
+                        int thumbHeight = SDL_max(10, (int)(visibleAreaHeight * ratio));
+                        int thumbY = upBtn.y + 15 + (int)((float)mScrollOffset * ratio);
+
+                        if (mouse.x >= sbX && mouse.x < sbX + 15 && mouse.y >= thumbY &&
+                            mouse.y < thumbY + thumbHeight)
+                        {
+                            mDraggingThumb = true;
+                            mDragStartY = mouse.y;
+                            mDragStartScroll = mScrollOffset;
+                            mSelectingDrag = false;
+                        }
+                        else if (mouse.y < thumbY)
+                        {
+                            mScrollOffset -= maxVisibleRows * mRowHeight;
+                            mSelectingDrag = false;
+                        }
+                        else if (mouse.y > thumbY + thumbHeight)
+                        {
+                            mScrollOffset += maxVisibleRows * mRowHeight;
+                            mSelectingDrag = false;
+                        }
                     }
                 }
             }
-            else
+
+            if (!mDraggingThumb && mouse.x >= rect.x && mouse.x < sbX)
             {
                 int localY = mouse.y - rect.y - mHeaderHeight;
                 if (localY >= 0 && mouse.x < sbX)
@@ -179,6 +197,7 @@ namespace nuvelocity
                     if (index >= 0 && index < static_cast<int>(mRows.size()))
                     {
                         SetSelectedIndex(index);
+                        mSelectingDrag = true;
                     }
                 }
             }
@@ -202,6 +221,30 @@ namespace nuvelocity
             else
             {
                 mDraggingThumb = false;
+            }
+        }
+
+        if (mSelectingDrag)
+        {
+            if (input.IsMouseButtonDown(SDL_BUTTON_LEFT))
+            {
+                if (listAreaHeight > 0 && mouse.y >= rect.y + mHeaderHeight &&
+                    mouse.y < rect.y + mHeaderHeight + listAreaHeight)
+                {
+                    int clampedY = SDL_clamp(mouse.y,
+                                             rect.y + mHeaderHeight,
+                                             rect.y + mHeaderHeight + listAreaHeight - 1);
+                    int localY = clampedY - rect.y - mHeaderHeight;
+                    int index = (localY + mScrollOffset) / mRowHeight;
+                    if (index >= 0 && index < static_cast<int>(mRows.size()))
+                    {
+                        SetSelectedIndex(index);
+                    }
+                }
+            }
+            else
+            {
+                mSelectingDrag = false;
             }
         }
 

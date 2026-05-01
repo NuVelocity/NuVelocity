@@ -88,6 +88,7 @@ namespace nuvelocity
         bool mDraggingThumb = false;
         int mDragStartY = 0;
         int mDragStartScroll = 0;
+        bool mSelectingDrag = false;
 
         bool mUpPressed = false;
         bool mDownPressed = false;
