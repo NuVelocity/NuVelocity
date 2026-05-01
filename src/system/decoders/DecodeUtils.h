@@ -54,6 +54,13 @@ namespace nuvelocity
             return uncompress2(dest, &destLen64, source, &sourceLen64);
         }
 
+        static inline int
+        Deflate(uint8_t* dest, uint32_t* destLen, const uint8_t* source, uint32_t sourceLen)
+        {
+            uLongf destLen64 = *destLen;
+            return compress(dest, &destLen64, source, (uLong)sourceLen);
+        }
+
         static inline void MergeBitPlane(int plane,
                                          int channel,
                                          uint32_t width,
