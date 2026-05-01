@@ -587,63 +587,55 @@ namespace nuvelocity
         output += GetIndent(indentLevel) + line + "\n";
     }
 
-    inline static std::string GetPropertyValueAsString(const void* object, Property* prop)
+    inline static std::string
+    ValueToString(const void* valuePtr, PropertyType type, Property* prop = nullptr)
     {
-        PropertyType type = prop->GetType();
-
         switch (type)
         {
         case PropertyType::Int:
-        {
-            IntProperty* intProp = static_cast<IntProperty*>(prop);
-            return std::to_string(intProp->GetIntValue(const_cast<void*>(object)));
-        }
+            return std::to_string(*static_cast<const int*>(valuePtr));
         case PropertyType::UInt:
-        {
-            UIntProperty* uintProp = static_cast<UIntProperty*>(prop);
-            return std::to_string(uintProp->GetUIntValue(const_cast<void*>(object)));
-        }
+            return std::to_string(*static_cast<const uint32_t*>(valuePtr));
         case PropertyType::Float:
         {
-            FloatProperty* floatProp = static_cast<FloatProperty*>(prop);
-            float val = floatProp->GetFloatValue(const_cast<void*>(object));
+            float val = *static_cast<const float*>(valuePtr);
             std::ostringstream oss;
             oss << val;
             return oss.str();
         }
         case PropertyType::Double:
         {
-            DoubleProperty* doubleProp = static_cast<DoubleProperty*>(prop);
-            double val = doubleProp->GetDoubleValue(const_cast<void*>(object));
+            double val = *static_cast<const double*>(valuePtr);
             std::ostringstream oss;
             oss << val;
             return oss.str();
         }
         case PropertyType::Bool:
-        {
-            BoolProperty* boolProp = static_cast<BoolProperty*>(prop);
-            return boolProp->GetBoolValue(const_cast<void*>(object)) ? "1" : "0";
-        }
+            return (*static_cast<const bool*>(valuePtr)) ? "1" : "0";
         case PropertyType::String:
-        {
-            StringProperty* strProp = static_cast<StringProperty*>(prop);
-            return strProp->GetStringValue(const_cast<void*>(object));
-        }
+            return *static_cast<const std::string*>(valuePtr);
         case PropertyType::CString:
         {
-            CStringProperty* cstrProp = static_cast<CStringProperty*>(prop);
-            const char* val = cstrProp->GetCStringValue(const_cast<void*>(object));
+            const char* val = *static_cast<const char* const*>(valuePtr);
             return val ? std::string(val) : "";
         }
-        case PropertyType::Enum:
+        case PropertyType::Color:
         {
-            EnumProperty* enumProp = static_cast<EnumProperty*>(prop);
-            return enumProp->GetSerializedValue(const_cast<void*>(object));
+            const SDL_Color& color = *static_cast<const SDL_Color*>(valuePtr);
+            return std::to_string(color.r) + "," + std::to_string(color.g) + "," +
+                   std::to_string(color.b) + "," + std::to_string(color.a);
+        }
+        case PropertyType::Point:
+        {
+            const SDL_FPoint& point = *static_cast<const SDL_FPoint*>(valuePtr);
+            std::ostringstream oss;
+            oss << point.x << "," << point.y;
+            return oss.str();
         }
         case PropertyType::Polygon:
         {
-            PolygonProperty* polyProp = static_cast<PolygonProperty*>(prop);
-            const std::vector<SDL_FPoint>& points = polyProp->GetPoints(const_cast<void*>(object));
+            const std::vector<SDL_FPoint>& points =
+                *static_cast<const std::vector<SDL_FPoint>*>(valuePtr);
             std::ostringstream oss;
             for (size_t i = 0; i < points.size(); ++i)
             {
@@ -655,21 +647,32 @@ namespace nuvelocity
             }
             return oss.str();
         }
-        case PropertyType::Point:
+        case PropertyType::Enum:
         {
-            PointProperty* pointProp = static_cast<PointProperty*>(prop);
-            SDL_FPoint point = pointProp->GetPointValue(const_cast<void*>(object));
-            std::ostringstream oss;
-            oss << point.x << "," << point.y;
-            return oss.str();
+            if (prop && prop->GetType() == PropertyType::Enum)
+            {
+                const EnumProperty* enumProp = static_cast<const EnumProperty*>(prop);
+                int intValue = enumProp->GetIntValueByValuePtr(valuePtr);
+                return enumProp->GetSerializedValueFromInt(intValue);
+            }
+            return std::to_string(*static_cast<const int*>(valuePtr));
         }
         default:
             return "";
         }
     }
 
-    inline static void
-    SerializeObject(const void* object, ClassInfo* classInfo, std::string& output, int indentLevel)
+    inline static std::string GetPropertyValueAsString(const void* object, Property* prop)
+    {
+        void* valuePtr = prop->GetValue(const_cast<void*>(object));
+        return ValueToString(valuePtr, prop->GetType(), prop);
+    }
+
+    inline static void SerializeObject(const void* object,
+                                       ClassInfo* classInfo,
+                                       std::string& output,
+                                       int indentLevel,
+                                       const std::string& key = "")
     {
         if (classInfo == nullptr || object == nullptr)
         {
@@ -731,7 +734,14 @@ namespace nuvelocity
             return;
         }
 
-        AppendLine(output, indentLevel, classInfo->mName);
+        if (key.empty())
+        {
+            AppendLine(output, indentLevel, classInfo->mName);
+        }
+        else
+        {
+            AppendLine(output, indentLevel, key + "=" + classInfo->mName);
+        }
         AppendLine(output, indentLevel, std::string(kTokenOpenBrace));
 
         Property* prop = classInfo->GetFirstProperty();
@@ -763,9 +773,46 @@ namespace nuvelocity
                     itemKey = std::string(kKeyArrayItem);
                 }
 
-                SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS,
-                            "Array serialization for '%s' requires element type at compile-time",
-                            propName.c_str());
+                PropertyType elemType = prop->GetElementType();
+                if (elemType == PropertyType::Object)
+                {
+                    ClassInfo* childInfo = prop->GetChildClassInfo();
+                    if (childInfo != nullptr)
+                    {
+                        for (size_t i = 0; i < arraySize; ++i)
+                        {
+                            void* itemObj = prop->GetArrayEntryObject(const_cast<void*>(object), i);
+                            if (itemObj != nullptr)
+                            {
+                                SerializeObject(
+                                    itemObj, childInfo, output, indentLevel + 2, itemKey);
+                            }
+                            else
+                            {
+                                AppendLine(output, indentLevel + 2, itemKey + "=");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS,
+                                    "No ClassInfo for object array element '%s'",
+                                    propName.c_str());
+                        for (size_t i = 0; i < arraySize; ++i)
+                        {
+                            AppendLine(output, indentLevel + 2, itemKey + "=");
+                        }
+                    }
+                }
+                else
+                {
+                    for (size_t i = 0; i < arraySize; ++i)
+                    {
+                        void* valPtr = prop->GetArrayEntryValuePtr(const_cast<void*>(object), i);
+                        std::string val = ValueToString(valPtr, elemType, prop);
+                        AppendLine(output, indentLevel + 2, itemKey + "=" + val);
+                    }
+                }
 
                 AppendLine(output, indentLevel + 1, std::string(kTokenCloseBrace));
                 break;
@@ -776,16 +823,55 @@ namespace nuvelocity
                 AppendLine(output, indentLevel + 1, propName + "=" + std::string(kKeyArray));
                 AppendLine(output, indentLevel + 1, std::string(kTokenOpenBrace));
 
-                SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS,
-                            "Map serialization for '%s' requires key/value type at compile-time",
-                            propName.c_str());
+                PropertyType elemType = prop->GetElementType();
+                if (elemType == PropertyType::Object)
+                {
+                    std::vector<std::pair<std::string, void*>> entries;
+                    prop->GetMapObjectEntries(const_cast<void*>(object), entries);
+                    ClassInfo* childInfo = prop->GetChildClassInfo();
+                    if (childInfo != nullptr)
+                    {
+                        for (const auto& entry : entries)
+                        {
+                            if (entry.second != nullptr)
+                            {
+                                SerializeObject(
+                                    entry.second, childInfo, output, indentLevel + 2, entry.first);
+                            }
+                            else
+                            {
+                                AppendLine(output, indentLevel + 2, entry.first + "=");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS,
+                                    "No ClassInfo for object map element '%s'",
+                                    propName.c_str());
+                        for (const auto& entry : entries)
+                        {
+                            AppendLine(output, indentLevel + 2, entry.first + "=");
+                        }
+                    }
+                }
+                else
+                {
+                    std::vector<std::pair<std::string, void*>> entries;
+                    prop->GetMapEntryValuePtrs(const_cast<void*>(object), entries);
+                    for (const auto& entry : entries)
+                    {
+                        std::string val = ValueToString(entry.second, elemType, prop);
+                        AppendLine(output, indentLevel + 2, entry.first + "=" + val);
+                    }
+                }
 
                 AppendLine(output, indentLevel + 1, std::string(kTokenCloseBrace));
                 break;
             }
             case PropertyType::Object:
             {
-                void* childObject = *(void**)prop->GetValue(const_cast<void*>(object));
+                void* childObject = *static_cast<void**>(prop->GetValue(const_cast<void*>(object)));
                 if (childObject != nullptr)
                 {
                     ClassInfo* childInfo = prop->GetChildClassInfo();
@@ -793,14 +879,19 @@ namespace nuvelocity
                     if (childInfo != nullptr)
                     {
                         // Recursively serialize the child object
-                        SerializeObject(childObject, childInfo, output, indentLevel + 1);
+                        SerializeObject(childObject, childInfo, output, indentLevel + 1, propName);
                     }
                     else
                     {
                         SDL_LogWarn(NVE_LOG_CATEGORY_PROPSYS,
                                     "No ClassInfo for object property '%s'",
                                     propName.c_str());
+                        AppendLine(output, indentLevel + 1, propName + "=");
                     }
+                }
+                else
+                {
+                    AppendLine(output, indentLevel + 1, propName + "=");
                 }
                 break;
             }
@@ -844,7 +935,7 @@ namespace nuvelocity
                         ClassInfo* childInfo = std::get<2>(tupleVal);
                         if (childInfo != nullptr)
                         {
-                            SerializeObject(valPtr, childInfo, output, indentLevel + 1);
+                            SerializeObject(valPtr, childInfo, output, indentLevel + 1, dynKey);
                         }
                     }
                 }

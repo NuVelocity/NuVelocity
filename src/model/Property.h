@@ -210,6 +210,36 @@ namespace nuvelocity
                         mName.c_str());
         }
 
+        virtual void* GetArrayEntryObject(void* obj, size_t index) const
+        {
+            return nullptr;
+        }
+
+        virtual void* GetArrayEntryValuePtr(void* obj, size_t index) const
+        {
+            return nullptr;
+        }
+
+        virtual void GetMapEntryValuePtrs(void* obj,
+                                          std::vector<std::pair<std::string, void*>>& entries) const
+        {
+        }
+
+        virtual void GetMapObjectEntries(void* obj,
+                                         std::vector<std::pair<std::string, void*>>& entries) const
+        {
+        }
+
+        virtual PropertyType GetElementType() const
+        {
+            return PropertyType::Object;
+        }
+
+        virtual PropertyType GetMapKeyType() const
+        {
+            return PropertyType::String;
+        }
+
         virtual void DumpValue(void* obj) const
         {
             void* valuePtr = GetValue(obj);
@@ -678,9 +708,35 @@ namespace nuvelocity
             }
         }
 
-        std::string GetSerializedValue(void* obj) const
+        int GetIntValueByValuePtr(const void* valuePtr) const
         {
-            const int intValue = GetIntValue(obj);
+            if (mStorageIsInt32)
+            {
+                return *static_cast<const int*>(valuePtr);
+            }
+
+            if (mSize == 1)
+            {
+                return static_cast<int>(*static_cast<const uint8_t*>(valuePtr));
+            }
+            if (mSize == 2)
+            {
+                return static_cast<int>(*static_cast<const uint16_t*>(valuePtr));
+            }
+            if (mSize == 4)
+            {
+                return static_cast<int>(*static_cast<const uint32_t*>(valuePtr));
+            }
+
+            SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                        "Unsupported enum storage size (%zu) for property '%s'",
+                        mSize,
+                        mName.c_str());
+            return 0;
+        }
+
+        std::string GetSerializedValueFromInt(int intValue) const
+        {
             const auto textIt = mValueToText.find(intValue);
             if (textIt != mValueToText.end())
             {
@@ -688,6 +744,11 @@ namespace nuvelocity
             }
 
             return std::to_string(intValue);
+        }
+
+        std::string GetSerializedValue(void* obj) const
+        {
+            return GetSerializedValueFromInt(GetIntValue(obj));
         }
 
         void DumpValue(void* obj) const override
@@ -1019,6 +1080,69 @@ namespace nuvelocity
         {
             return mChildClassInfo;
         }
+
+        PropertyType GetElementType() const override
+        {
+            if constexpr (std::is_same_v<T, int>)
+            {
+                return PropertyType::Int;
+            }
+            else if constexpr (std::is_same_v<T, uint32_t>)
+            {
+                return PropertyType::UInt;
+            }
+            else if constexpr (std::is_same_v<T, float>)
+            {
+                return PropertyType::Float;
+            }
+            else if constexpr (std::is_same_v<T, double>)
+            {
+                return PropertyType::Double;
+            }
+            else if constexpr (std::is_same_v<T, bool>)
+            {
+                return PropertyType::Bool;
+            }
+            else if constexpr (std::is_same_v<T, std::string>)
+            {
+                return PropertyType::String;
+            }
+            else if constexpr (std::is_same_v<T, SDL_Color>)
+            {
+                return PropertyType::Color;
+            }
+            else if constexpr (std::is_same_v<T, SDL_FPoint>)
+            {
+                return PropertyType::Point;
+            }
+            else if constexpr (std::is_same_v<T, std::vector<SDL_FPoint>>)
+            {
+                return PropertyType::Polygon;
+            }
+            else if constexpr (std::is_enum_v<T>)
+            {
+                return PropertyType::Enum;
+            }
+            else if constexpr (std::is_pointer_v<T>)
+            {
+                return PropertyType::Object;
+            }
+            return PropertyType::Object;
+        }
+
+        void* GetArrayEntryValuePtr(void* obj, size_t index) const override
+        {
+            return static_cast<void*>(&GetVector(obj)[index]);
+        }
+
+        void* GetArrayEntryObject(void* obj, size_t index) const override
+        {
+            if constexpr (std::is_pointer_v<T>)
+            {
+                return static_cast<void*>(GetVector(obj)[index]);
+            }
+            return nullptr;
+        }
     };
 
     // Base template for shared map/unordered_map logic
@@ -1163,9 +1287,125 @@ namespace nuvelocity
             }
         }
 
-        ClassInfo* GetChildClassInfo() const override
+        PropertyType GetElementType() const override
         {
-            return mChildClassInfo;
+            if constexpr (std::is_same_v<V, int>)
+            {
+                return PropertyType::Int;
+            }
+            else if constexpr (std::is_same_v<V, uint32_t>)
+            {
+                return PropertyType::UInt;
+            }
+            else if constexpr (std::is_same_v<V, float>)
+            {
+                return PropertyType::Float;
+            }
+            else if constexpr (std::is_same_v<V, double>)
+            {
+                return PropertyType::Double;
+            }
+            else if constexpr (std::is_same_v<V, bool>)
+            {
+                return PropertyType::Bool;
+            }
+            else if constexpr (std::is_same_v<V, std::string>)
+            {
+                return PropertyType::String;
+            }
+            else if constexpr (std::is_same_v<V, SDL_Color>)
+            {
+                return PropertyType::Color;
+            }
+            else if constexpr (std::is_same_v<V, SDL_FPoint>)
+            {
+                return PropertyType::Point;
+            }
+            else if constexpr (std::is_same_v<V, std::vector<SDL_FPoint>>)
+            {
+                return PropertyType::Polygon;
+            }
+            else if constexpr (std::is_enum_v<V>)
+            {
+                return PropertyType::Enum;
+            }
+            else if constexpr (std::is_pointer_v<V>)
+            {
+                return PropertyType::Object;
+            }
+            return PropertyType::Object;
+        }
+
+        PropertyType GetMapKeyType() const override
+        {
+            if constexpr (std::is_same_v<K, int>)
+            {
+                return PropertyType::Int;
+            }
+            else if constexpr (std::is_same_v<K, uint32_t>)
+            {
+                return PropertyType::UInt;
+            }
+            else if constexpr (std::is_same_v<K, std::string>)
+            {
+                return PropertyType::String;
+            }
+            return PropertyType::String;
+        }
+
+        void
+        GetMapEntryValuePtrs(void* obj,
+                             std::vector<std::pair<std::string, void*>>& entries) const override
+        {
+            if constexpr (!std::is_pointer_v<V>)
+            {
+                for (auto& [key, val] : GetMapContainer(obj))
+                {
+                    std::string keyStr;
+                    if constexpr (std::is_same_v<K, std::string>)
+                    {
+                        keyStr = key;
+                    }
+                    else if constexpr (std::is_arithmetic_v<K>)
+                    {
+                        keyStr = std::to_string(key);
+                    }
+                    else
+                    {
+                        std::ostringstream oss;
+                        oss << key;
+                        keyStr = oss.str();
+                    }
+                    entries.push_back({keyStr, static_cast<void*>(&val)});
+                }
+            }
+        }
+
+        void GetMapObjectEntries(void* obj,
+                                 std::vector<std::pair<std::string, void*>>& entries) const override
+        {
+            if constexpr (std::is_pointer_v<V>)
+            {
+                for (auto& [key, val] : GetMapContainer(obj))
+                {
+                    std::string keyStr;
+                    if constexpr (std::is_same_v<K, std::string>)
+                    {
+                        keyStr = key;
+                    }
+                    else if constexpr (std::is_arithmetic_v<K>)
+                    {
+                        keyStr = std::to_string(key);
+                    }
+                    else
+                    {
+                        std::ostringstream oss;
+                        oss << key;
+                        keyStr = oss.str();
+                    }
+                    entries.push_back({keyStr, static_cast<void*>(val)});
+                }
+            }
         }
     };
 
