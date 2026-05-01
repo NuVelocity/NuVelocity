@@ -174,6 +174,7 @@ namespace nuvelocity
 
         SDL_Rect compositeDest{.x = rect.x, .y = rect.y, .w = rect.w, .h = rect.h};
         spriteBatch->Draw(compositeSurface, &compositeDest, nullptr);
+        SDL_DestroySurface(compositeSurface);
     }
 
     void AlphaSkinBorder::DrawTiledBackground(SpriteBatch* spriteBatch, const SDL_Rect& rect)
