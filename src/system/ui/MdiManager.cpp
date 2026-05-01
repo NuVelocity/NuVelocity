@@ -33,11 +33,12 @@ namespace nuvelocity
 
     void MdiManager::AddWindow(const std::shared_ptr<MdiWindow>& window)
     {
-        if (window != nullptr)
+        if (window == nullptr)
         {
-            mWindows.push_back(window);
-            SetActiveWindow(window);
+            return;
         }
+
+        mPendingWindows.push_back(window);
     }
 
     void MdiManager::AddCenteredWindow(Game* game, const std::shared_ptr<MdiWindow>& window)
@@ -59,11 +60,15 @@ namespace nuvelocity
     {
         auto [first, last] = std::ranges::remove(mWindows, window);
         mWindows.erase(first, last);
+
+        auto [pendingFirst, pendingLast] = std::ranges::remove(mPendingWindows, window);
+        mPendingWindows.erase(pendingFirst, pendingLast);
     }
 
     void MdiManager::Clear()
     {
         mWindows.clear();
+        mPendingWindows.clear();
     }
 
     void MdiManager::Update(Game* game)
@@ -135,6 +140,8 @@ namespace nuvelocity
                                    [](const std::shared_ptr<MdiWindow>& window)
                                    { return window == nullptr || window->ShouldClose(); });
         mWindows.erase(rmFirst, rmLast);
+
+        FlushPendingWindows();
     }
 
     void MdiManager::Draw(Game* game)
@@ -201,5 +208,26 @@ namespace nuvelocity
     JWindowSkin* MdiManager::GetDefaultSkin() const
     {
         return mDefaultSkin;
+    }
+
+    void MdiManager::FlushPendingWindows()
+    {
+        if (mPendingWindows.empty())
+        {
+            return;
+        }
+
+        for (const std::shared_ptr<MdiWindow>& window : mPendingWindows)
+        {
+            if (window == nullptr)
+            {
+                continue;
+            }
+
+            mWindows.push_back(window);
+            SetActiveWindow(window);
+        }
+
+        mPendingWindows.clear();
     }
 } // namespace nuvelocity

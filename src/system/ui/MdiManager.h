@@ -45,7 +45,10 @@ namespace nuvelocity
         NVE_API JWindowSkin* GetDefaultSkin() const;
 
     private:
+        void FlushPendingWindows();
+
         std::vector<std::shared_ptr<MdiWindow>> mWindows;
+        std::vector<std::shared_ptr<MdiWindow>> mPendingWindows;
         std::unordered_map<std::string, JWindowSkin*> mSkins;
         JWindowSkin* mDefaultSkin = nullptr;
     };
