@@ -114,8 +114,9 @@ namespace nuvelocity
         const SDL_Rect windowRect = GetScreenRect();
         const SDL_Rect clipRect = {
             .x = windowRect.x, .y = windowRect.y, .w = windowRect.w, .h = windowRect.h};
-        // game->mSpriteBatch->SetClipRect(&clipRect);
-
+#if !DEBUG
+        game->mSpriteBatch->SetClipRect(&clipRect);
+#endif
         JWindowSkin* skin = GetSkin(game);
         if (skin != nullptr)
         {
@@ -129,14 +130,14 @@ namespace nuvelocity
                 child->Draw(game);
             }
         }
-
+#if !DEBUG
+        game->mSpriteBatch->SetClipRect(nullptr);
+#endif
         if (game->mSpriteBatch->IsDrawBoundsEnabled())
         {
-            game->mSpriteBatch->OutlineRect(
-                &windowRect, SDL_Color{.r = 255, .g = 0, .b = 0, .a = 255}, 1);
+            const SDL_Rect clientRect = GetClientRect();
+            game->mSpriteBatch->OutlineRect(&clientRect, Colors::Red);
         }
-
-        game->mSpriteBatch->SetClipRect(nullptr);
     }
 
     void MdiWindow::SetTitle(const std::string& title)
