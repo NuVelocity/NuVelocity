@@ -114,6 +114,27 @@ namespace nuvelocity
             return false;
         }
 
+        // Mount any .red files found in the base path
+        std::error_code ec;
+        for (const auto& entry : std::filesystem::directory_iterator(basePath, ec))
+        {
+            if (entry.is_regular_file() && entry.path().extension() == ".red")
+            {
+                const std::string redPath = entry.path().generic_string();
+                if (PHYSFS_mount(redPath.c_str(), nullptr, 0) == 0)
+                {
+                    SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                                "Failed to mount .red file '%s': %s",
+                                redPath.c_str(),
+                                GetErrorMessage());
+                }
+                else
+                {
+                    SDL_Log("Mounted .red file: %s", redPath.c_str());
+                }
+            }
+        }
+
         if (PHYSFS_setWriteDir(baseDataPathText.c_str()) == 0)
         {
             SDL_LogError(NVE_LOG_CATEGORY_ASSETS,
