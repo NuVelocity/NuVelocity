@@ -16,6 +16,67 @@ namespace nuvelocity
     {
     }
 
+    void Label::SetText(const std::string& text)
+    {
+        mText = text;
+        InvalidateLayout();
+    }
+    const std::string& Label::GetText() const
+    {
+        return mText;
+    }
+    void Label::SetFont(const std::string& font)
+    {
+        mFont = font;
+        InvalidateLayout();
+    }
+    const std::string& Label::GetFont() const
+    {
+        return mFont;
+    }
+    void Label::SetWrap(bool wrap)
+    {
+        mWrap = wrap;
+        InvalidateLayout();
+    }
+    bool Label::IsWrapEnabled() const
+    {
+        return mWrap;
+    }
+    void Label::SetPointSize(int pointSize)
+    {
+        mPointSize = pointSize;
+        InvalidateLayout();
+    }
+    int Label::GetPointSize() const
+    {
+        return mPointSize;
+    }
+    void Label::SetAlignment(TextAlignment alignment)
+    {
+        mAlignment = alignment;
+    }
+    TextAlignment Label::GetAlignment() const
+    {
+        return mAlignment;
+    }
+    void Label::SetColor(const SDL_Color& color)
+    {
+        mColor = color;
+    }
+    const SDL_Color& Label::GetColor() const
+    {
+        return mColor;
+    }
+    void Label::SetVerticalCenter(bool center)
+    {
+        mVerticalCenter = center;
+    }
+    bool Label::IsVerticalCenter() const
+    {
+        return mVerticalCenter;
+    }
+
     void Label::Update(Game* game)
     {
         Widget::Update(game);
@@ -31,7 +92,7 @@ namespace nuvelocity
             return;
         }
 
-        const auto lines = BuildWrappedLines(game, mText, mRect.w);
+        const auto lines = GetWrappedLines(game, mRect.w);
         const int lineHeight = MeasureLineHeight(game);
         mRect.h = SDL_max(0, static_cast<int>(lines.size()) * lineHeight);
     }
@@ -47,39 +108,96 @@ namespace nuvelocity
 
         if (!mWrap || rect.w <= 0)
         {
+            int drawX = rect.x;
+            if (mAlignment == TextAlignment::Center)
+            {
+                drawX = rect.x + rect.w / 2;
+            }
+            else if (mAlignment == TextAlignment::Right)
+            {
+                drawX = rect.x + rect.w;
+            }
+
+            int drawY = rect.y;
+            if (mVerticalCenter)
+            {
+                int width = 0;
+                int height = 0;
+                if (game->mFont->MeasureStringWithFont(mFont, mText, mPointSize, width, height))
+                {
+                    drawY = rect.y + (rect.h - height) / 2;
+                }
+            }
+
             game->mFont->DrawStringWithFontAt(mFont,
                                               game->mSpriteBatch,
                                               mText,
-                                              rect.x,
-                                              rect.y,
-                                              Colors::White,
+                                              drawX,
+                                              drawY,
+                                              mColor,
                                               mPointSize,
-                                              TextAlignment::Left,
+                                              mAlignment,
                                               nullptr,
                                               -1,
-                                              Colors::White);
+                                              mColor);
             return;
         }
 
-        const auto lines = BuildWrappedLines(game, mText, rect.w);
+        const auto lines = GetWrappedLines(game, rect.w);
         const int lineHeight = MeasureLineHeight(game);
         SDL_Rect clipRect = rect;
         int drawY = rect.y;
+
+        if (mVerticalCenter)
+        {
+            int totalHeight = static_cast<int>(lines.size()) * lineHeight;
+            drawY = rect.y + (rect.h - totalHeight) / 2;
+        }
+
         for (const auto& line : lines)
         {
+            int drawX = rect.x;
+            if (mAlignment == TextAlignment::Center)
+            {
+                drawX = rect.x + rect.w / 2;
+            }
+            else if (mAlignment == TextAlignment::Right)
+            {
+                drawX = rect.x + rect.w;
+            }
+
             game->mFont->DrawStringWithFontAt(mFont,
                                               game->mSpriteBatch,
                                               line,
-                                              rect.x,
+                                              drawX,
                                               drawY,
-                                              Colors::White,
+                                              mColor,
                                               mPointSize,
-                                              TextAlignment::Left,
+                                              mAlignment,
                                               &clipRect,
                                               -1,
-                                              Colors::White);
+                                              mColor);
             drawY += lineHeight;
         }
+    }
+
+    std::vector<std::string> Label::GetWrappedLines(Game* game, int maxWidth) const
+    {
+        if (maxWidth == mLastWrapWidth && mText == mLastWrapText && !mCachedLines.empty())
+        {
+            return mCachedLines;
+        }
+
+        mCachedLines = BuildWrappedLines(game, mText, maxWidth);
+        mLastWrapWidth = maxWidth;
+        mLastWrapText = mText;
+        return mCachedLines;
+    }
+
+    int Label::GetRequiredHeight(Game* game, int maxWidth) const
+    {
+        const auto lines = GetWrappedLines(game, maxWidth);
+        return static_cast<int>(lines.size()) * MeasureLineHeight(game);
     }
 
     std::vector<std::string>
@@ -180,5 +298,11 @@ namespace nuvelocity
         }
 
         return mPointSize;
+    }
+
+    void Label::InvalidateLayout()
+    {
+        mLastWrapWidth = -1;
+        mCachedLines.clear();
     }
 } // namespace nuvelocity
