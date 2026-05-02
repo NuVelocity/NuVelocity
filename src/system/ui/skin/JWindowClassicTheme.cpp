@@ -5,10 +5,11 @@
 #include <system/Game.h>
 #include <system/SpriteBatch.h>
 #include <system/ui/Button.h>
-#include <system/ui/JListBox.h>
-#include <system/ui/JTabControl.h>
-#include <system/ui/MdiWindow.h>
-#include <system/ui/TextBox.h>
+#include "system/ui/JListBox.h"
+#include "system/ui/JTabControl.h"
+#include "system/ui/MdiWindow.h"
+#include "system/ui/ScrollView.h"
+#include "system/ui/TextBox.h"
 #include <system/ui/WidgetUtils.h>
 
 namespace nuvelocity
@@ -352,6 +353,22 @@ namespace nuvelocity
                 curX += columns[c].width;
             }
         }
+    }
+
+    void JWindowClassicTheme::DrawScrollView(Game* game, ScrollView* scrollView)
+    {
+        // Simple stub: draw background and scrollbar border
+        if (game == nullptr || game->mSpriteBatch == nullptr || scrollView == nullptr)
+        {
+            return;
+        }
+
+        const SDL_Rect rect = scrollView->GetScreenRect();
+        const auto& style = scrollView->GetStyle();
+        SpriteBatch* batch = game->mSpriteBatch;
+
+        WidgetUtils::DrawBevel(
+            batch, rect, {style.borderLightColor, style.borderDarkColor}, true, 1);
     }
 
     void JWindowClassicTheme::DrawTabControl(Game* game, JTabControl* tabControl)

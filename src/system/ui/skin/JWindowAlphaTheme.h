@@ -19,6 +19,7 @@ namespace nuvelocity
         void DrawMdiWindow(Game* game, MdiWindow* window) override;
         void DrawTextBox(Game* game, TextBox* textBox) override;
         void DrawTabControl(Game* game, JTabControl* tabControl) override;
+        void DrawScrollView(Game* game, ScrollView* scrollView) override;
 
         SDL_Rect GetInnerRect(const MdiWindow* window) const override;
         SDL_Rect GetCloseButtonRect(const MdiWindow* window) const override;

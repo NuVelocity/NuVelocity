@@ -25,6 +25,8 @@ target_sources(
     JTabControl.h
     ToggleButtonGroup.cpp
     ToggleButtonGroup.h
+    ScrollView.cpp
+    ScrollView.h
 )
 
 add_subdirectory(skin)
