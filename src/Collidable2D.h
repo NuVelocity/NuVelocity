@@ -29,10 +29,15 @@ namespace nuvelocity
 
         virtual std::vector<SDL_FPoint> GetCollisionPolygon() const = 0;
 
-        virtual void OnHit(Game* game, const SDL_Rect& bounds)
+        virtual void OnHit(Game* game,
+                           const SDL_Rect& bounds,
+                           bool hitFromTop = false,
+                           bool ignoreDirection = true)
         {
             (void)game;
             (void)bounds;
+            (void)hitFromTop;
+            (void)ignoreDirection;
         }
 
         virtual bool IsDestroyed() const
