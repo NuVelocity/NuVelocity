@@ -35,7 +35,8 @@ namespace nuvelocity
             info.mByteArrayInfoFunction = [](const void* obj) -> ByteArrayInfo
             {
                 const Frame* frame = static_cast<const Frame*>(obj);
-                return ByteArrayInfo{frame->mWidth, frame->mHeight, frame->mBitsPerPixel};
+                int pitch = (frame->GetSurface() != nullptr) ? frame->GetSurface()->pitch : 0;
+                return ByteArrayInfo{frame->mWidth, frame->mHeight, frame->mBitsPerPixel, pitch};
             };
 
             // Register byte array init function to initialize from cols, rows, bits during

@@ -117,7 +117,16 @@ namespace nuvelocity
                 throw std::runtime_error("Byte array target pointer not initialized");
             }
 
-            // Parse pairs of hex characters and write directly to target array
+            const int bpp = context.byteArrayTarget.info.bits;
+            const int bytesPerPixel = bpp / 8;
+            const int cols = context.byteArrayTarget.info.cols;
+            int pitch = context.byteArrayTarget.info.pitch;
+            if (pitch <= 0)
+            {
+                pitch = cols * bytesPerPixel;
+            }
+
+            // Parse pairs of hex characters and write to target array respecting pitch
             for (size_t i = 0; i < line.length(); i += 2)
             {
                 if (i + 1 >= line.length())
@@ -130,7 +139,15 @@ namespace nuvelocity
                 try
                 {
                     uint8_t byte = static_cast<uint8_t>(std::stoul(hexPair, nullptr, 16));
-                    context.byteArrayTarget.data[context.byteArraySize++] = byte;
+
+                    const size_t packedIndex = context.byteArraySize;
+                    const size_t x = (packedIndex / bytesPerPixel) % cols;
+                    const size_t y = (packedIndex / (bytesPerPixel * cols));
+                    const size_t targetIndex =
+                        (y * static_cast<size_t>(pitch)) + (x * bytesPerPixel);
+
+                    context.byteArrayTarget.data[targetIndex] = byte;
+                    context.byteArraySize++;
                 }
                 catch (const std::exception& e)
                 {
@@ -714,20 +731,36 @@ namespace nuvelocity
                 auto* pixelData = static_cast<uint8_t**>(
                     classInfo->mByteArrayProperty->GetValue(const_cast<void*>(object)));
 
-                const bool hasExpectedSize = byteArrayInfo.IsValid();
-                const size_t expectedSize = hasExpectedSize ? byteArrayInfo.ByteCount() : 0;
-
-                if (pixelData != nullptr && *pixelData != nullptr && hasExpectedSize)
+                if (pixelData != nullptr && *pixelData != nullptr && byteArrayInfo.IsValid())
                 {
-                    constexpr size_t kBytesPerLine = 32;
-                    for (size_t offset = 0; offset < expectedSize; offset += kBytesPerLine)
+                    const int bpp = byteArrayInfo.bits;
+                    const int bytesPerPixel = bpp / 8;
+                    const int cols = byteArrayInfo.cols;
+                    const int rows = byteArrayInfo.rows;
+                    int pitch = byteArrayInfo.pitch;
+                    if (pitch <= 0)
                     {
-                        const size_t chunk = std::min(kBytesPerLine, expectedSize - offset);
+                        pitch = cols * bytesPerPixel;
+                    }
+
+                    const size_t packedTotal = static_cast<size_t>(cols) * rows * bytesPerPixel;
+                    constexpr size_t kBytesPerLine = 32;
+
+                    for (size_t packedIndex = 0; packedIndex < packedTotal;
+                         packedIndex += kBytesPerLine)
+                    {
+                        const size_t chunk = std::min(kBytesPerLine, packedTotal - packedIndex);
                         std::ostringstream hexLine;
                         for (size_t i = 0; i < chunk; ++i)
                         {
+                            const size_t curPacked = packedIndex + i;
+                            const size_t x = (curPacked / bytesPerPixel) % cols;
+                            const size_t y = (curPacked / (bytesPerPixel * cols));
+                            const size_t targetIndex =
+                                (y * static_cast<size_t>(pitch)) + (x * bytesPerPixel);
+
                             hexLine << std::hex << std::setfill('0') << std::setw(2)
-                                    << static_cast<unsigned int>((*pixelData)[offset + i]);
+                                    << static_cast<unsigned int>((*pixelData)[targetIndex]);
                         }
                         AppendLine(output, indentLevel + 1, hexLine.str());
                     }

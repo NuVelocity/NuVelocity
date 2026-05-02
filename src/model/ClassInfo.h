@@ -15,6 +15,7 @@ namespace nuvelocity
         int cols = 0;
         int rows = 0;
         int bits = 0;
+        int pitch = 0; // Bytes per row in the target buffer (0 means packed)
 
         bool IsValid() const
         {
