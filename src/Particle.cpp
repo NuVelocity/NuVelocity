@@ -6,12 +6,14 @@
 
 namespace nuvelocity
 {
-    Particle::Particle(nuvelocity::Sequence* seq, SDL_FPoint pos, SDL_FPoint vel, float lifeTime)
+    Particle::Particle(
+        nuvelocity::Sequence* seq, SDL_FPoint pos, SDL_FPoint vel, float lifeTime, bool doFadeOut)
             : mSequence(seq)
             , mPosition(pos)
             , mVelocity(vel)
             , mLife(lifeTime)
             , mMaxLife(lifeTime)
+            , mDoFadeOut(doFadeOut)
     {
         mStartTick = SDL_GetTicks();
     }
@@ -55,7 +57,7 @@ namespace nuvelocity
                 .w = surface->w,
                 .h = surface->h};
 
-            float alphaPercent = mLife / mMaxLife;
+            float alphaPercent = mDoFadeOut ? (mLife / mMaxLife) : 1.0F;
             uint8_t alpha = static_cast<uint8_t>(std::clamp(alphaPercent * 255.0F, 0.0F, 255.0F));
             game->mSpriteBatch->Draw(surface, &destRect, nullptr, {255, 255, 255, alpha});
         }

@@ -11,7 +11,11 @@ namespace nuvelocity
     class Particle : public GameComponent
     {
     public:
-        Particle(nuvelocity::Sequence* seq, SDL_FPoint pos, SDL_FPoint vel, float lifeTime);
+        Particle(nuvelocity::Sequence* seq,
+                 SDL_FPoint pos,
+                 SDL_FPoint vel,
+                 float lifeTime,
+                 bool doFadeOut = false);
         virtual ~Particle() = default;
 
         void Update(Game* game) override;
@@ -29,6 +33,7 @@ namespace nuvelocity
         float mLife;
         float mMaxLife;
         uint64_t mStartTick;
+        bool mDoFadeOut;
     };
 } // namespace nuvelocity
 
