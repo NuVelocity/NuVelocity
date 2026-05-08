@@ -88,7 +88,7 @@ namespace nuvelocity
         DrawCentered(surface);
     }
 
-    void SpriteBatch::OutlineRect(const SDL_Rect* rect, SDL_Color color, int thickness)
+    void SpriteBatch::OutlineRect(const SDL_Rect* rect, SDL_Color color, float thickness)
     {
         DrawLine(rect->x, rect->y, rect->x + rect->w, rect->y, color, thickness);
         DrawLine(

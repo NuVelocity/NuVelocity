@@ -48,10 +48,11 @@ namespace nuvelocity
 
         NVE_API virtual void DrawCentered(Sequence* sequence, std::size_t frameIndex);
 
-        NVE_API virtual void
-        DrawLine(int x1, int y1, int x2, int y2, SDL_Color color, int thickness = 1) = 0;
+        NVE_API virtual void DrawLine(
+            float x1, float y1, float x2, float y2, SDL_Color color, float thickness = 1.0F) = 0;
 
-        NVE_API virtual void OutlineRect(const SDL_Rect* rect, SDL_Color color, int thickness = 1);
+        NVE_API virtual void
+        OutlineRect(const SDL_Rect* rect, SDL_Color color, float thickness = 1.0F);
 
         NVE_API virtual void FillRect(const SDL_Rect* rect, SDL_Color color) = 0;
 

@@ -27,7 +27,12 @@ namespace nuvelocity
 
         void DrawCentered(SDL_Surface* surface) override;
 
-        void DrawLine(int x1, int y1, int x2, int y2, SDL_Color color, int thickness = 1) override;
+        void DrawLine(float x1,
+                      float y1,
+                      float x2,
+                      float y2,
+                      SDL_Color color,
+                      float thickness = 1.0F) override;
 
         void FillRect(const SDL_Rect* rect, SDL_Color color) override;
 

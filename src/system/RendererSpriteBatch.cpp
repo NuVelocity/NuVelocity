@@ -1,6 +1,8 @@
 #include "RendererSpriteBatch.h"
 #include "Colors.h"
 #include <SDL3/SDL_render.h>
+#include <algorithm>
+#include <cmath>
 
 namespace nuvelocity
 {
@@ -177,17 +179,169 @@ namespace nuvelocity
         SDL_RenderTexture(mRenderer, tex, nullptr, &dst);
     }
 
-    void
-    RendererSpriteBatch::DrawLine(int x1, int y1, int x2, int y2, SDL_Color color, int thickness)
+    static void PushQuadV(std::vector<SDL_Vertex>& verts,
+                          std::vector<int>& indices,
+                          SDL_FPoint p0,
+                          SDL_FPoint p1,
+                          SDL_FPoint p2,
+                          SDL_FPoint p3,
+                          SDL_FColor c0,
+                          SDL_FColor c1,
+                          SDL_FColor c2,
+                          SDL_FColor c3)
+    {
+        const int base = static_cast<int>(verts.size());
+
+        verts.push_back({p0, c0, {0.0f, 0.0f}});
+        verts.push_back({p1, c1, {1.0f, 0.0f}});
+        verts.push_back({p2, c2, {1.0f, 1.0f}});
+        verts.push_back({p3, c3, {0.0f, 1.0f}});
+
+        indices.push_back(base + 0);
+        indices.push_back(base + 1);
+        indices.push_back(base + 2);
+        indices.push_back(base + 0);
+        indices.push_back(base + 2);
+        indices.push_back(base + 3);
+    }
+
+    void RendererSpriteBatch::DrawLine(
+        float x1, float y1, float x2, float y2, SDL_Color color, float thickness)
     {
         if (mRenderer == nullptr)
+        {
             return;
+        }
 
         Flush();
 
+        const float fx1 = x1;
+        const float fy1 = y1;
+        const float fx2 = x2;
+        const float fy2 = y2;
+        const float fThickness = thickness;
+
+        const float dx = fx2 - fx1;
+        const float dy = fy2 - fy1;
+        const float len = std::sqrt((dx * dx) + (dy * dy));
+        if (len < 0.001F)
+        {
+            return;
+        }
+
+        const SDL_FColor cFull = {
+            color.r / 255.0F, color.g / 255.0F, color.b / 255.0F, color.a / 255.0F};
+
+        const bool isStraight = (std::abs(dx) < 0.001F || std::abs(dy) < 0.001F);
+        const bool isInteger = (std::fmod(fx1, 1.0F) == 0.0F && std::fmod(fy1, 1.0F) == 0.0F &&
+                                std::fmod(fx2, 1.0F) == 0.0F && std::fmod(fy2, 1.0F) == 0.0F &&
+                                std::fmod(fThickness, 1.0F) == 0.0F);
+
+        if (isStraight && isInteger)
+        {
+            float wx = 0.0F;
+            float wy = 0.0F;
+            float ox = 0.0F;
+            float oy = 0.0F;
+            if (std::abs(dx) < 0.001F)
+            {
+                wx = fThickness * 0.5F;
+                if (static_cast<int>(fThickness) % 2 != 0)
+                {
+                    ox = 0.5F;
+                }
+            }
+            else
+            {
+                wy = fThickness * 0.5F;
+                if (static_cast<int>(fThickness) % 2 != 0)
+                {
+                    oy = 0.5F;
+                }
+            }
+
+            std::vector<SDL_Vertex> verts;
+            std::vector<int> indices;
+            PushQuadV(verts,
+                      indices,
+                      {fx1 + wx + ox, fy1 + wy + oy},
+                      {fx1 - wx + ox, fy1 - wy + oy},
+                      {fx2 - wx + ox, fy2 - wy + oy},
+                      {fx2 + wx + ox, fy2 + wy + oy},
+                      cFull,
+                      cFull,
+                      cFull,
+                      cFull);
+
+            SDL_SetRenderDrawBlendMode(mRenderer, SDL_BLENDMODE_BLEND);
+            SDL_RenderGeometry(mRenderer,
+                               nullptr,
+                               verts.data(),
+                               static_cast<int>(verts.size()),
+                               indices.data(),
+                               static_cast<int>(indices.size()));
+            return;
+        }
+
+        const float nx = -dy / len;
+        const float ny = dx / len;
+
+        const SDL_FColor cFade = {color.r / 255.0F, color.g / 255.0F, color.b / 255.0F, 0.0F};
+
+        const float halfCore = std::max(0.0F, (fThickness - 1.0F) * 0.5F);
+        const float halfTotal = halfCore + 1.0F;
+
+        std::vector<SDL_Vertex> verts;
+        std::vector<int> indices;
+        verts.reserve(12);
+        indices.reserve(18);
+
+        // Core
+        if (halfCore > 0.0F)
+        {
+            PushQuadV(verts,
+                      indices,
+                      {fx1 + nx * halfCore, fy1 + ny * halfCore},
+                      {fx1 - nx * halfCore, fy1 - ny * halfCore},
+                      {fx2 - nx * halfCore, fy2 - ny * halfCore},
+                      {fx2 + nx * halfCore, fy2 + ny * halfCore},
+                      cFull,
+                      cFull,
+                      cFull,
+                      cFull);
+        }
+
+        // Top fringe
+        PushQuadV(verts,
+                  indices,
+                  {fx1 + nx * halfTotal, fy1 + ny * halfTotal},
+                  {fx1 + nx * halfCore, fy1 + ny * halfCore},
+                  {fx2 + nx * halfCore, fy2 + ny * halfCore},
+                  {fx2 + nx * halfTotal, fy2 + ny * halfTotal},
+                  cFade,
+                  cFull,
+                  cFull,
+                  cFade);
+
+        // Bottom fringe
+        PushQuadV(verts,
+                  indices,
+                  {fx1 - nx * halfCore, fy1 - ny * halfCore},
+                  {fx1 - nx * halfTotal, fy1 - ny * halfTotal},
+                  {fx2 - nx * halfTotal, fy2 - ny * halfTotal},
+                  {fx2 - nx * halfCore, fy2 - ny * halfCore},
+                  cFull,
+                  cFade,
+                  cFade,
+                  cFull);
+
         SDL_SetRenderDrawBlendMode(mRenderer, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(mRenderer, color.r, color.g, color.b, color.a);
-        SDL_RenderLine(mRenderer, x1, y1, x2, y2);
+        SDL_RenderGeometry(mRenderer,
+                           nullptr,
+                           verts.data(),
+                           static_cast<int>(verts.size()),
+                           indices.data(),
+                           static_cast<int>(indices.size()));
     }
 
     void RendererSpriteBatch::FillRect(const SDL_Rect* rect, SDL_Color color)

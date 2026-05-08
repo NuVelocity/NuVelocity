@@ -35,11 +35,16 @@ namespace nuvelocity
 
         void DrawCentered(SDL_Surface* surface) override;
 
-        void DrawLine(int x1, int y1, int x2, int y2, SDL_Color color, int thickness = 1) override;
+        void DrawLine(float x1,
+                      float y1,
+                      float x2,
+                      float y2,
+                      SDL_Color color,
+                      float thickness = 1.0F) override;
 
         void FillRect(const SDL_Rect* rect, SDL_Color color) override;
 
-        void OutlineRect(const SDL_Rect* rect, SDL_Color color, int thickness = 1) override;
+        void OutlineRect(const SDL_Rect* rect, SDL_Color color, float thickness = 1.0F) override;
 
         void SetClipRect(const SDL_Rect* rect) override;
 
@@ -74,14 +79,19 @@ namespace nuvelocity
         SDL_GPUSampler* mSampler = nullptr;
         SDL_GPUTexture* mWhiteTexture = nullptr;
 
-        // Per-frame CPU-side geometry staging
+        // Sprite batching (flushes on texture change)
         std::vector<SpriteVertex> mVertexData;
         std::vector<Uint16> mIndexData;
-
-        SDL_GPUTexture* mCurrentTexture;
-        SDL_BlendMode mCurrentBlendMode;
+        SDL_GPUTexture* mCurrentTexture = nullptr;
+        SDL_BlendMode mCurrentBlendMode = SDL_BLENDMODE_BLEND;
         SDL_Rect mCurrentClipRect{};
-        bool mHasCurrentClipRect;
+        bool mHasCurrentClipRect = false;
+
+        // Primitive batching (always uses white texture, flushes at frame end)
+        std::vector<SpriteVertex> mPrimitiveVertexData;
+        std::vector<Uint16> mPrimitiveIndexData;
+        SDL_Rect mPrimitiveClipRect{};
+        bool mHasPrimitiveClipRect = false;
 
         // Texture cache
         std::unordered_map<SDL_Surface*, CachedTexture> mTextureCache;
@@ -119,6 +129,57 @@ namespace nuvelocity
                       float g,
                       float b,
                       float a);
+
+        void PushQuadV(float x0,
+                       float y0,
+                       float x1,
+                       float y1,
+                       float x2,
+                       float y2,
+                       float x3,
+                       float y3,
+                       float u0,
+                       float v0,
+                       float u1,
+                       float v1,
+                       const SDL_FColor& c0,
+                       const SDL_FColor& c1,
+                       const SDL_FColor& c2,
+                       const SDL_FColor& c3);
+
+        void PushPrimitiveQuad(float x0,
+                               float y0,
+                               float x1,
+                               float y1,
+                               float x2,
+                               float y2,
+                               float x3,
+                               float y3,
+                               float u0,
+                               float v0,
+                               float u1,
+                               float v1,
+                               float r,
+                               float g,
+                               float b,
+                               float a);
+
+        void PushPrimitiveQuadV(float x0,
+                                float y0,
+                                float x1,
+                                float y1,
+                                float x2,
+                                float y2,
+                                float x3,
+                                float y3,
+                                float u0,
+                                float v0,
+                                float u1,
+                                float v1,
+                                const SDL_FColor& c0,
+                                const SDL_FColor& c1,
+                                const SDL_FColor& c2,
+                                const SDL_FColor& c3);
 
         void SubmitCommandBuffer();
         void FlushBatch();

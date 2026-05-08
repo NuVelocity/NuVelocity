@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
 #include <vector>
 
 #include "Colors.h"
@@ -329,63 +330,147 @@ namespace nuvelocity
         mIndexGPUBufferCapacity = (mIndexGPUBuffer != nullptr) ? newCapacity : 0;
     }
 
+    void GPUSpriteBatch::PushPrimitiveQuad(float x0,
+                                           float y0,
+                                           float x1,
+                                           float y1,
+                                           float x2,
+                                           float y2,
+                                           float x3,
+                                           float y3,
+                                           float u0,
+                                           float v0,
+                                           float u1_,
+                                           float v1_,
+                                           float r,
+                                           float g,
+                                           float b,
+                                           float a)
+    {
+        const Uint16 base = static_cast<Uint16>(mPrimitiveVertexData.size());
+
+        mPrimitiveVertexData.push_back({x0, y0, u0, v0, r, g, b, a});
+        mPrimitiveVertexData.push_back({x1, y1, u1_, v0, r, g, b, a});
+        mPrimitiveVertexData.push_back({x2, y2, u1_, v1_, r, g, b, a});
+        mPrimitiveVertexData.push_back({x3, y3, u0, v1_, r, g, b, a});
+
+        mPrimitiveIndexData.push_back(base + 0);
+        mPrimitiveIndexData.push_back(base + 1);
+        mPrimitiveIndexData.push_back(base + 2);
+        mPrimitiveIndexData.push_back(base + 0);
+        mPrimitiveIndexData.push_back(base + 2);
+        mPrimitiveIndexData.push_back(base + 3);
+    }
+
+    void GPUSpriteBatch::PushPrimitiveQuadV(float x0,
+                                            float y0,
+                                            float x1,
+                                            float y1,
+                                            float x2,
+                                            float y2,
+                                            float x3,
+                                            float y3,
+                                            float u0,
+                                            float v0,
+                                            float u1_,
+                                            float v1_,
+                                            const SDL_FColor& c0,
+                                            const SDL_FColor& c1,
+                                            const SDL_FColor& c2,
+                                            const SDL_FColor& c3)
+    {
+        const Uint16 base = static_cast<Uint16>(mPrimitiveVertexData.size());
+
+        mPrimitiveVertexData.push_back({x0, y0, u0, v0, c0.r, c0.g, c0.b, c0.a});
+        mPrimitiveVertexData.push_back({x1, y1, u1_, v0, c1.r, c1.g, c1.b, c1.a});
+        mPrimitiveVertexData.push_back({x2, y2, u1_, v1_, c2.r, c2.g, c2.b, c2.a});
+        mPrimitiveVertexData.push_back({x3, y3, u0, v1_, c3.r, c3.g, c3.b, c3.a});
+
+        mPrimitiveIndexData.push_back(base + 0);
+        mPrimitiveIndexData.push_back(base + 1);
+        mPrimitiveIndexData.push_back(base + 2);
+        mPrimitiveIndexData.push_back(base + 0);
+        mPrimitiveIndexData.push_back(base + 2);
+        mPrimitiveIndexData.push_back(base + 3);
+    }
+
     void GPUSpriteBatch::FlushBatch()
     {
-        if (mVertexData.empty() || mCommandBuffer == nullptr || mDevice == nullptr ||
-            mPipelines.empty() || mSwapchainTexture == nullptr)
+        if (mVertexData.empty() && mPrimitiveVertexData.empty())
+        {
+            mCurrentTexture = nullptr;
+            return;
+        }
+
+        if (!EnsureSwapchainTexture())
         {
             return;
         }
 
-        const Uint32 vertexBufferSize =
+        EnsureCommandBuffer();
+
+        // 1. Calculate sizes
+        const Uint32 spriteVertexSize =
             static_cast<Uint32>(mVertexData.size() * sizeof(SpriteVertex));
-        const Uint32 indexBufferSize = static_cast<Uint32>(mIndexData.size() * sizeof(Uint16));
+        const Uint32 spriteIndexSize = static_cast<Uint32>(mIndexData.size() * sizeof(Uint16));
+        const Uint32 primVertexSize =
+            static_cast<Uint32>(mPrimitiveVertexData.size() * sizeof(SpriteVertex));
+        const Uint32 primIndexSize =
+            static_cast<Uint32>(mPrimitiveIndexData.size() * sizeof(Uint16));
 
-        // 1. Grow persistent GPU buffers if needed.
-        EnsureVertexBufferCapacity(vertexBufferSize);
-        EnsureIndexBufferCapacity(indexBufferSize);
+        const Uint32 totalVertexSize = spriteVertexSize + primVertexSize;
+        const Uint32 totalIndexSize = spriteIndexSize + primIndexSize;
 
-        if (mVertexGPUBuffer == nullptr || mIndexGPUBuffer == nullptr)
+        if (totalVertexSize == 0)
         {
-            // Allocation failed; drop the batch rather than crash.
-            mVertexData.clear();
-            mIndexData.clear();
             return;
         }
 
-        // 2. Upload via a single transfer buffer.
+        // 2. Upload to GPU
+        EnsureVertexBufferCapacity(totalVertexSize);
+        EnsureIndexBufferCapacity(totalIndexSize);
+
         SDL_GPUTransferBufferCreateInfo tbufInfo{.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-                                                 .size = vertexBufferSize + indexBufferSize,
-                                                 .props = 0};
+                                                 .size = totalVertexSize + totalIndexSize};
         SDL_GPUTransferBuffer* tbuf = SDL_CreateGPUTransferBuffer(mDevice, &tbufInfo);
-        if (tbuf == nullptr)
+        if (tbuf != nullptr)
         {
-            mVertexData.clear();
-            mIndexData.clear();
-            return;
+            Uint8* tbufData = static_cast<Uint8*>(SDL_MapGPUTransferBuffer(mDevice, tbuf, false));
+            if (spriteVertexSize > 0)
+            {
+                std::memcpy(tbufData, mVertexData.data(), spriteVertexSize);
+            }
+            if (primVertexSize > 0)
+            {
+                std::memcpy(
+                    tbufData + spriteVertexSize, mPrimitiveVertexData.data(), primVertexSize);
+            }
+            if (spriteIndexSize > 0)
+            {
+                std::memcpy(tbufData + totalVertexSize, mIndexData.data(), spriteIndexSize);
+            }
+            if (primIndexSize > 0)
+            {
+                std::memcpy(tbufData + totalVertexSize + spriteIndexSize,
+                            mPrimitiveIndexData.data(),
+                            primIndexSize);
+            }
+            SDL_UnmapGPUTransferBuffer(mDevice, tbuf);
+
+            SDL_GPUCopyPass* copyPass = SDL_BeginGPUCopyPass(mCommandBuffer);
+            SDL_GPUTransferBufferLocation srcVertex{.transfer_buffer = tbuf, .offset = 0};
+            SDL_GPUBufferRegion dstVertex{
+                .buffer = mVertexGPUBuffer, .offset = 0, .size = totalVertexSize};
+            SDL_UploadToGPUBuffer(copyPass, &srcVertex, &dstVertex, false);
+
+            SDL_GPUTransferBufferLocation srcIndex{.transfer_buffer = tbuf,
+                                                   .offset = totalVertexSize};
+            SDL_GPUBufferRegion dstIndex{
+                .buffer = mIndexGPUBuffer, .offset = 0, .size = totalIndexSize};
+            SDL_UploadToGPUBuffer(copyPass, &srcIndex, &dstIndex, false);
+            SDL_EndGPUCopyPass(copyPass);
+            SDL_ReleaseGPUTransferBuffer(mDevice, tbuf);
         }
-
-        void* mapped = SDL_MapGPUTransferBuffer(mDevice, tbuf, false);
-        SDL_memcpy(mapped, mVertexData.data(), vertexBufferSize);
-        SDL_memcpy(
-            static_cast<uint8_t*>(mapped) + vertexBufferSize, mIndexData.data(), indexBufferSize);
-        SDL_UnmapGPUTransferBuffer(mDevice, tbuf);
-
-        SDL_GPUCopyPass* copyPass = SDL_BeginGPUCopyPass(mCommandBuffer);
-
-        SDL_GPUTransferBufferLocation srcVert{.transfer_buffer = tbuf, .offset = 0};
-        SDL_GPUBufferRegion dstVert{
-            .buffer = mVertexGPUBuffer, .offset = 0, .size = vertexBufferSize};
-        SDL_UploadToGPUBuffer(copyPass, &srcVert, &dstVert, false);
-
-        SDL_GPUTransferBufferLocation srcIndex{.transfer_buffer = tbuf, .offset = vertexBufferSize};
-        SDL_GPUBufferRegion dstIndex{
-            .buffer = mIndexGPUBuffer, .offset = 0, .size = indexBufferSize};
-        SDL_UploadToGPUBuffer(copyPass, &srcIndex, &dstIndex, false);
-        SDL_EndGPUCopyPass(copyPass);
-
-        // The transfer buffer is only needed for the copy. Release it immediately.
-        SDL_ReleaseGPUTransferBuffer(mDevice, tbuf);
 
         // 3. Render pass
         bool requiresInitialClear = mNeedsClear && !mHasBlittedThisFrame;
@@ -403,28 +488,15 @@ namespace nuvelocity
         SDL_GPUGraphicsPipeline* pipeline = nullptr;
         auto it = mPipelines.find(mCurrentBlendMode);
         pipeline = (it != mPipelines.end()) ? it->second : mPipelines[SDL_BLENDMODE_BLEND];
-
         if (pipeline != nullptr)
         {
             SDL_BindGPUGraphicsPipeline(renderPass, pipeline);
         }
 
-        if (mHasCurrentClipRect)
-        {
-            SDL_SetGPUScissor(renderPass, &mCurrentClipRect);
-        }
-
         SDL_GPUBufferBinding vbind{.buffer = mVertexGPUBuffer, .offset = 0};
         SDL_BindGPUVertexBuffers(renderPass, 0, &vbind, 1);
-
         SDL_GPUBufferBinding ibind{.buffer = mIndexGPUBuffer, .offset = 0};
         SDL_BindGPUIndexBuffer(renderPass, &ibind, SDL_GPU_INDEXELEMENTSIZE_16BIT);
-
-        if (mCurrentTexture != nullptr)
-        {
-            SDL_GPUTextureSamplerBinding texBind{.texture = mCurrentTexture, .sampler = mSampler};
-            SDL_BindGPUFragmentSamplers(renderPass, 0, &texBind, 1);
-        }
 
         float pushConstants[4] = {2.0F / static_cast<float>(mSwapchainWidth),
                                   -2.0F / static_cast<float>(mSwapchainHeight),
@@ -432,12 +504,54 @@ namespace nuvelocity
                                   1.0F};
         SDL_PushGPUVertexUniformData(mCommandBuffer, 0, pushConstants, sizeof(pushConstants));
 
-        SDL_DrawGPUIndexedPrimitives(
-            renderPass, static_cast<Uint32>(mIndexData.size()), 1, 0, 0, 0);
+        // Draw sprites
+        if (!mVertexData.empty())
+        {
+            if (mHasCurrentClipRect)
+            {
+                SDL_SetGPUScissor(renderPass, &mCurrentClipRect);
+            }
+            if (mCurrentTexture != nullptr)
+            {
+                SDL_GPUTextureSamplerBinding texBind{.texture = mCurrentTexture,
+                                                     .sampler = mSampler};
+                SDL_BindGPUFragmentSamplers(renderPass, 0, &texBind, 1);
+            }
+            SDL_DrawGPUIndexedPrimitives(
+                renderPass, static_cast<Uint32>(mIndexData.size()), 1, 0, 0, 0);
+        }
+
+        // Draw primitives
+        if (!mPrimitiveVertexData.empty())
+        {
+            if (mHasPrimitiveClipRect)
+            {
+                SDL_SetGPUScissor(renderPass, &mPrimitiveClipRect);
+            }
+            else
+            {
+                SDL_Rect fullRect = {0, 0, (int)mSwapchainWidth, (int)mSwapchainHeight};
+                SDL_SetGPUScissor(renderPass, &fullRect);
+            }
+            if (mWhiteTexture != nullptr)
+            {
+                SDL_GPUTextureSamplerBinding texBind{.texture = mWhiteTexture, .sampler = mSampler};
+                SDL_BindGPUFragmentSamplers(renderPass, 0, &texBind, 1);
+            }
+            SDL_DrawGPUIndexedPrimitives(renderPass,
+                                         static_cast<Uint32>(mPrimitiveIndexData.size()),
+                                         1,
+                                         static_cast<Uint32>(mIndexData.size()),
+                                         static_cast<int>(mVertexData.size()),
+                                         0);
+        }
+
         SDL_EndGPURenderPass(renderPass);
 
         mVertexData.clear();
         mIndexData.clear();
+        mPrimitiveVertexData.clear();
+        mPrimitiveIndexData.clear();
         mHasBlittedThisFrame = true;
         mNeedsClear = false;
     }
@@ -459,13 +573,6 @@ namespace nuvelocity
                                   float b,
                                   float a)
     {
-        // Guard against Uint16 overflow — flush the current batch first if we're
-        // about to exceed the index range.
-        if (static_cast<Uint32>(mVertexData.size()) + 4u > kMaxVerticesPerFlush)
-        {
-            FlushBatch();
-        }
-
         const Uint16 base = static_cast<Uint16>(mVertexData.size());
 
         mVertexData.push_back({x0, y0, u0, v0, r, g, b, a});
@@ -481,18 +588,51 @@ namespace nuvelocity
         mIndexData.push_back(base + 3);
     }
 
-    void GPUSpriteBatch::DrawLine(int x1, int y1, int x2, int y2, SDL_Color color, int thickness)
+    void GPUSpriteBatch::PushQuadV(float x0,
+                                   float y0,
+                                   float x1,
+                                   float y1,
+                                   float x2,
+                                   float y2,
+                                   float x3,
+                                   float y3,
+                                   float u0,
+                                   float v0,
+                                   float u1_,
+                                   float v1_,
+                                   const SDL_FColor& c0,
+                                   const SDL_FColor& c1,
+                                   const SDL_FColor& c2,
+                                   const SDL_FColor& c3)
+    {
+        const Uint16 base = static_cast<Uint16>(mVertexData.size());
+
+        mVertexData.push_back({x0, y0, u0, v0, c0.r, c0.g, c0.b, c0.a});
+        mVertexData.push_back({x1, y1, u1_, v0, c1.r, c1.g, c1.b, c1.a});
+        mVertexData.push_back({x2, y2, u1_, v1_, c2.r, c2.g, c2.b, c2.a});
+        mVertexData.push_back({x3, y3, u0, v1_, c3.r, c3.g, c3.b, c3.a});
+
+        mIndexData.push_back(base + 0);
+        mIndexData.push_back(base + 1);
+        mIndexData.push_back(base + 2);
+        mIndexData.push_back(base + 0);
+        mIndexData.push_back(base + 2);
+        mIndexData.push_back(base + 3);
+    }
+
+    void GPUSpriteBatch::DrawLine(
+        float x1, float y1, float x2, float y2, SDL_Color color, float thickness)
     {
         if (mDevice == nullptr || mWindow == nullptr || mWhiteTexture == nullptr)
         {
             return;
         }
 
-        const float fx1 = static_cast<float>(x1);
-        const float fy1 = static_cast<float>(y1);
-        const float fx2 = static_cast<float>(x2);
-        const float fy2 = static_cast<float>(y2);
-        const float fThickness = static_cast<float>(thickness);
+        const float fx1 = x1;
+        const float fy1 = y1;
+        const float fx2 = x2;
+        const float fy2 = y2;
+        const float fThickness = thickness;
 
         const float dx = fx2 - fx1;
         const float dy = fy2 - fy1;
@@ -502,49 +642,132 @@ namespace nuvelocity
             return;
         }
 
-        const float wx = -dy / len * (fThickness * 0.5F);
-        const float wy = dx / len * (fThickness * 0.5F);
-
-        if (mWhiteTexture != mCurrentTexture)
-        {
-            FlushBatch();
-            mCurrentTexture = mWhiteTexture;
-        }
-
         const float r = color.r / 255.0F;
         const float g = color.g / 255.0F;
         const float b = color.b / 255.0F;
         const float a = color.a / 255.0F;
 
-        PushQuad(fx1 + wx,
-                 fy1 + wy,
-                 fx1 - wx,
-                 fy1 - wy,
-                 fx2 - wx,
-                 fy2 - wy,
-                 fx2 + wx,
-                 fy2 + wy,
-                 0.0F,
-                 0.0F,
-                 1.0F,
-                 1.0F,
-                 r,
-                 g,
-                 b,
-                 a);
+        // Check if anti-aliasing is necessary.
+        // A line is "sharp" if it is axis-aligned and on integer coordinates/thickness.
+        const bool isStraight = (std::abs(dx) < 0.001F || std::abs(dy) < 0.001F);
+        const bool isInteger = (std::fmod(fx1, 1.0F) == 0.0F && std::fmod(fy1, 1.0F) == 0.0F &&
+                                std::fmod(fx2, 1.0F) == 0.0F && std::fmod(fy2, 1.0F) == 0.0F &&
+                                std::fmod(fThickness, 1.0F) == 0.0F);
+
+        if (isStraight && isInteger)
+        {
+            float wx = 0.0F;
+            float wy = 0.0F;
+            float ox = 0.0F;
+            float oy = 0.0F;
+            if (std::abs(dx) < 0.001F)
+            {
+                wx = fThickness * 0.5F;
+                if (static_cast<int>(fThickness) % 2 != 0)
+                {
+                    ox = 0.5F;
+                }
+            }
+            else
+            {
+                wy = fThickness * 0.5F;
+                if (static_cast<int>(fThickness) % 2 != 0)
+                {
+                    oy = 0.5F;
+                }
+            }
+
+            PushPrimitiveQuad(fx1 + wx + ox,
+                              fy1 + wy + oy,
+                              fx1 - wx + ox,
+                              fy1 - wy + oy,
+                              fx2 - wx + ox,
+                              fy2 - wy + oy,
+                              fx2 + wx + ox,
+                              fy2 + wy + oy,
+                              0.0F,
+                              0.0F,
+                              1.0F,
+                              1.0F,
+                              r,
+                              g,
+                              b,
+                              a);
+            return;
+        }
+
+        // Normal vector for the line width
+        const float nx = -dy / len;
+        const float ny = dx / len;
+
+        const SDL_FColor cFull = {r, g, b, a};
+        const SDL_FColor cFade = {r, g, b, 0.0F};
+
+        const float halfCore = std::max(0.0F, (fThickness - 1.0F) * 0.5F);
+        const float halfTotal = halfCore + 1.0F; // 1.0px fade on each side
+
+        if (halfCore > 0.0F)
+        {
+            PushPrimitiveQuad(fx1 + nx * halfCore,
+                              fy1 + ny * halfCore,
+                              fx1 - nx * halfCore,
+                              fy1 - ny * halfCore,
+                              fx2 - nx * halfCore,
+                              fy2 - ny * halfCore,
+                              fx2 + nx * halfCore,
+                              fy2 + ny * halfCore,
+                              0.0F,
+                              0.0F,
+                              1.0F,
+                              1.0F,
+                              r,
+                              g,
+                              b,
+                              a);
+        }
+
+        // Top fringe
+        PushPrimitiveQuadV(fx1 + nx * halfTotal,
+                           fy1 + ny * halfTotal,
+                           fx1 + nx * halfCore,
+                           fy1 + ny * halfCore,
+                           fx2 + nx * halfCore,
+                           fy2 + ny * halfCore,
+                           fx2 + nx * halfTotal,
+                           fy2 + ny * halfTotal,
+                           0.0F,
+                           0.0F,
+                           1.0F,
+                           1.0F,
+                           cFade,
+                           cFull,
+                           cFull,
+                           cFade);
+
+        // Bottom fringe
+        PushPrimitiveQuadV(fx1 - nx * halfCore,
+                           fy1 - ny * halfCore,
+                           fx1 - nx * halfTotal,
+                           fy1 - ny * halfTotal,
+                           fx2 - nx * halfTotal,
+                           fy2 - ny * halfTotal,
+                           fx2 - nx * halfCore,
+                           fy2 - ny * halfCore,
+                           0.0F,
+                           0.0F,
+                           1.0F,
+                           1.0F,
+                           cFull,
+                           cFade,
+                           cFade,
+                           cFull);
     }
 
     void GPUSpriteBatch::FillRect(const SDL_Rect* rect, SDL_Color color)
     {
-        if (mWhiteTexture == nullptr)
+        if (mDevice == nullptr || mWindow == nullptr || mWhiteTexture == nullptr)
         {
             return;
-        }
-
-        if (mWhiteTexture != mCurrentTexture)
-        {
-            FlushBatch();
-            mCurrentTexture = mWhiteTexture;
         }
 
         SDL_Rect dr;
@@ -581,11 +804,11 @@ namespace nuvelocity
         const float fw = static_cast<float>(dr.w);
         const float fh = static_cast<float>(dr.h);
 
-        PushQuad(
+        PushPrimitiveQuad(
             fx, fy, fx + fw, fy, fx + fw, fy + fh, fx, fy + fh, 0.0F, 0.0F, 1.0F, 1.0F, r, g, b, a);
     }
 
-    void GPUSpriteBatch::OutlineRect(const SDL_Rect* rect, SDL_Color color, int thickness)
+    void GPUSpriteBatch::OutlineRect(const SDL_Rect* rect, SDL_Color color, float thickness)
     {
         if (rect == nullptr)
         {
@@ -602,24 +825,18 @@ namespace nuvelocity
 
     void GPUSpriteBatch::SetClipRect(const SDL_Rect* rect)
     {
-        bool isAlreadyClipped = mHasCurrentClipRect;
-        bool willBeClipped = (rect != nullptr);
-
-        if (isAlreadyClipped != willBeClipped ||
-            (willBeClipped && (mCurrentClipRect.x != rect->x || mCurrentClipRect.y != rect->y ||
-                               mCurrentClipRect.w != rect->w || mCurrentClipRect.h != rect->h)))
+        if (rect != nullptr)
         {
-            FlushBatch();
+            mCurrentClipRect = *rect;
+            mHasCurrentClipRect = true;
 
-            if (rect != nullptr)
-            {
-                mCurrentClipRect = *rect;
-                mHasCurrentClipRect = true;
-            }
-            else
-            {
-                mHasCurrentClipRect = false;
-            }
+            mPrimitiveClipRect = *rect;
+            mHasPrimitiveClipRect = true;
+        }
+        else
+        {
+            mHasCurrentClipRect = false;
+            mHasPrimitiveClipRect = false;
         }
     }
 
@@ -860,18 +1077,7 @@ namespace nuvelocity
         // debug lines don't corrupt the next sprite's batch grouping.
         if (mDrawBounds)
         {
-            SDL_GPUTexture* savedTexture = mCurrentTexture;
-            SDL_BlendMode savedBlendMode = mCurrentBlendMode;
-
             OutlineRect(&dr, Colors::Magenta);
-
-            // Restore sprite state so subsequent same-texture draws still batch.
-            if (savedTexture != mCurrentTexture || savedBlendMode != mCurrentBlendMode)
-            {
-                FlushBatch();
-                mCurrentTexture = savedTexture;
-                mCurrentBlendMode = savedBlendMode;
-            }
         }
     }
 
