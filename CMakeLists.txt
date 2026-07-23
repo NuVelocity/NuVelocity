@@ -89,8 +89,13 @@ set(PHYSFS_ARCHIVE_VDF OFF CACHE BOOL "" FORCE)
 set(PHYSFS_ARCHIVE_LECARCHIVES OFF CACHE BOOL "" FORCE)
 set(PHYSFS_ARCHIVE_POD OFF CACHE BOOL "" FORCE)
 
+# Enable SDL3 platform support.
+set(PHYSFS_PLATFORM_SDL3 ON CACHE BOOL "" FORCE)
+
 # Disable building as a static library.
 set(PHYSFS_BUILD_STATIC OFF CACHE BOOL "" FORCE)
+# Disable installing the library, since we link it into our own library.
+set(PHYSFS_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(third_party/physfs EXCLUDE_FROM_ALL)
 
 # ------------------------------------------------------------------------------
