@@ -825,18 +825,24 @@ namespace nuvelocity
 
     void GPUSpriteBatch::SetClipRect(const SDL_Rect* rect)
     {
-        if (rect != nullptr)
-        {
-            mCurrentClipRect = *rect;
-            mHasCurrentClipRect = true;
+        bool isAlreadyClipped = mHasCurrentClipRect;
+        bool willBeClipped = (rect != nullptr);
 
-            mPrimitiveClipRect = *rect;
-            mHasPrimitiveClipRect = true;
-        }
-        else
+        if (isAlreadyClipped != willBeClipped ||
+            (willBeClipped && (mCurrentClipRect.x != rect->x || mCurrentClipRect.y != rect->y ||
+                               mCurrentClipRect.w != rect->w || mCurrentClipRect.h != rect->h)))
         {
-            mHasCurrentClipRect = false;
-            mHasPrimitiveClipRect = false;
+            FlushBatch();
+
+            if (rect != nullptr)
+            {
+                mCurrentClipRect = *rect;
+                mHasCurrentClipRect = true;
+            }
+            else
+            {
+                mHasCurrentClipRect = false;
+            }
         }
     }
 
