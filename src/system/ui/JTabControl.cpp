@@ -1,12 +1,8 @@
 #include "JTabControl.h"
 #include "skin/JWindowSkin.h"
+#include "SpriteBatch.h"
 #include <system/Game.h>
 #include <system/InputManager.h>
-
-namespace nuvelocity
-{
-    // AddChild/GetChildren and container behavior implemented below
-}
 
 namespace nuvelocity
 {
