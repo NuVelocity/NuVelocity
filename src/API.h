@@ -1,5 +1,5 @@
 #ifdef NVE_BUILD_STATIC
-#define NVE_API extern
+#define NVE_API
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #ifdef NVE_LIB
 #define NVE_API __declspec(dllexport)
