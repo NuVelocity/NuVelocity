@@ -133,7 +133,7 @@ add_library(NuVelocity::NuVelocity ALIAS NuVelocity)
 
 target_compile_definitions(
     NuVelocity PRIVATE
-    DEBUG
+    $<$<CONFIG:Debug>:DEBUG>
     NVE_LIB
 )
 
