@@ -122,6 +122,7 @@ include(cmake/CodeQuality.cmake)
 # ------------------------------------------------------------------------------
 if(NVE_BUILD_STATIC)
     add_library(NuVelocity STATIC)
+    target_compile_definitions(NuVelocity PRIVATE NVE_BUILD_STATIC)
 else()
     add_library(NuVelocity SHARED)
 endif()
