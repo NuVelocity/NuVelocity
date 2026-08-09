@@ -22,3 +22,7 @@
 	path = third_party/SDL_ttf
 	url = git@github.com:libsdl-org/SDL_ttf.git
 	shallow = true
+[submodule "third_party/argparse"]
+	path = third_party/argparse
+	url = https://github.com/p-ranav/argparse.git
+	shallow = true

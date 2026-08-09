@@ -110,18 +110,7 @@ endif()
 
 add_subdirectory(third_party/physfs EXCLUDE_FROM_ALL)
 
-# ------------------------------------------------------------------------------
-# Third-Party Libraries (via FetchContent)
-# ------------------------------------------------------------------------------
-include(FetchContent)
-
-# * argparse
-FetchContent_Declare(
-    argparse
-    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
-    GIT_TAG v3.2
-)
-FetchContent_MakeAvailable(argparse)
+add_subdirectory(third_party/argparse EXCLUDE_FROM_ALL)
 
 # ------------------------------------------------------------------------------
 # Code Quality Tools
