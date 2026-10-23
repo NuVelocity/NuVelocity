@@ -34,6 +34,7 @@ option(NVE_VENDORED "Use vendored libraries" ON)
 if(NVE_VENDORED)
     set(SDL_SHARED ${NVE_BUILD_SHARED} CACHE BOOL "" FORCE)
     set(SDL_STATIC ${NVE_BUILD_STATIC} CACHE BOOL "" FORCE)
+    set(ZLIB_BUILD_EXAMPLES OFF CACHE INTERNAL "" FORCE)
 
     # * SDL3
     add_subdirectory(third_party/SDL EXCLUDE_FROM_ALL)
