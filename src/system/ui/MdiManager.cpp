@@ -118,7 +118,7 @@ namespace nuvelocity
         }
 
         // Consume mouse pressed/released transitions when the pointer is inside
-        // any visible window so the scene does not receive the same click.
+        // any visible window so the screen does not receive the same click.
         // We only clear pressed/released (not down) to keep drag logic intact.
         if (mouseOverAnyWindow)
         {

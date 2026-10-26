@@ -18,7 +18,7 @@
 #include "ModuleInfo.h"
 #include "ObjectRegistration.h"
 #include "RendererSpriteBatch.h"
-#include "Scene.h"
+#include "Screen.h"
 #include "SpriteBatch.h"
 #include "ui/MdiManager.h"
 
@@ -37,7 +37,7 @@ namespace nuvelocity
             , mAudio(nullptr)
             , mFont(nullptr)
             , mInitialized(false)
-            , mScene(nullptr)
+            , mScreen(nullptr)
             , mInput(nullptr)
             , mMdi(nullptr)
             , mSpriteBatch(nullptr)
@@ -316,29 +316,29 @@ namespace nuvelocity
             mMdi->Update(this);
         }
 
-        if (mScene != nullptr)
+        if (mScreen != nullptr)
         {
-            mScene->Update(this);
+            mScreen->Update(this);
         }
 
-        if (mPendingScene != nullptr)
+        if (mPendingScreen != nullptr)
         {
-            if (mScene != nullptr)
+            if (mScreen != nullptr)
             {
-                mScene->Unload(this);
-                delete mScene;
+                mScreen->Unload(this);
+                delete mScreen;
             }
-            mScene = mPendingScene;
-            mScene->Load(this);
-            mPendingScene = nullptr;
+            mScreen = mPendingScreen;
+            mScreen->Load(this);
+            mPendingScreen = nullptr;
         }
     }
 
     void Game::Draw()
     {
-        if (mScene != nullptr)
+        if (mScreen != nullptr)
         {
-            mScene->Draw(this);
+            mScreen->Draw(this);
         }
 
         if (mMdi != nullptr)
@@ -365,14 +365,14 @@ namespace nuvelocity
         }
     }
 
-    void Game::SetScene(Scene* scene)
+    void Game::SetScreen(Screen* screen)
     {
-        mPendingScene = scene;
+        mPendingScreen = screen;
     }
 
-    Scene* Game::GetScene()
+    Screen* Game::GetScreen()
     {
-        return mScene;
+        return mScreen;
     }
 
     SpriteBatch* Game::GetSpriteBatch() const
@@ -454,8 +454,8 @@ namespace nuvelocity
 
     Game::~Game()
     {
-        delete mScene;
-        mScene = nullptr;
+        delete mScreen;
+        mScreen = nullptr;
 
         if (mCursor != nullptr)
         {

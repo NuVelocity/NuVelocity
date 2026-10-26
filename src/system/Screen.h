@@ -1,5 +1,5 @@
-#ifndef NVE_SCENE_H
-#define NVE_SCENE_H
+#ifndef NVE_SCREEN_H
+#define NVE_SCREEN_H
 
 #include "API.h"
 #include "GameComponent.h"
@@ -9,10 +9,10 @@ namespace nuvelocity
 {
     class Game;
 
-    class Scene : public GameComponent
+    class Screen : public GameComponent
     {
     public:
-        virtual ~Scene() = default;
+        virtual ~Screen() = default;
 
         NVE_API virtual void Update(Game* game) override = 0;
         NVE_API virtual void Draw(Game* game) override = 0;
@@ -23,12 +23,12 @@ namespace nuvelocity
         NVE_API virtual std::string GetName() const = 0;
 
     protected:
-        Scene() = default;
+        Screen() = default;
 
     private:
-        Scene(const Scene&) = delete;
-        Scene& operator=(const Scene&) = delete;
+        Screen(const Screen&) = delete;
+        Screen& operator=(const Screen&) = delete;
     };
 } // namespace nuvelocity
 
-#endif // NVE_SCENE_H
+#endif // NVE_SCREEN_H

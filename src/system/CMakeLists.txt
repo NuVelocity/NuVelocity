@@ -28,7 +28,7 @@ target_sources(
     Game.h
     LogCategory.h
     Manager.h
-    Scene.h
+    Screen.h
     RendererSpriteBatch.cpp
     RendererSpriteBatch.h
     SpriteBatch.h

@@ -18,7 +18,7 @@ namespace nuvelocity
     class InputManager;
     class MdiManager;
     class ModuleInfo;
-    class Scene;
+    class Screen;
     class SpriteBatch;
 
     class Game
@@ -59,8 +59,8 @@ namespace nuvelocity
         NVE_API void HandleEvent(const SDL_Event& event) const;
         NVE_API void EndFrame() const;
 
-        NVE_API void SetScene(Scene* scene);
-        NVE_API Scene* GetScene();
+        NVE_API void SetScreen(Screen* screen);
+        NVE_API Screen* GetScreen();
         NVE_API SpriteBatch* GetSpriteBatch() const;
 
         NVE_API void SetMouseCursor(std::string sequencePath);
@@ -82,8 +82,8 @@ namespace nuvelocity
         }
 
     protected:
-        Scene* mScene;
-        Scene* mPendingScene;
+        Screen* mScreen;
+        Screen* mPendingScreen;
         static inline bool Fail();
         std::string mCursorSequencePath;
         std::string mModuleInfoPath;
