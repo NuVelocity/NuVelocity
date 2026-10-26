@@ -4,7 +4,7 @@
   <h3>A C++ game engine, re-implementing Reflexive Entertainment's Velocity Engine.</h3>
 </div>
 
-It powers games such as FreeRS42, providing modular 2D game development, asset management, rendering, audio, and scene management.
+It powers games such as [FreeRS42](https://github.com/NuVelocity/FRS42), providing modular 2D game development, asset management, rendering, audio, and screen management.
 
 ## Features
 
