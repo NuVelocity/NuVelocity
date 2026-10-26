@@ -1,7 +1,7 @@
-<div style="text-align:center">
+<div align="center">
   <img src="logo.png" width="128" />
   <h1>NuVelocity Engine</h1>
-  <h3>A C++ game engine, re-implementing Reflexive Entertainment's Velocity Engine..</h3>
+  <h3>A C++ game engine, re-implementing Reflexive Entertainment's Velocity Engine.</h3>
 </div>
 
 It powers games such as FreeRS42, providing modular 2D game development, asset management, rendering, audio, and scene management.
