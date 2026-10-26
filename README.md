@@ -32,6 +32,11 @@ It powers games such as FreeRS42, providing modular 2D game development, asset m
 Engine and main code are licensed under the Mozilla Public License 2.0 (MPL 2.0).
 For third-party code, see the `third_party` directory for license information.
 
+NuVelocity is not affiliated with or endorsed by Reflexive Entertainment. This is
+an unofficial community project run by fans of the series with an interest in
+preserving the legacy. All product names, logos, and brands are property of their
+respective owners.
+
 ## Contact
 
 For questions, open an issue. Code contribution guidelines are still being written.
